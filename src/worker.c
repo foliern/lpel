@@ -136,11 +136,13 @@ void LpelMasterCleanup( void) {
 void LpelMasterSpawn( void) {
 	int i;
 	/* master */
+	printf("I am the MASTER! \n");
 	(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
 	/* workers */
 	for( i=0; i<num_workers; i++) {
 		workerctx_t *wc = WORKER_PTR(i);
+		printf("I am the SLAVE NR.:%i \n",i);
 		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
 	}
 }
