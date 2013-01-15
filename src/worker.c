@@ -22,6 +22,7 @@
 #include "stream.h"
 #include "mailbox.h"
 #include "lpel/monitor.h"
+#include "readTileID.h"
 
 #define WORKER_PTR(i) (workers[(i)])
 #define MASTER_PTR	master
@@ -136,6 +137,7 @@ void LpelMasterCleanup( void) {
 void LpelMasterSpawn( void) {
 	int i;
 	/* master */
+	(void) readTileID();
 	printf("I am the MASTER! \n");
 	(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
