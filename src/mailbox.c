@@ -2,17 +2,55 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <assert.h>
+#include <stdio.h>
 #include "mailbox.h"
 // for communication over MPB
-#include "scc.h"
+
 #include <string.h>
 #include <unistd.h>
 //to use uint64_t
 #include <stdint.h>
 
-#include "debug.h"
+
 #include "SCC_API.h"
-#include "bool.h"
+
+
+#define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
+#define PAGE_SIZE           (16*1024*1024)
+#define LINUX_PRIV_PAGES    (20)
+#define PAGES_PER_CORE      (41)
+#define MAX_PAGES           (172)
+#define IRQ_BIT             (0x01 << GLCFG_XINTR_BIT)
+
+#define B_OFFSET            64
+#define FOOL_WRITE_COMBINE  (mpbs[node_location][0] = 1)
+#define START(i)            (*((volatile uint16_t *) (mpbs[i] + B_OFFSET)))
+#define END(i)              (*((volatile uint16_t *) (mpbs[i] + B_OFFSET + 2)))
+#define HANDLING(i)         (*(mpbs[i] + B_OFFSET + 4))
+#define WRITING(i)          (*(mpbs[i] + B_OFFSET + 5))
+#define B_START             (B_OFFSET + 32)
+#define B_SIZE              (MPBSIZE - B_START)
+#define true				1
+#define false				0
+#define LUT(loc, idx)       (*((volatile uint32_t*)(&luts[loc][idx])))
+
+//extern bool remap;
+extern int node_location;
+
+extern t_vcharp mpbs[CORES];
+extern t_vcharp locks[CORES];
+//extern volatile int *irq_pins[CORES];
+//extern volatile uint64_t *luts[CORES];
+
+static inline int min(int x, int y) { return x < y ? x : y; }
+
+/* Flush MPBT from L1. */
+static inline void flush() { __asm__ volatile ( ".byte 0x0f; .byte 0x0a;\n" ); }
+
+static inline void lock(int core) { while (!(*locks[core] & 0x01)); }
+
+static inline void unlock(int core) { *locks[core] = 0; }
+
 
 /* mailbox structures */
 
@@ -153,7 +191,7 @@ void LpelMailboxSend_overMPB(int node, void *src, int size)
 {
 	  int start, end, free;
 
-	  if (size >= B_SIZE) SNetUtilDebugFatal("Message to big!");
+	  if (size >= B_SIZE) printf("Message to big!");
 
 	  flush();
 	  WRITING(node) = true;

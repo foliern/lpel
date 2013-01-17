@@ -1,4 +1,4 @@
-SUBDIRS = include . tests
+viSUBDIRS = include . tests
 
 lib_LTLIBRARIES = liblpel.la liblpel_mon.la
 
