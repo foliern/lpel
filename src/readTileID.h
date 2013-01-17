@@ -5,4 +5,4 @@
  *      Author: Simon
  */
 
-void readTileID( void);
+int readTileID( void);

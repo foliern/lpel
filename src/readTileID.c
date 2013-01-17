@@ -18,7 +18,7 @@
  #include "readTileID.h"
 
 
-void readTileID( void){
+int readTileID( void){
 
 	typedef volatile unsigned char* t_vcharp;
 	int PAGE_SIZE, NCMDeviceFD;
@@ -44,5 +44,6 @@ void readTileID( void){
 	printf("My tileID = 0x%2x\n",tileID);
 	printf("My coreID = %1d\n",coreID);
 	printf("My processorID = %2d\n",(x_val +(6*y_val))*2 + coreID);
+	return (x_val +(6*y_val))*2 + coreID;
 }
 
