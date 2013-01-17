@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 
-#include "SCC_API.h"
+#include "SCC_API_test.h"
 
 
 #define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
@@ -35,10 +35,10 @@
 #define LUT(loc, idx)       (*((volatile uint32_t*)(&luts[loc][idx])))
 
 //extern bool remap;
-extern int node_location;
+int node_location;
 
-extern t_vcharp mpbs[CORES];
-extern t_vcharp locks[CORES];
+t_vcharp mpbs[CORES];
+t_vcharp locks[CORES];
 //extern volatile int *irq_pins[CORES];
 //extern volatile uint64_t *luts[CORES];
 
