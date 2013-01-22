@@ -11,7 +11,7 @@
 //to use uint64_t
 #include <stdint.h>
 
-#define SCC
+
 #include "RCCE_lib.h"
 #include "SCC_API_test.h"
 

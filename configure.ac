@@ -5,6 +5,14 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.11 tar-ustar no-define foreign dist-bzip2 subdir-objects silent-rules])
 AM_SILENT_RULES([yes])
 
+
+AC_ARG_ENABLE([scc], [AS_HELP_STRING([--enable-scc],
+    [Enable the custom distribution layer for the SCC (default is disabled)])],
+    [scc=true], [scc=false])
+if test x$scc = xtrue; then
+	AC_DEFINE([SCC], [1], [Set to 1 to enable the SCC distribution layer])
+fi
+
 AC_PROG_CC_C99
 AC_USE_SYSTEM_EXTENSIONS
 AM_PROG_AS
