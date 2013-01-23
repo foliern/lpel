@@ -20,6 +20,8 @@
 #include "lpelcfg.h"
 #include "worker.h"
 
+#include "RCCE.h"
+
 
 #ifdef HAVE_PROC_CAPABILITIES
 #  include <sys/capability.h>
@@ -180,9 +182,11 @@ static void CreateCpusets( void)
  *       num_workers == proc_workers
  *
  */
-int LpelInit(lpel_config_t *cfg)
+int LpelInit(lpel_config_t *cfg, int argc, char **argv)
 {
   int res;
+
+  RCCE_init(&argc, &argv);
 
   /* store a local copy of cfg */
   _lpel_global_config = *cfg;
