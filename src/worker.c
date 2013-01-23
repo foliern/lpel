@@ -136,10 +136,11 @@ void LpelMasterCleanup( void) {
 
 void LpelMasterSpawn( void) {
 	int i;
-	int processor_ID, cond_message, worker_message;
+	int processor_ID;
+	char cond_message, worker_message;
 	/* master */
 	processor_ID = readTileID();
-	cond_message = 3;
+	cond_message = 'c';
 
 	if (processor_ID == 0) {
 		printf("I am processor %i, the CONDUCTOR! \n", processor_ID);
@@ -151,7 +152,7 @@ void LpelMasterSpawn( void) {
 		printf("I am processor %i, the WORKER \n",processor_ID);
 		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
 		LpelMailboxRecv_overMPB(0, &worker_message, sizeof(cond_message));
-		printf("Nachricht von node 0: %i", worker_message);
+		printf("Nachricht von node 0: %s", worker_message);
 	}
 
 //	printf("I am the MASTER! \n");

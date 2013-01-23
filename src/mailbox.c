@@ -11,10 +11,9 @@
 //to use uint64_t
 #include <stdint.h>
 
-
+#include "RCCE.h"
 #include "RCCE_lib.h"
 #include "SCC_API_test.h"
-
 
 #define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
 #define PAGE_SIZE           (16*1024*1024)
@@ -188,8 +187,9 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   pthread_mutex_unlock( &mbox->lock_inbox);
 }
 
-void LpelMailboxSend_overMPB(int node, void *src, int size)
+void LpelMailboxSend_overMPB(int node, char *src, int size)
 {
+	RCCE_send(src, size, node);
 }
 
 
@@ -222,8 +222,9 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   PutFree( mbox, node);
 }
 
-void LpelMailboxRecv_overMPB(int node, void *dst, int size)
+void LpelMailboxRecv_overMPB(int node, char *dst, int size)
 {
+	RCCE_recv(dst, size, node);
 }
 /**
  * @return 1 if there is an incoming msg, 0 otherwise
