@@ -101,7 +101,8 @@ AX_PTHREAD
 if test "x$ax_pthread_ok" = "xno"; then
    AC_MSG_ERROR([Cannot build without a working POSIX thread implementation.])
 fi
-LIBS="$LIBS $PTHREAD_LIBS"
+RCCE_LIBS=/shared/foliern/rcce/bin/SCC_LINUX/libRCCE_bigflags_nongory_nopwrmgmt.a 
+LIBS="$LIBS $PTHREAD_LIBS $RCCE_LIBS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 
 AC_CHECK_FUNCS([sysconf])

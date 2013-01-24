@@ -132,7 +132,7 @@ static void testBasic(void)
   cfg.flags = 0;
 
   LpelMonInit(&cfg.mon);
-  LpelInit(&cfg);
+  //LpelInit(&cfg);
 
 
   in = LpelStreamCreate(0);

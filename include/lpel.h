@@ -108,7 +108,7 @@ typedef struct {
 
 
 
-int LpelInit( lpel_config_t *cfg);
+int LpelInit( lpel_config_t *cfg, int argc, char **argv);
 void LpelCleanup( void);
 
 void LpelStart(void);

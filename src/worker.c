@@ -137,22 +137,26 @@ void LpelMasterCleanup( void) {
 void LpelMasterSpawn( void) {
 	int i;
 	int processor_ID;
-	char cond_message, worker_message;
+	char *cond_message= "Hallo Worker";
+	char *worker_message= "init Message";
 	/* master */
 	processor_ID = readTileID();
-	cond_message = 'c';
 
 	if (processor_ID == 0) {
 		printf("I am processor %i, the CONDUCTOR! \n", processor_ID);
 		(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
-		LpelMailboxSend_overMPB(1, &cond_message, sizeof(cond_message));
+		LpelMailboxSend_overMPB(1, cond_message, sizeof(cond_message));
+		printf("Nachricht an node 1: %s \n", cond_message);
 	} else {
-		workerctx_t *wc = WORKER_PTR(i);
+		 worker_message= "init Messag2";
+//		 *wc = WORKER_PTR(0);
 		printf("I am processor %i, the WORKER \n",processor_ID);
-		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
-		LpelMailboxRecv_overMPB(0, &worker_message, sizeof(cond_message));
-		printf("Nachricht von node 0: %s", worker_message);
+                (void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR);        /* spawn joinable thread */
+//                LpelMailboxSend_overMPB(1, &cond_message, sizeof(cond_message));
+//		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
+		LpelMailboxRecv_overMPB(0, worker_message, sizeof(worker_message));
+		printf("Nachricht von node 0: %s \n", worker_message);
 	}
 
 //	printf("I am the MASTER! \n");

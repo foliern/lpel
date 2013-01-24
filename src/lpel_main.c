@@ -187,7 +187,7 @@ int LpelInit(lpel_config_t *cfg, int argc, char **argv)
   int res;
 
   RCCE_init(&argc, &argv);
-
+  printf("RCCE Number of UEs %d \n",RCCE_num_ues());
   /* store a local copy of cfg */
   _lpel_global_config = *cfg;
 
