@@ -107,7 +107,7 @@ typedef struct {
 #define LPEL_FLAG_EXCLUSIVE   (1<<1)
 
 
-
+void RCCE_init_fct();
 int LpelInit( lpel_config_t *cfg, int argc, char **argv);
 void LpelCleanup( void);
 

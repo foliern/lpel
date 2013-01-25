@@ -169,6 +169,35 @@ static void CreateCpusets( void)
 
 
 
+
+void RCCE_init_fct(){
+	
+	int init_res= -10;
+	int argcf;
+	 char **argvf;
+	  //Usage: "./rccerun -nue <number of UEs> [-f HOSTFILE] [-clock GHz] <executable> [executable parameters]
+	  //argc =3;
+	  //**argv = "rccerun -nue 2";
+	 //	*argv="rccerun\0";
+	//	*(argv+1)="-nue";
+	//	argv[2]="2";  	  
+	char* dummy_args[]={"./rccerun","-nue","1","test",NULL};
+	printf("Eingabe0: %s \n", dummy_args[0]);
+	printf("Eingabe1: %s \n", dummy_args[1]);
+	printf("Eingabe2: %s \n", dummy_args[2]);
+	printf("Eingabe3: %s \n", dummy_args[3]);
+	printf("Eingabe4: %s \n", dummy_args[4]);
+
+	//argcf=sizeof(dummy_args)/sizeof(dummy_args[0])-1;
+	argcf=4;
+	argvf=dummy_args;
+
+	  init_res=RCCE_init(&argcf, &argvf);
+	  printf("RCCE Init Return Value:  %d \n",init_res);
+	  printf("RCCE Number of UEs:  %d \n",RCCE_num_ues());
+	  printf("RCCE Core Rank:  %d \n",RCCE_ue());
+}
+
 /**
  * Initialise the LPEL
  *
@@ -185,10 +214,15 @@ static void CreateCpusets( void)
 int LpelInit(lpel_config_t *cfg, int argc, char **argv)
 {
   int res;
+ // int init_res= -10;
+ //argc =0;
+ // init_res=RCCE_init(&argc, &argv);
+ //  printf("RCCE Init Result:  %d \n",init_res);
+ // printf("RCCE Number of UEs:  %d \n",RCCE_num_ues());
+ // printf("RCCE Core Rank:  %d \n",RCCE_ue());
 
-  RCCE_init(&argc, &argv);
-  printf("RCCE Number of UEs %d \n",RCCE_num_ues());
-  /* store a local copy of cfg */
+
+/* store a local copy of cfg */
   _lpel_global_config = *cfg;
 
   /* check the config */
