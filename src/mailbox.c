@@ -63,6 +63,8 @@ t_vcharp RCCE_buff_ptr;
   //size_t RCCE_chunk;
   size_t chunk_size;
 
+  int MPBDeviceFD; // File descriptor for message passing buffers.
+
 //......................................................................................
 // END GLOBAL VARIABLES USED FOR MPB
 //......................................................................................
@@ -173,6 +175,12 @@ void RCCE_malloc_init(
 			  *MPB = NULL;
 			  return;
 		  }
+		  if ((MPBDeviceFD=open("/dev/rckmpb", O_RDWR))<0) {
+		        printf("Error opening /dev/rckmpb!!!");
+		        exit(-1);
+		    }
+
+
 		  MappedAddr = (t_vcharp) mmap(NULL, MPBSIZE, PROT_WRITE|PROT_READ, MAP_SHARED, MPBDeviceFD, alignedAddr);
 		  if (MappedAddr == MAP_FAILED)
 		  {
