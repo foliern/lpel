@@ -1,4 +1,4 @@
-
+#include <fcntl.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <assert.h>
@@ -144,7 +144,7 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 //--------------------------------------------------------------------------------------
 // initialize memory allocator
 //--------------------------------------------------------------------------------------
-void RCCE_malloc_init(
+void RCCE_malloc_init2(
   t_vcharp mem, // pointer to MPB space that is to be managed by allocator
   size_t size   // size (bytes) of managed space
 ) {
@@ -161,7 +161,7 @@ void RCCE_malloc_init(
 // Parameter: MPB                   - Pointer to MPB area (return value, virtal address)
 //            x,y,core              - Position of tile (x,y) and core...
 //
-	void MPBalloc(t_vcharp *MPB, int x, int y, int core, int isOwnMPB)
+	void MPBalloc2(t_vcharp *MPB, int x, int y, int core, int isOwnMPB)
 	{
 		  t_vcharp MappedAddr;
 		  // enable local MPB bypass (if trusted) by uncommenting next two lines and commenting
@@ -197,11 +197,11 @@ void RCCE_malloc_init(
 //--------------------------------------------------------------------------------------
 // return (virtual) start address of MPB for UE with rank ue
 //--------------------------------------------------------------------------------------
-  t_vcharp RC_COMM_BUFFER_START(int ue)
+  t_vcharp RC_COMM_BUFFER_START2(int ue)
   {
     // "Allocate" MPB, using memory mapping of physical addresses
     t_vcharp retval;
-    MPBalloc(&retval, X_PID(RC_COREID[ue]), Y_PID(RC_COREID[ue]), Z_PID(RC_COREID[ue]),
+    MPBalloc2(&retval, X_PID(RC_COREID[ue]), Y_PID(RC_COREID[ue]), Z_PID(RC_COREID[ue]),
              (X_PID(RC_COREID[ue]) == X_PID(RC_COREID[RCCE_IAM])) &&
              (Y_PID(RC_COREID[ue]) == Y_PID(RC_COREID[RCCE_IAM]))
             );
@@ -213,7 +213,7 @@ void RCCE_malloc_init(
 //--------------------------------------------------------------------------------------
 // invalidate (not flush!) lines in L1 that map to MPB lines
 //--------------------------------------------------------------------------------------
-    void RC_cache_invalidate()
+    void RC_cache_invalidate2()
     {
 	  __asm__ volatile ( ".byte 0x0f; .byte 0x0a;\n" ); // CL1FLUSHMB
 	  	 return;
@@ -224,7 +224,7 @@ void RCCE_malloc_init(
 //--------------------------------------------------------------------------------------
 // optimized memcpy for copying data from private memory to MPB
 //--------------------------------------------------------------------------------------
-    inline static void *memcpy_put(void *dest, const void *src, size_t count)
+    inline static void *memcpy_put2(void *dest, const void *src, size_t count)
     {
 		int i, j, k;
 
@@ -249,7 +249,7 @@ void RCCE_malloc_init(
 //--------------------------------------------------------------------------------------
 
 
-    int RCCE_put(
+    int RCCE_put2(
 			t_vcharp target, // target buffer, MPB
 			t_vcharp source, // source buffer, MPB or private memory
 			int num_bytes,
@@ -261,9 +261,9 @@ void RCCE_malloc_init(
     	target = RCCE_comm_buffer[ID]+(target-RCCE_comm_buffer[RCCE_IAM]);
 
 		// do the actual copy
-		RC_cache_invalidate();
+		RC_cache_invalidate2();
 
-		memcpy_put((void *)target, (void *)source, num_bytes);
+		memcpy_put2((void *)target, (void *)source, num_bytes);
 
 		return(RCCE_SUCCESS);
     }
@@ -291,13 +291,13 @@ mailbox_t *LpelMailboxCreate(void)
   // of single-byte MPB access
   //RCCE_fool_write_combine_buffer = RC_COMM_BUFFER_START(RCCE_IAM);
 
-  RCCE_comm_buffer[NODE_ID] = RC_COMM_BUFFER_START(NODE_ID) + RCCE_LINE_SIZE;
+  RCCE_comm_buffer[NODE_ID] = RC_COMM_BUFFER_START2(NODE_ID) + RCCE_LINE_SIZE;
 
   // gross MPB size is set equal to maximum
   RCCE_BUFF_SIZE = RCCE_BUFF_SIZE_MAX - RCCE_LINE_SIZE;
 
   // initialize RCCE_malloc
-  RCCE_malloc_init(RCCE_comm_buffer[NODE_ID],RCCE_BUFF_SIZE);
+  RCCE_malloc_init2(RCCE_comm_buffer[NODE_ID],RCCE_BUFF_SIZE);
 
   //if SHMADD & SHMDBG are not defined
   //RCCE_shmalloc_init(RC_SHM_BUFFER_START(),RCCE_SHM_SIZE_MAX);
@@ -393,17 +393,17 @@ void LpelMailboxSend_overMPB(
 	    //bufptr = privbuf + wsize;
 	    //nbytes = chunk;
 	    // copy private data to own comm buffer
-	    RCCE_put(I_buff_ptr, (t_vcharp) privbuf, chunk_size, NODE_ID);
+	    RCCE_put2(I_buff_ptr, (t_vcharp) privbuf, chunk_size, NODE_ID);
 	    //RCCE_flag_write(sent, RCCE_FLAG_SET, dest);
 	    // wait for the destination to be ready to receive a message
 	    //RCCE_wait_until(*ready, RCCE_FLAG_SET);
 	    //RCCE_flag_write(ready, RCCE_FLAG_UNSET, RCCE_IAM);
-	  }
+	 // }
 
 	 // remainder = size%chunk;
 	  // if nothing is left over, we are done
 	  //if (!remainder) return(RCCE_SUCCESS);
-	return (1)
+//	return (1)
 	  // send remainder of data--whole cache lines
 //	  bufptr = privbuf + (size/chunk)*chunk;
 //	  nbytes = remainder - remainder%RCCE_LINE_SIZE;
