@@ -146,7 +146,7 @@ void LpelMasterSpawn( void) {
 		printf("I am processor %i, the CONDUCTOR! \n", processor_ID);
 		(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
-		LpelMailboxSend_overMPB(1, cond_message, sizeof(cond_message));
+		LpelMailboxSend_overMPB(cond_message, sizeof(cond_message),processor_ID);
 		printf("Nachricht an node 1: %s \n", cond_message);
 	} else {
 		 worker_message= "init Messag2";
@@ -155,7 +155,7 @@ void LpelMasterSpawn( void) {
                 (void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR);        /* spawn joinable thread */
 //                LpelMailboxSend_overMPB(1, &cond_message, sizeof(cond_message));
 //		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
-		LpelMailboxRecv_overMPB(0, worker_message, sizeof(worker_message));
+		//LpelMailboxRecv_overMPB(0, worker_message, sizeof(worker_message));
 		printf("Nachricht von node 0: %s \n", worker_message);
 	}
 
