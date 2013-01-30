@@ -11,11 +11,12 @@
 //to use uint64_t
 #include <stdint.h>
 
-//#include "RCCE.h"
-//#include "RCCE_lib.h"
+#include "RCCE.h"
+#include "RCCE_lib.h"
 #include "SCC_API_test.h"
 #include "readTileID.h"
 #include "configuration.h"
+//#include "/shared/foliern/rcce/src/RCCE_memcpy.c"
 
 #define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
 #define PAGE_SIZE           (16*1024*1024)
@@ -244,6 +245,41 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 		return dest;
     }
 
+inline static void *memcpy_get2(void *dest, const void *src, size_t count)
+{
+        int h, i, j, k, l, m;
+
+        asm volatile("cld;\n\t"
+                "1: cmpl $0, %%eax ; je 2f\n\t"
+                "movl (%%edi), %%edx\n\t"
+                "movl 0(%%esi), %%ecx\n\t"
+                "movl 4(%%esi), %%edx\n\t"
+                "movl %%ecx, 0(%%edi)\n\t"
+                "movl %%edx, 4(%%edi)\n\t"
+                "movl 8(%%esi), %%ecx\n\t"
+                "movl 12(%%esi), %%edx\n\t"
+                "movl %%ecx, 8(%%edi)\n\t"
+                "movl %%edx, 12(%%edi)\n\t"
+                "movl 16(%%esi), %%ecx\n\t"
+                "movl 20(%%esi), %%edx\n\t"
+                "movl %%ecx, 16(%%edi)\n\t"
+                "movl %%edx, 20(%%edi)\n\t"
+                "movl 24(%%esi), %%ecx\n\t"
+                "movl 28(%%esi), %%edx\n\t"
+                "movl %%ecx, 24(%%edi)\n\t"
+                "movl %%edx, 28(%%edi)\n\t"
+                "addl $32, %%esi\n\t"
+                "addl $32, %%edi\n\t"
+                "dec %%eax ; jmp 1b\n\t"
+                "2: movl %%ebx, %%ecx\n\t"
+                "movl (%%edi), %%edx\n\t"
+                "andl $31, %%ecx\n\t"
+                "rep ; movsb\n\t"
+                : "=&a"(h), "=&D"(i), "=&S"(j), "=&b"(k), "=&c"(l), "=&d"(m)
+                : "0"(count/32), "1"(dest), "2"(src), "3"(count)  : "memory");
+
+        return dest;
+}
 
 //--------------------------------------------------------------------------------------
 // FUNCTION: RCCE_put
@@ -255,25 +291,26 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 
 
     int RCCE_put2(
-			t_vcharp target, // target buffer, MPB
-			t_vcharp source, // source buffer, MPB or private memory, message to write into MPB
-			int num_bytes,
-			int ID
-			)
+                        t_vcharp target, // target buffer, MPB
+                        t_vcharp source, // source buffer, MPB or private memory, message to write into MPB
+                        int num_bytes,
+                        int ID
+                        )
     {
-    	// in non-GORY mode we only need to retain the MPB target shift; we
-    	// already know the target is in the MPB, not private memory
-    	target = RCCE_comm_buffer[ID]+(target-RCCE_comm_buffer[ID]);
+        // in non-GORY mode we only need to retain the MPB target shift; we
+        // already know the target is in the MPB, not private memory
+        target = RCCE_comm_buffer[ID]+(target-RCCE_comm_buffer[ID]);
 
-		// do the actual copy
-		RC_cache_invalidate2();
-	//test address
-	//target= (char *)0xb7551020;
+                // do the actual copy
+                RC_cache_invalidate2();
+        //test address
+        //target= (char *)0xb7551020;
 
-		memcpy_put2((void *)target, (void *)source, num_bytes);
-
-		return(RCCE_SUCCESS);
+                memcpy_put2((void *)target, (void *)source, num_bytes);
+                memcpy_get2((void *)target, (void *)source, num_bytes);
+                return(RCCE_SUCCESS);
     }
+
 
 /******************************************************************************/
 /* Public functions                                                           */
@@ -387,42 +424,9 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 //--------------------------------------------------------------------------------------
 // optimized memcpy for copying data from MPB to private memory
 //--------------------------------------------------------------------------------------
-inline static void *memcpy_get2(void *dest, const void *src, size_t count)
-{
-        int h, i, j, k, l, m;
 
-        asm volatile (
-                "cld;\n\t"
-                "1: cmpl $0, %%eax ; je 2f\n\t"
-                "movl (%%edi), %%edx\n\t"
-                "movl 0(%%esi), %%ecx\n\t"
-                "movl 4(%%esi), %%edx\n\t"
-                "movl %%ecx, 0(%%edi)\n\t"
-                "movl %%edx, 4(%%edi)\n\t"
-                "movl 8(%%esi), %%ecx\n\t"
-                "movl 12(%%esi), %%edx\n\t"
-                "movl %%ecx, 8(%%edi)\n\t"
-                "movl %%edx, 12(%%edi)\n\t"
-                "movl 16(%%esi), %%ecx\n\t"
-                "movl 20(%%esi), %%edx\n\t"
-                "movl %%ecx, 16(%%edi)\n\t"
-                "movl %%edx, 20(%%edi)\n\t"
-                "movl 24(%%esi), %%ecx\n\t"
-                "movl 28(%%esi), %%edx\n\t"
-                "movl %%ecx, 24(%%edi)\n\t"
-                "movl %%edx, 28(%%edi)\n\t"
-                "addl $32, %%esi\n\t"
-                "addl $32, %%edi\n\t"
-                "dec %%eax ; jmp 1b\n\t"
-                "2: movl %%ebx, %%ecx\n\t"
-                "movl (%%edi), %%edx\n\t"
-                "andl $31, %%ecx\n\t"
-                "rep ; movsb\n\t"
-                : "=&a"(h), "=&D"(i), "=&S"(j), "=&b"(k), "=&c"(l), "=&d"(m)
-                : "0"(count/32), "1"(dest), "2"(src), "3"(count)  : "memory");
 
-        return dest;
-}
+
 //--------------------------------------------------------------------------------------
 // FUNCTION: RCCE_get
 //--------------------------------------------------------------------------------------
@@ -437,7 +441,6 @@ int RCCE_get2(
   int ID           // rank of source UE
   ) {
 
-
     // in non-GORY mode we only need to retain the MPB source shift; we
     // already know the source is in the MPB, not private memory
     source = RCCE_comm_buffer[ID]+(source-RCCE_comm_buffer[ID]);
@@ -446,7 +449,7 @@ int RCCE_get2(
   // do the actual copy
   RC_cache_invalidate2();
 
-  memcpy_get2((void *)target, (void *)source, num_bytes);
+  //memcpy_get2((void *)target, (void *)source, num_bytes);
 
   return(RCCE_SUCCESS);
 }
