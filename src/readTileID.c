@@ -16,6 +16,7 @@
  //#define MYTILEID  0x100
  #include "SCC_API_test.h"
  #include "readTileID.h"
+#include "configuration.h"
 
 
 int readTileID( void){
@@ -35,15 +36,15 @@ int readTileID( void){
 				   perror("mmap");exit(-1);
 	}
 	result = *(unsigned int*)(MappedAddr+pageOffset); munmap((void*)MappedAddr, PAGE_SIZE);
-	printf("result = %x %d \n",result, result);
+	PRT_DBG("result = %x %d \n",result, result);
 				coreID = result & coreID_mask;
 				x_val  = (result & x_mask) >> 3;
 				y_val  = (result & y_mask) >> 7;
 				tileID = y_val*16 + x_val;
-	printf("My (x,y) = (%d,%d)\n", x_val, y_val);
-	printf("My tileID = 0x%2x\n",tileID);
-	printf("My coreID = %1d\n",coreID);
-	printf("My processorID = %2d\n",(x_val +(6*y_val))*2 + coreID);
+	PRT_DBG("My (x,y) = (%d,%d)\n", x_val, y_val);
+	PRT_DBG("My tileID = 0x%2x\n",tileID);
+	PRT_DBG("My coreID = %1d\n",coreID);
+	PRT_DBG("My processorID = %2d\n",(x_val +(6*y_val))*2 + coreID);
 	return (x_val +(6*y_val))*2 + coreID;
 }
 

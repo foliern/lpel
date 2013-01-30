@@ -15,6 +15,7 @@
 #include "RCCE_lib.h"
 #include "SCC_API_test.h"
 #include "readTileID.h"
+#include "configuration.h"
 
 #define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
 #define PAGE_SIZE           (16*1024*1024)
@@ -34,6 +35,8 @@
 #define true				1
 #define false				0
 #define LUT(loc, idx)       (*((volatile uint32_t*)(&luts[loc][idx])))
+//because from 0 to 47 = 48
+#define ACTIVE_NODES		47
 
 //......................................................................................
 // GLOBAL VARIABLES USED FOR MPB
@@ -58,10 +61,10 @@ t_vcharp RCCE_buff_ptr;
 
   // payload part of the MPBs starts at a specific address, not malloced space
   //t_vcharp RCCE_buff_ptr;
-  t_vcharp I_buff_ptr;
+  t_vcharp OWN_BUFF_ptr;
   // maximum chunk size of message payload is also specified
   //size_t RCCE_chunk;
-  size_t chunk_size;
+  size_t CHUNK_size;
 
   int MPBDeviceFD; // File descriptor for message passing buffers.
 
@@ -144,17 +147,17 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 //--------------------------------------------------------------------------------------
 // initialize memory allocator
 //--------------------------------------------------------------------------------------
-void RCCE_malloc_init2(
-  t_vcharp mem, // pointer to MPB space that is to be managed by allocator
-  size_t size   // size (bytes) of managed space
-) {
-
-  // in the simplified API MPB memory allocation merely uses running pointers
-  //RCCE_flags_start = mem;
-  chunk_size       = size;
-  I_buff_ptr    = mem;
-
-}
+//void RCCE_malloc_init2(
+//  t_vcharp mem, // pointer to MPB space that is to be managed by allocator
+//  size_t size   // size (bytes) of managed space
+//) {
+//
+//  // in the simplified API MPB memory allocation merely uses running pointers
+//  //RCCE_flags_start = mem;
+//  CHUNK_size       = size;
+//  OWN_BUFF_ptr    = mem;
+//
+//}
 
 // MPBalloc allocates MPBSIZE bytes of MessagePassing buffer Memory at MPB_ADDR(x,y,core).
 //
@@ -171,12 +174,12 @@ void RCCE_malloc_init2(
 		  unsigned int alignedAddr = (MPB_ADDR(x,y,core)) & (~(PAGE_SIZE-1));
 		  unsigned int pageOffset = (MPB_ADDR(x,y,core)) - alignedAddr;
 		  if ((x>=NUM_COLS) || (y>=NUM_ROWS) || (core>=NUM_CORES)) {
-			  printf("MPBalloc: Invalid coordinates (x=%0d, y=%0d, core=%0d)\n", x,y,core);
+			  PRT_DBG("MPBalloc: Invalid coordinates (x=%0d, y=%0d, core=%0d)\n", x,y,core);
 			  *MPB = NULL;
 			  return;
 		  }
 		  if ((MPBDeviceFD=open("/dev/rckmpb", O_RDWR))<0) {
-		        printf("Error opening /dev/rckmpb!!!");
+		        PRT_DBG("Error opening /dev/rckmpb!!!");
 		        exit(-1);
 		    }
 
@@ -251,7 +254,7 @@ void RCCE_malloc_init2(
 
     int RCCE_put2(
 			t_vcharp target, // target buffer, MPB
-			t_vcharp source, // source buffer, MPB or private memory
+			t_vcharp source, // source buffer, MPB or private memory, message to write into MPB
 			int num_bytes,
 			int ID
 			)
@@ -292,14 +295,19 @@ mailbox_t *LpelMailboxCreate(void)
   // dummy cache line at front of MPB for fooling write combine buffer in case
   // of single-byte MPB access
   //RCCE_fool_write_combine_buffer = RC_COMM_BUFFER_START(RCCE_IAM);
-
-  RCCE_comm_buffer[NODE_ID] = RC_COMM_BUFFER_START2(NODE_ID) + RCCE_LINE_SIZE;
-
+  for (int ue=0; ue < ACTIVE_NODES; ue++){
+	  RCCE_comm_buffer[ue] = RC_COMM_BUFFER_START2(ue) + RCCE_LINE_SIZE;
+  }
   // gross MPB size is set equal to maximum
   RCCE_BUFF_SIZE = RCCE_BUFF_SIZE_MAX - RCCE_LINE_SIZE;
 
   // initialize RCCE_malloc
-  RCCE_malloc_init2(RCCE_comm_buffer[NODE_ID],RCCE_BUFF_SIZE);
+  //RCCE_malloc_init2(RCCE_comm_buffer[NODE_ID],RCCE_BUFF_SIZE);
+
+  // in the simplified API MPB memory allocation merely uses running pointers
+    //RCCE_flags_start = mem;
+    CHUNK_size    = RCCE_BUFF_SIZE;
+    OWN_BUFF_ptr    = RCCE_comm_buffer[NODE_ID];
 
   //if SHMADD & SHMDBG are not defined
   //RCCE_shmalloc_init(RC_SHM_BUFFER_START(),RCCE_SHM_SIZE_MAX);
@@ -374,7 +382,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 void LpelMailboxSend_overMPB(
 	  char *privbuf,    // source buffer in local private memory (send buffer)
 	  //t_vcharp combuf,  // intermediate buffer in MPB
-	  //RCCE_Buff_ptr = I_BUFF_PTR
+	  //RCCE_Buff_ptr = OWN_BUFF_ptr
 	  //size_t chunk,     // size of MPB available for this message (bytes)
 	  //RCCE_chunk
 	  //RCCE_FLAG *ready, // flag indicating whether receiver is ready
@@ -395,8 +403,12 @@ void LpelMailboxSend_overMPB(
 	    //bufptr = privbuf + wsize;
 	    //nbytes = chunk;
 	    // copy private data to own comm buffer
-	    RCCE_put2(I_buff_ptr, (t_vcharp) privbuf, chunk_size, NODE_ID);
-	    //RCCE_flag_write(sent, RCCE_FLAG_SET, dest);
+
+
+	//RCCE_put2(OWN_BUFF_ptr, (t_vcharp) privbuf, CHUNK_size, dest);
+	RCCE_put2(RCCE_comm_buffer[dest], (t_vcharp) privbuf, CHUNK_size, dest);
+
+	//RCCE_flag_write(sent, RCCE_FLAG_SET, dest);
 	    // wait for the destination to be ready to receive a message
 	    //RCCE_wait_until(*ready, RCCE_FLAG_SET);
 	    //RCCE_flag_write(ready, RCCE_FLAG_UNSET, RCCE_IAM);
