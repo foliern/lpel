@@ -137,16 +137,17 @@ void LpelMasterCleanup( void) {
 void LpelMasterSpawn( void) {
 	int i;
 	int processor_ID;
-	char *cond_message= "Hallo Worker";
+	char *cond_message= "0123456789abcdefghijklmnopqrstuvwxyz";
 	char *worker_message= "init Message";
 	/* master */
+
 	processor_ID = readTileID();
 
 	if (processor_ID == 0) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
 		(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
-		LpelMailboxSend_overMPB(cond_message, sizeof(cond_message),processor_ID);
+		LpelMailboxSend_overMPB(cond_message, sizeof(cond_message),2);
 		PRT_DBG("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, processor_ID, sizeof(cond_message));
 
 	} else {

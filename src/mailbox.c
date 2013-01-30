@@ -35,8 +35,8 @@
 #define true				1
 #define false				0
 #define LUT(loc, idx)       (*((volatile uint32_t*)(&luts[loc][idx])))
-//because from 0 to 47 = 48
-#define ACTIVE_NODES		47
+//because from 0 to < 48
+#define ACTIVE_NODES		48
 
 //......................................................................................
 // GLOBAL VARIABLES USED FOR MPB
@@ -205,8 +205,8 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
     // "Allocate" MPB, using memory mapping of physical addresses
     t_vcharp retval;
     MPBalloc2(&retval, X_PID(RC_COREID[ue]), Y_PID(RC_COREID[ue]), Z_PID(RC_COREID[ue]),
-             (X_PID(RC_COREID[ue]) == X_PID(RC_COREID[RCCE_IAM])) &&
-             (Y_PID(RC_COREID[ue]) == Y_PID(RC_COREID[RCCE_IAM]))
+             (X_PID(RC_COREID[ue])) && //== X_PID(RC_COREID[RCCE_IAM])) &&
+             (Y_PID(RC_COREID[ue]))// == Y_PID(RC_COREID[RCCE_IAM]))
             );
     return retval;
   }
@@ -296,6 +296,7 @@ mailbox_t *LpelMailboxCreate(void)
   // of single-byte MPB access
   //RCCE_fool_write_combine_buffer = RC_COMM_BUFFER_START(RCCE_IAM);
   for (int ue=0; ue < ACTIVE_NODES; ue++){
+	 RC_COREID[ue]=ue;
 	  RCCE_comm_buffer[ue] = RC_COMM_BUFFER_START2(ue) + RCCE_LINE_SIZE;
   }
   // gross MPB size is set equal to maximum
