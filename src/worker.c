@@ -143,30 +143,30 @@ void LpelMasterSpawn( void) {
 	processor_ID = readTileID();
 
 	if (processor_ID == 0) {
-		printf("I am processor %i, the CONDUCTOR! \n", processor_ID);
+		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
 		(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
 		LpelMailboxSend_overMPB(cond_message, sizeof(cond_message),processor_ID);
-		printf("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, processor_ID, sizeof(cond_message));
+		PRT_DBG("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, processor_ID, sizeof(cond_message));
 
 	} else {
 		 worker_message= "init Messag2";
 //		 *wc = WORKER_PTR(0);
-		printf("I am processor %i, the WORKER \n",processor_ID);
+		PRT_DBG("I am processor %i, the WORKER \n",processor_ID);
                 (void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR);        /* spawn joinable thread */
 //                LpelMailboxSend_overMPB(1, &cond_message, sizeof(cond_message));
 //		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
 		//LpelMailboxRecv_overMPB(0, worker_message, sizeof(worker_message));
-		printf("Nachricht von node 0: %s \n", worker_message);
+		PRT_DBG("Nachricht von node 0: %s \n", worker_message);
 	}
 
-//	printf("I am the MASTER! \n");
+//	PRT_DBG("I am the MASTER! \n");
 //	(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 //
 //	/* workers */
 //	for( i=0; i<num_workers; i++) {
 //		workerctx_t *wc = WORKER_PTR(i);
-//		printf("I am the SLAVE NR.:%i \n",i);
+//		PRT_DBG("I am the SLAVE NR.:%i \n",i);
 //		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
 
 }
