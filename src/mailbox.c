@@ -380,6 +380,76 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   pthread_mutex_unlock( &mbox->lock_inbox);
 }
 
+//--------------------------------------------------------------------------------------
+// FUNCTION: memcpy_get
+//--------------------------------------------------------------------------------------
+// optimized memcpy for copying data from MPB to private memory
+//--------------------------------------------------------------------------------------
+inline static void *memcpy_get2(void *dest, const void *src, size_t count)
+{
+        int h, i, j, k, l, m;
+
+        asm volatile (
+                "cld;\n\t"
+                "1: cmpl $0, %%eax ; je 2f\n\t"
+                "movl (%%edi), %%edx\n\t"
+		"movl 0(%%esi), %%ecx\n\t"
+		"movl 4(%%esi), %%edx\n\t"
+		"movl %%ecx, 0(%%edi)\n\t"
+		"movl %%edx, 4(%%edi)\n\t"
+		"movl 8(%%esi), %%ecx\n\t"
+		"movl 12(%%esi), %%edx\n\t"
+		"movl %%ecx, 8(%%edi)\n\t"
+		"movl %%edx, 12(%%edi)\n\t"
+		"movl 16(%%esi), %%ecx\n\t"
+		"movl 20(%%esi), %%edx\n\t"
+		"movl %%ecx, 16(%%edi)\n\t"
+		"movl %%edx, 20(%%edi)\n\t"
+		"movl 24(%%esi), %%ecx\n\t"
+		"movl 28(%%esi), %%edx\n\t"
+		"movl %%ecx, 24(%%edi)\n\t"
+		"movl %%edx, 28(%%edi)\n\t"
+		"addl $32, %%esi\n\t"
+		"addl $32, %%edi\n\t"
+                "dec %%eax ; jmp 1b\n\t"
+                "2: movl %%ebx, %%ecx\n\t"
+                "movl (%%edi), %%edx\n\t"
+                "andl $31, %%ecx\n\t"
+                "rep ; movsb\n\t"
+		: "=&a"(h), "=&D"(i), "=&S"(j), "=&b"(k), "=&c"(l), "=&d"(m)
+		: "0"(count/32), "1"(dest), "2"(src), "3"(count)  : "memory");
+
+        return dest;
+}
+
+//--------------------------------------------------------------------------------------
+// FUNCTION: RCCE_get
+//--------------------------------------------------------------------------------------
+// copy data from address "source" in the remote MPB to address "target" in either the
+// local MPB, or in the calling UE's private memory. We do not test to see if a move
+// into the calling UE's private memory stays within allocated memory                     *
+//--------------------------------------------------------------------------------------
+int RCCE_get2(
+  t_vcharp target, // target buffer, MPB or private memory
+  t_vcharp source, // source buffer, MPB
+  int num_bytes,   // number of bytes to copy (must be multiple of cache line size
+  int ID           // rank of source UE
+  ) {
+
+
+    // in non-GORY mode we only need to retain the MPB source shift; we
+    // already know the source is in the MPB, not private memory
+    source = RCCE_comm_buffer[ID]+(source-RCCE_comm_buffer[ID]);
+
+
+  // do the actual copy
+  RC_cache_invalidate();
+
+  memcpy_get2((void *)target, (void *)source, num_bytes);
+
+  return(RCCE_SUCCESS);
+}
+
 void LpelMailboxSend_overMPB(
 	  char *privbuf,    // source buffer in local private memory (send buffer)
 	  //t_vcharp combuf,  // intermediate buffer in MPB
@@ -484,9 +554,97 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   PutFree( mbox, node);
 }
 
-void LpelMailboxRecv_overMPB(int node, char *dst, int size)
-{
-	RCCE_recv(dst, size, node);
+void LpelMailboxRecv_overMPB(
+	  char *privbuf,    // destination buffer in local private memory (receive buffer)
+//	  t_vcharp combuf,  // intermediate buffer in MPB
+//	  size_t chunk,     // size of MPB available for this message (bytes)
+	  //RCCE_FLAG *ready, // flag indicating whether receiver is ready
+	  //RCCE_FLAG *sent,  // flag indicating whether message has been sent by source
+	  size_t size,      // size of message (bytes)
+	  int source,       // UE that sent the message
+	//  int *test         // if 1 upon entry, do nonblocking receive; if message available
+	                    // set to 1, otherwise to 0
+	  ) {
+
+//	  char padline[RCCE_LINE_SIZE]; // copy buffer, used if message not multiple of line size
+//	  size_t wsize,   // offset within receive buffer when pulling in "chunk" bytes
+//	       remainder, // bytes remaining to be received
+//	       nbytes;    // number of bytes to be received in single RCCE_get call
+//	  int first_test; // only use first chunk to determine if message has been received yet
+//	  char *bufptr;   // running pointer inside privbuf for current location
+//
+//	  first_test = 1;
+
+	  // receive data in units of available chunk size of MPB
+//	  for (wsize=0; wsize< (size/chunk)*chunk; wsize+=chunk) {
+//	    bufptr = privbuf + wsize;
+//	    nbytes = chunk;
+//	    // if function is called in test mode, check if first chunk has been sent already.
+//	    // If so, proceed as usual. If not, exit immediately
+//	    if (*test && first_test) {
+//	      first_test = 0;
+//	      if (!(*test = RCCE_probe(*sent))) return(RCCE_SUCCESS);
+//	    }
+	    //RCCE_wait_until(*sent, RCCE_FLAG_SET);
+	    //RCCE_flag_write(sent, RCCE_FLAG_UNSET, RCCE_IAM);
+	    // copy data from local MPB space to private memory
+	    RCCE_get2((t_vcharp)privbuf, RCCE_comm_buffer[source], CHUNK_size, source);
+
+	    // tell the source I have moved data out of its comm buffer
+	    //RCCE_flag_write(ready, RCCE_FLAG_SET, source);
+//	  }
+
+//	  remainder = size%chunk;
+//	  // if nothing is left over, we are done
+//	  if (!remainder) return(RCCE_SUCCESS);
+//
+//	  // receive remainder of data--whole cache lines
+//	  bufptr = privbuf + (size/chunk)*chunk;
+//	  nbytes = remainder - remainder%RCCE_LINE_SIZE;
+//	  if (nbytes) {
+//	    // if function is called in test mode, check if first chunk has been sent already.
+//	    // If so, proceed as usual. If not, exit immediately
+//	    if (*test && first_test) {
+//	      first_test = 0;
+//	      if (!(*test = RCCE_probe(*sent))) return(RCCE_SUCCESS);
+//	    }
+//	    RCCE_wait_until(*sent, RCCE_FLAG_SET);
+//	    RCCE_flag_write(sent, RCCE_FLAG_UNSET, RCCE_IAM);
+//	    // copy data from local MPB space to private memory
+//	    RCCE_get((t_vcharp)bufptr, combuf, nbytes, source);
+//
+//	    // tell the source I have moved data out of its comm buffer
+//	    RCCE_flag_write(ready, RCCE_FLAG_SET, source);
+//	  }
+//
+//	  remainder = remainder%RCCE_LINE_SIZE;
+//	  if (!remainder) return(RCCE_SUCCESS);
+//
+//	  // remainder is less than cache line. This must be copied into appropriately sized
+//	  // intermediate space before exact number of bytes get copied to the final destination
+//	  bufptr = privbuf + (size/chunk)*chunk + nbytes;
+//	  nbytes = RCCE_LINE_SIZE;
+//	    // if function is called in test mode, check if first chunk has been sent already.
+//	    // If so, proceed as usual. If not, exit immediately
+//	    if (*test && first_test) {
+//	      first_test = 0;
+//	      if (!(*test = RCCE_probe(*sent))) return(RCCE_SUCCESS);
+//	    }
+//	    RCCE_wait_until(*sent, RCCE_FLAG_SET);
+//	    RCCE_flag_write(sent, RCCE_FLAG_UNSET, RCCE_IAM);
+//	    // copy data from local MPB space to private memory
+//	    RCCE_get((t_vcharp)padline, combuf, nbytes, source);
+//	#ifdef SCC
+//	    memcpy_get(bufptr,padline,remainder);
+//	#else
+//	    memcpy(bufptr,padline,remainder);
+//	#endif
+//
+//	    // tell the source I have moved data out of its comm buffer
+//	    RCCE_flag_write(ready, RCCE_FLAG_SET, source);
+//
+//	  return(RCCE_SUCCESS);
+//	}
 }
 /**
  * @return 1 if there is an incoming msg, 0 otherwise
