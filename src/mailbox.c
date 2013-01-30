@@ -11,8 +11,8 @@
 //to use uint64_t
 #include <stdint.h>
 
-#include "RCCE.h"
-#include "RCCE_lib.h"
+//#include "RCCE.h"
+//#include "RCCE_lib.h"
 #include "SCC_API_test.h"
 #include "readTileID.h"
 #include "configuration.h"
@@ -41,6 +41,8 @@
 //......................................................................................
 // GLOBAL VARIABLES USED FOR MPB
 //......................................................................................
+#define RCCE_MAXNP                         48
+#define RCCE_SUCCESS                       0
 #define LOG2_LINE_SIZE                     5
 #define RCCE_LINE_SIZE                     (1<<LOG2_LINE_SIZE)
 // RCCE_BUFF_SIZE_MAX is space per UE, which is half of the space per tile
@@ -393,35 +395,34 @@ inline static void *memcpy_get2(void *dest, const void *src, size_t count)
                 "cld;\n\t"
                 "1: cmpl $0, %%eax ; je 2f\n\t"
                 "movl (%%edi), %%edx\n\t"
-		"movl 0(%%esi), %%ecx\n\t"
-		"movl 4(%%esi), %%edx\n\t"
-		"movl %%ecx, 0(%%edi)\n\t"
-		"movl %%edx, 4(%%edi)\n\t"
-		"movl 8(%%esi), %%ecx\n\t"
-		"movl 12(%%esi), %%edx\n\t"
-		"movl %%ecx, 8(%%edi)\n\t"
-		"movl %%edx, 12(%%edi)\n\t"
-		"movl 16(%%esi), %%ecx\n\t"
-		"movl 20(%%esi), %%edx\n\t"
-		"movl %%ecx, 16(%%edi)\n\t"
-		"movl %%edx, 20(%%edi)\n\t"
-		"movl 24(%%esi), %%ecx\n\t"
-		"movl 28(%%esi), %%edx\n\t"
-		"movl %%ecx, 24(%%edi)\n\t"
-		"movl %%edx, 28(%%edi)\n\t"
-		"addl $32, %%esi\n\t"
-		"addl $32, %%edi\n\t"
+                "movl 0(%%esi), %%ecx\n\t"
+                "movl 4(%%esi), %%edx\n\t"
+                "movl %%ecx, 0(%%edi)\n\t"
+                "movl %%edx, 4(%%edi)\n\t"
+                "movl 8(%%esi), %%ecx\n\t"
+                "movl 12(%%esi), %%edx\n\t"
+                "movl %%ecx, 8(%%edi)\n\t"
+                "movl %%edx, 12(%%edi)\n\t"
+                "movl 16(%%esi), %%ecx\n\t"
+                "movl 20(%%esi), %%edx\n\t"
+                "movl %%ecx, 16(%%edi)\n\t"
+                "movl %%edx, 20(%%edi)\n\t"
+                "movl 24(%%esi), %%ecx\n\t"
+                "movl 28(%%esi), %%edx\n\t"
+                "movl %%ecx, 24(%%edi)\n\t"
+                "movl %%edx, 28(%%edi)\n\t"
+                "addl $32, %%esi\n\t"
+                "addl $32, %%edi\n\t"
                 "dec %%eax ; jmp 1b\n\t"
                 "2: movl %%ebx, %%ecx\n\t"
                 "movl (%%edi), %%edx\n\t"
                 "andl $31, %%ecx\n\t"
                 "rep ; movsb\n\t"
-		: "=&a"(h), "=&D"(i), "=&S"(j), "=&b"(k), "=&c"(l), "=&d"(m)
-		: "0"(count/32), "1"(dest), "2"(src), "3"(count)  : "memory");
+                : "=&a"(h), "=&D"(i), "=&S"(j), "=&b"(k), "=&c"(l), "=&d"(m)
+                : "0"(count/32), "1"(dest), "2"(src), "3"(count)  : "memory");
 
         return dest;
 }
-
 //--------------------------------------------------------------------------------------
 // FUNCTION: RCCE_get
 //--------------------------------------------------------------------------------------
@@ -443,7 +444,7 @@ int RCCE_get2(
 
 
   // do the actual copy
-  RC_cache_invalidate();
+  RC_cache_invalidate2();
 
   memcpy_get2((void *)target, (void *)source, num_bytes);
 
@@ -561,7 +562,7 @@ void LpelMailboxRecv_overMPB(
 	  //RCCE_FLAG *ready, // flag indicating whether receiver is ready
 	  //RCCE_FLAG *sent,  // flag indicating whether message has been sent by source
 	  size_t size,      // size of message (bytes)
-	  int source,       // UE that sent the message
+	  int source       // UE that sent the message
 	//  int *test         // if 1 upon entry, do nonblocking receive; if message available
 	                    // set to 1, otherwise to 0
 	  ) {

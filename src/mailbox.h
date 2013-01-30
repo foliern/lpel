@@ -12,7 +12,7 @@ void LpelMailboxRecv(mailbox_t *mbox, workermsg_t *msg);
 int  LpelMailboxHasIncoming(mailbox_t *mbox);
 
 void LpelMailboxSend_overMPB(char *privbuf, size_t size, int dest);
-void LpelMailboxRecv_overMPB(int node, char *dst, int size);
+void LpelMailboxRecv_overMPB(char *privbuf, size_t size, int source);  
 
 
 
