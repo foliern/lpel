@@ -258,10 +258,12 @@ void RCCE_malloc_init2(
     {
     	// in non-GORY mode we only need to retain the MPB target shift; we
     	// already know the target is in the MPB, not private memory
-    	target = RCCE_comm_buffer[ID]+(target-RCCE_comm_buffer[RCCE_IAM]);
+    	target = RCCE_comm_buffer[ID]+(target-RCCE_comm_buffer[ID]);
 
 		// do the actual copy
 		RC_cache_invalidate2();
+	//test address
+	//target= (char *)0xb7551020;
 
 		memcpy_put2((void *)target, (void *)source, num_bytes);
 

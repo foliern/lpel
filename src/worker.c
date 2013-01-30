@@ -147,7 +147,8 @@ void LpelMasterSpawn( void) {
 		(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
 		LpelMailboxSend_overMPB(cond_message, sizeof(cond_message),processor_ID);
-		printf("Nachricht an node 1: %s \n", cond_message);
+		printf("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, processor_ID, sizeof(cond_message));
+
 	} else {
 		 worker_message= "init Messag2";
 //		 *wc = WORKER_PTR(0);
