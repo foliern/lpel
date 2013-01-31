@@ -20,7 +20,7 @@
 #include "lpelcfg.h"
 #include "worker.h"
 
-#include "RCCE.h"
+//#include "RCCE.h"
 
 
 #ifdef HAVE_PROC_CAPABILITIES

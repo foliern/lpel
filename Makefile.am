@@ -1,6 +1,6 @@
-SUBDIRS = include . tests
+SUBDIRS = include . 
 
-lib_LTLIBRARIES = liblpel.la liblpel_mon.la
+lib_LTLIBRARIES = liblpel_mon.la liblpel.la
 
 liblpel_la_SOURCES = \
 	src/arch/atomic-pthread.h \

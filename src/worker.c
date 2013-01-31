@@ -139,11 +139,11 @@ void LpelMasterSpawn( void) {
 	int temp_mpb;
 	int processor_ID;
 	char *cond_message= "0123456789abcdefghijklmnopqrstuvwxyz";
-	char *worker_message= "init Message";
+	char *worker_message= "firstnine";
 	/* master */
 
 	processor_ID = readTileID();
-	temp_mpb=2;
+	temp_mpb=4;
 
 	if (processor_ID == 0) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
@@ -151,9 +151,9 @@ void LpelMasterSpawn( void) {
 
 
 
-		LpelMailboxSend_overMPB(cond_message, sizeof(cond_message),temp_mpb);
-		PRT_DBG("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, temp_mpb, sizeof(cond_message));
-		LpelMailboxRecv_overMPB( worker_message, sizeof(worker_message),temp_mpb);
+		LpelMailboxSend_overMPB(cond_message, strlen(cond_message),temp_mpb);
+		PRT_DBG("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, temp_mpb, strlen(cond_message));
+		LpelMailboxRecv_overMPB( worker_message, strlen(worker_message),temp_mpb);
 		PRT_DBG("Nachricht aus MPB von Node %d: %s \n",temp_mpb, worker_message);
 	} else {
 		 worker_message= "init Messag2";
@@ -162,7 +162,7 @@ void LpelMasterSpawn( void) {
                 (void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR);        /* spawn joinable thread */
 //                LpelMailboxSend_overMPB(1, &cond_message, sizeof(cond_message));
 //		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
-		LpelMailboxRecv_overMPB( worker_message, sizeof(worker_message),temp_mpb);
+		LpelMailboxRecv_overMPB( worker_message, strlen(worker_message),temp_mpb);
 		PRT_DBG("Nachricht aus MPB von Node %d: %s \n",temp_mpb, worker_message);
 	}
 

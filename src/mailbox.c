@@ -11,8 +11,11 @@
 //to use uint64_t
 #include <stdint.h>
 
-#include "RCCE.h"
-#include "RCCE_lib.h"
+//#include "RCCE.h"
+//#include "RCCE_lib.h"
+//#include "RCCE_memcpy.c"
+
+
 #include "SCC_API_test.h"
 #include "readTileID.h"
 #include "configuration.h"
@@ -307,7 +310,6 @@ inline static void *memcpy_get2(void *dest, const void *src, size_t count)
         //target= (char *)0xb7551020;
 
                 memcpy_put2((void *)target, (void *)source, num_bytes);
-                memcpy_get2((void *)target, (void *)source, num_bytes);
                 return(RCCE_SUCCESS);
     }
 
@@ -443,13 +445,13 @@ int RCCE_get2(
 
     // in non-GORY mode we only need to retain the MPB source shift; we
     // already know the source is in the MPB, not private memory
-    source = RCCE_comm_buffer[ID]+(source-RCCE_comm_buffer[ID]);
+    //source = RCCE_comm_buffer[ID]+(source-RCCE_comm_buffer[ID]);
 
 
   // do the actual copy
   RC_cache_invalidate2();
 
-  //memcpy_get2((void *)target, (void *)source, num_bytes);
+  memcpy_get2((void *)target, (void *)source, num_bytes);
 
   return(RCCE_SUCCESS);
 }
@@ -481,7 +483,7 @@ void LpelMailboxSend_overMPB(
 
 
 	//RCCE_put2(OWN_BUFF_ptr, (t_vcharp) privbuf, CHUNK_size, dest);
-	RCCE_put2(RCCE_comm_buffer[dest], (t_vcharp) privbuf, CHUNK_size, dest);
+	RCCE_put2(RCCE_comm_buffer[dest], (t_vcharp) privbuf, size, dest);
 
 	//RCCE_flag_write(sent, RCCE_FLAG_SET, dest);
 	    // wait for the destination to be ready to receive a message
@@ -592,7 +594,7 @@ void LpelMailboxRecv_overMPB(
 	    //RCCE_wait_until(*sent, RCCE_FLAG_SET);
 	    //RCCE_flag_write(sent, RCCE_FLAG_UNSET, RCCE_IAM);
 	    // copy data from local MPB space to private memory
-	    RCCE_get2((t_vcharp)privbuf, RCCE_comm_buffer[source], CHUNK_size, source);
+	    RCCE_get2((t_vcharp)privbuf, RCCE_comm_buffer[source], size, source);
 
 	    // tell the source I have moved data out of its comm buffer
 	    //RCCE_flag_write(ready, RCCE_FLAG_SET, source);
