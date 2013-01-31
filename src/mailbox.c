@@ -302,14 +302,14 @@ inline static void *memcpy_get2(void *dest, const void *src, size_t count)
     {
         // in non-GORY mode we only need to retain the MPB target shift; we
         // already know the target is in the MPB, not private memory
-        target = RCCE_comm_buffer[ID]+(target-RCCE_comm_buffer[ID]);
+        //target = RCCE_comm_buffer[ID]+(target-RCCE_comm_buffer[ID]);
 
                 // do the actual copy
                 RC_cache_invalidate2();
         //test address
         //target= (char *)0xb7551020;
-
-                memcpy_put2((void *)target, (void *)source, num_bytes);
+	*target=*source;        
+//        memcpy_put2((void *)target, (void *)source, num_bytes);
                 return(RCCE_SUCCESS);
     }
 
@@ -451,7 +451,8 @@ int RCCE_get2(
   // do the actual copy
   RC_cache_invalidate2();
 
-  memcpy_get2((void *)target, (void *)source, num_bytes);
+	*target=*source;
+  //memcpy_get2((void *)target, (void *)source, num_bytes);
 
   return(RCCE_SUCCESS);
 }
@@ -561,7 +562,7 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
 }
 
 void LpelMailboxRecv_overMPB(
-	  char *privbuf,    // destination buffer in local private memory (receive buffer)
+	  t_vcharp privbuf,    // destination buffer in local private memory (receive buffer)
 //	  t_vcharp combuf,  // intermediate buffer in MPB
 //	  size_t chunk,     // size of MPB available for this message (bytes)
 	  //RCCE_FLAG *ready, // flag indicating whether receiver is ready

@@ -1,6 +1,7 @@
 #ifndef _MAILBOX_H_
 #define _MAILBOX_H_
 
+#include "SCC_API_test.h"
 #include "workermsg.h"
 
 typedef struct mailbox_t mailbox_t;
@@ -12,7 +13,7 @@ void LpelMailboxRecv(mailbox_t *mbox, workermsg_t *msg);
 int  LpelMailboxHasIncoming(mailbox_t *mbox);
 
 void LpelMailboxSend_overMPB(char *privbuf, size_t size, int dest);
-void LpelMailboxRecv_overMPB(char *privbuf, size_t size, int source);  
+void LpelMailboxRecv_overMPB(t_vcharp privbuf, size_t size, int source);  
 
 
 
