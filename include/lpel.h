@@ -249,4 +249,20 @@ void LpelStreamIterRemove(  lpel_stream_iter_t *iter);
 /* for dynamic scheduling */
 void LpelTaskSetRecLimit(lpel_task_t *t, int lim);
 
+/******************************************************************************/
+/*  SCC CONSTANTS                                                         */
+/******************************************************************************/
+
+#define DLPEL_MAXNP                         48
+#define DLPEL_SUCCESS                       0
+//#define MPB_LINE_SIZE                     5
+#define MPB_LINE_SIZE                     (1<<LOG2_LINE_SIZE)
+// RCCE_BUFF_SIZE_MAX is space per UE, which is half of the space per tile
+#define MPB_BUFF_SIZE_MAX                 (1<<13)
+#define MPB_BUFF_SIZE						16000*8
+#define MPB_META_DATA_OFFSET(ID)			(ID % 2)*8000*8
+#define MPB_BUFFER_OFFSET					32
+
+
+
 #endif /* _LPEL_H_ */

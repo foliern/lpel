@@ -3,23 +3,19 @@
 #include <pthread.h>
 #include <assert.h>
 #include <stdio.h>
-#include "mailbox.h"
+
 // for communication over MPB
 #include <sys/mman.h>
 #include <string.h>
 #include <unistd.h>
 //to use uint64_t
 #include <stdint.h>
-
-//#include "RCCE.h"
-//#include "RCCE_lib.h"
-//#include "RCCE_memcpy.c"
-
-
 #include "SCC_API_test.h"
 #include "readTileID.h"
 #include "configuration.h"
-//#include "/shared/foliern/rcce/src/RCCE_memcpy.c"
+#include "lpel.h"
+#include "mailbox.h"
+
 
 #define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
 #define PAGE_SIZE           (16*1024*1024)
@@ -45,34 +41,22 @@
 //......................................................................................
 // GLOBAL VARIABLES USED FOR MPB
 //......................................................................................
-#define RCCE_MAXNP                         48
-#define RCCE_SUCCESS                       0
-#define LOG2_LINE_SIZE                     5
-#define RCCE_LINE_SIZE                     (1<<LOG2_LINE_SIZE)
-// RCCE_BUFF_SIZE_MAX is space per UE, which is half of the space per tile
-#define RCCE_BUFF_SIZE_MAX                 (1<<13)
 
-int       RC_COREID[RCCE_MAXNP]; // array of physical core IDs for all participating
-                                 // cores, sorted by rank
-t_vcharp RCCE_fool_write_combine_buffer;
-int       RCCE_BUFF_SIZE;        // available MPB size
-t_vcharp  RCCE_comm_buffer[RCCE_MAXNP]; // starts of MPB, sorted by rank
+
+int       SCC_COREID[RCCE_MAXNP]; // array of physical core IDs for all participating cores, sorted
+int       MPB_BUFF_SIZE;        // available MPB size
+t_vcharp  SCC_MESSAGE_PASSING_BUFFER[RCCE_MAXNP]; // starts of MPB, sorted by rank
 int       NODE_ID=-1;           // rank of calling core (invalid by default)
 
-t_vcharp RCCE_buff_ptr;
-  // maximum chunk size of message payload is also specified
-  size_t RCCE_chunk;
-  // synchronization flags will be allocated at this address
-  t_vcharp  RCCE_flags_start;
 
-  // payload part of the MPBs starts at a specific address, not malloced space
-  //t_vcharp RCCE_buff_ptr;
-  t_vcharp OWN_BUFF_ptr;
-  // maximum chunk size of message payload is also specified
-  //size_t RCCE_chunk;
-  size_t CHUNK_size;
 
-  int MPBDeviceFD; // File descriptor for message passing buffers.
+// payload part of the MPBs starts at a specific address, not malloced space
+//t_vcharp RCCE_buff_ptr;
+t_vcharp my_mpb_ptr;
+// maximum chunk size of message payload is also specified
+//size_t RCCE_chunk;
+size_t CHUNK_size;
+int MPBDeviceFD; // File descriptor for message passing buffers.
 
 //......................................................................................
 // END GLOBAL VARIABLES USED FOR MPB
@@ -82,7 +66,6 @@ t_vcharp RCCE_buff_ptr;
 
 //extern bool remap;
 int node_location;
-
 t_vcharp mpbs[CORES];
 t_vcharp locks[CORES];
 //extern volatile int *irq_pins[CORES];
@@ -106,11 +89,16 @@ typedef struct mailbox_node_t {
 } mailbox_node_t;
 
 struct mailbox_t {
-  pthread_mutex_t  lock_free;
-  pthread_mutex_t  lock_inbox;
-  pthread_cond_t   notempty;
-  mailbox_node_t  *list_free;
-  mailbox_node_t  *list_inbox;
+	char writing_flag;
+	char handling_flag;
+	volatile unsigned char *start_pointer;
+	volatile unsigned char *end_pointer;
+
+  //pthread_mutex_t  lock_free;
+  //pthread_mutex_t  lock_inbox;
+  //pthread_cond_t   notempty;
+  //mailbox_node_t  *list_free;
+  //mailbox_node_t  *list_inbox;
 };
 
 
@@ -148,22 +136,7 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
   pthread_mutex_unlock( &mbox->lock_free);
 }
 
-//--------------------------------------------------------------------------------------
-// FUNCTION: RCCE_malloc_init
-//--------------------------------------------------------------------------------------
-// initialize memory allocator
-//--------------------------------------------------------------------------------------
-//void RCCE_malloc_init2(
-//  t_vcharp mem, // pointer to MPB space that is to be managed by allocator
-//  size_t size   // size (bytes) of managed space
-//) {
-//
-//  // in the simplified API MPB memory allocation merely uses running pointers
-//  //RCCE_flags_start = mem;
-//  CHUNK_size       = size;
-//  OWN_BUFF_ptr    = mem;
-//
-//}
+
 
 // MPBalloc allocates MPBSIZE bytes of MessagePassing buffer Memory at MPB_ADDR(x,y,core).
 //
@@ -210,10 +183,15 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
   {
     // "Allocate" MPB, using memory mapping of physical addresses
     t_vcharp retval;
-    MPBalloc2(&retval, X_PID(RC_COREID[ue]), Y_PID(RC_COREID[ue]), Z_PID(RC_COREID[ue]),
-             (X_PID(RC_COREID[ue])) && //== X_PID(RC_COREID[RCCE_IAM])) &&
-             (Y_PID(RC_COREID[ue]))// == Y_PID(RC_COREID[RCCE_IAM]))
+    //MPBalloc2(&retval, X_PID(SCC_COREID[ue]), Y_PID(SCC_COREID[ue]), Z_PID(SCC_COREID[ue]),
+    //         (X_PID(SCC_COREID[ue])) && //== X_PID(SCC_COREID[RCCE_IAM])) &&
+    //         (Y_PID(SCC_COREID[ue]))// == Y_PID(SCC_COREID[RCCE_IAM]))
             );
+            MPBalloc2(&retval, X_PID(ue), Y_PID(ue), Z_PID(ue),
+                         (X_PID(ue) && //== X_PID(SCC_COREID[RCCE_IAM])) &&
+                         (Y_PID(ue)// == Y_PID(SCC_COREID[RCCE_IAM]))
+                        );
+
     return retval;
   }
 
@@ -247,6 +225,12 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 
 		return dest;
     }
+
+    //--------------------------------------------------------------------------------------
+    // FUNCTION: memcpy_get
+    //--------------------------------------------------------------------------------------
+    // optimized memcpy for copying data from MPB to private memory
+    //--------------------------------------------------------------------------------------
 
 inline static void *memcpy_get2(void *dest, const void *src, size_t count)
 {
@@ -302,7 +286,7 @@ inline static void *memcpy_get2(void *dest, const void *src, size_t count)
     {
         // in non-GORY mode we only need to retain the MPB target shift; we
         // already know the target is in the MPB, not private memory
-        //target = RCCE_comm_buffer[ID]+(target-RCCE_comm_buffer[ID]);
+        //target = SCC_MESSAGE_PASSING_BUFFER[ID]+(target-SCC_MESSAGE_PASSING_BUFFER[ID]);
 
                 // do the actual copy
                 RC_cache_invalidate2();
@@ -319,16 +303,16 @@ inline static void *memcpy_get2(void *dest, const void *src, size_t count)
 /******************************************************************************/
 
 
-mailbox_t *LpelMailboxCreate(void)
+void LpelMailboxCreate(void)
 {
 
-  mailbox_t *mbox = (mailbox_t *)malloc(sizeof(mailbox_t));
+   //mailbox_t *mbox = (mailbox_t *)malloc(sizeof(mailbox_t));
 
-  pthread_mutex_init( &mbox->lock_free,  NULL);
-  pthread_mutex_init( &mbox->lock_inbox, NULL);
-  pthread_cond_init(  &mbox->notempty,   NULL);
-  mbox->list_free  = NULL;
-  mbox->list_inbox = NULL;
+  //pthread_mutex_init( &mbox->lock_free,  NULL);
+  //pthread_mutex_init( &mbox->lock_inbox, NULL);
+  //pthread_cond_init(  &mbox->notempty,   NULL);
+  //mbox->list_free  = NULL;
+  //mbox->list_inbox = NULL;
 
 
   NODE_ID=readTileID();
@@ -337,19 +321,18 @@ mailbox_t *LpelMailboxCreate(void)
   // of single-byte MPB access
   //RCCE_fool_write_combine_buffer = RC_COMM_BUFFER_START(RCCE_IAM);
   for (int ue=0; ue < ACTIVE_NODES; ue++){
-	 RC_COREID[ue]=ue;
-	  RCCE_comm_buffer[ue] = RC_COMM_BUFFER_START2(ue) + RCCE_LINE_SIZE;
+	 //SCC_COREID[ue]=ue;
+	  SCC_MESSAGE_PASSING_BUFFER[ue] = RC_COMM_BUFFER_START2(ue) + MPB_META_DATA_OFFSET(NODE_ID);
   }
   // gross MPB size is set equal to maximum
-  RCCE_BUFF_SIZE = RCCE_BUFF_SIZE_MAX - RCCE_LINE_SIZE;
+  //MPB_BUFF_SIZE = MPB_BUFF_SIZE_MAX - RCCE_LINE_SIZE;
 
   // initialize RCCE_malloc
-  //RCCE_malloc_init2(RCCE_comm_buffer[NODE_ID],RCCE_BUFF_SIZE);
+  //RCCE_malloc_init2(SCC_MESSAGE_PASSING_BUFFER[NODE_ID],MPB_BUFF_SIZE);
 
   // in the simplified API MPB memory allocation merely uses running pointers
     //RCCE_flags_start = mem;
-    CHUNK_size    = RCCE_BUFF_SIZE;
-    OWN_BUFF_ptr    = RCCE_comm_buffer[NODE_ID];
+    my_mpb_ptr    = SCC_MESSAGE_PASSING_BUFFER[NODE_ID];
 
   //if SHMADD & SHMDBG are not defined
   //RCCE_shmalloc_init(RC_SHM_BUFFER_START(),RCCE_SHM_SIZE_MAX);
@@ -421,13 +404,6 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   pthread_mutex_unlock( &mbox->lock_inbox);
 }
 
-//--------------------------------------------------------------------------------------
-// FUNCTION: memcpy_get
-//--------------------------------------------------------------------------------------
-// optimized memcpy for copying data from MPB to private memory
-//--------------------------------------------------------------------------------------
-
-
 
 //--------------------------------------------------------------------------------------
 // FUNCTION: RCCE_get
@@ -437,98 +413,40 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 // into the calling UE's private memory stays within allocated memory                     *
 //--------------------------------------------------------------------------------------
 int RCCE_get2(
-  t_vcharp target, // target buffer, MPB or private memory
-  t_vcharp source, // source buffer, MPB
-  int num_bytes,   // number of bytes to copy (must be multiple of cache line size
-  int ID           // rank of source UE
-  ) {
-
-    // in non-GORY mode we only need to retain the MPB source shift; we
-    // already know the source is in the MPB, not private memory
-    //source = RCCE_comm_buffer[ID]+(source-RCCE_comm_buffer[ID]);
-
-
-  // do the actual copy
-  RC_cache_invalidate2();
+		t_vcharp target, // target buffer, MPB or private memory
+		t_vcharp source, // source buffer, MPB
+		int num_bytes,   // number of bytes to copy (must be multiple of cache line size
+		int ID           // rank of source UE
+	)
+{
+	// do the actual copy
+	RC_cache_invalidate2();
 
 	*target=*source;
-  //memcpy_get2((void *)target, (void *)source, num_bytes);
-
-  return(RCCE_SUCCESS);
+	//memcpy_get2((void *)target, (void *)source, num_bytes);
+	return(RCCE_SUCCESS);
 }
 
 void LpelMailboxSend_overMPB(
-	  char *privbuf,    // source buffer in local private memory (send buffer)
-	  //t_vcharp combuf,  // intermediate buffer in MPB
-	  //RCCE_Buff_ptr = OWN_BUFF_ptr
-	  //size_t chunk,     // size of MPB available for this message (bytes)
-	  //RCCE_chunk
-	  //RCCE_FLAG *ready, // flag indicating whether receiver is ready
-	  //RCCE_FLAG *sent,  // flag indicating whether message has been sent by source
+		char *privbuf,    // source buffer in local private memory (send buffer)
+		size_t size,      // size of message (bytes)
+		int dest          // UE that will receive the message
+	)
+{
+	RCCE_put2(SCC_MESSAGE_PASSING_BUFFER[dest], (t_vcharp) privbuf, size, dest);
+
+}
+
+void LpelMailboxRecv_overMPB(
+	  t_vcharp privbuf,    // destination buffer in local private memory (receive buffer)
 	  size_t size,      // size of message (bytes)
-	  int dest          // UE that will receive the message
+	  int source       // UE that sent the message
+	                    // set to 1, otherwise to 0
 	  )
 {
+	// copy data from local MPB space to private memory
+	RCCE_get2((t_vcharp)privbuf, SCC_MESSAGE_PASSING_BUFFER[source], size, source);
 
-	  //char padline[RCCE_LINE_SIZE]; // copy buffer, used if message not multiple of line size
-	  //size_t wsize,    // offset within send buffer when putting in "chunk" bytes
-	  //      remainder, // bytes remaining to be sent
-	  //      nbytes;    // number of bytes to be sent in single RCCE_put call
-	  //char *bufptr;    // running pointer inside privbuf for current location
-
-	  // send data in units of available chunk size of comm buffer
-	  //for (wsize=0; wsize< (size/chunk)*chunk; wsize+=chunk) {
-	    //bufptr = privbuf + wsize;
-	    //nbytes = chunk;
-	    // copy private data to own comm buffer
-
-
-	//RCCE_put2(OWN_BUFF_ptr, (t_vcharp) privbuf, CHUNK_size, dest);
-	RCCE_put2(RCCE_comm_buffer[dest], (t_vcharp) privbuf, size, dest);
-
-	//RCCE_flag_write(sent, RCCE_FLAG_SET, dest);
-	    // wait for the destination to be ready to receive a message
-	    //RCCE_wait_until(*ready, RCCE_FLAG_SET);
-	    //RCCE_flag_write(ready, RCCE_FLAG_UNSET, RCCE_IAM);
-	 // }
-
-	 // remainder = size%chunk;
-	  // if nothing is left over, we are done
-	  //if (!remainder) return(RCCE_SUCCESS);
-//	return (1)
-	  // send remainder of data--whole cache lines
-//	  bufptr = privbuf + (size/chunk)*chunk;
-//	  nbytes = remainder - remainder%RCCE_LINE_SIZE;
-//	  if (nbytes) {
-//	    // copy private data to own comm buffer
-//	    RCCE_put(combuf, (t_vcharp)bufptr, nbytes, RCCE_IAM);
-//	    RCCE_flag_write(sent, RCCE_FLAG_SET, dest);
-//	    // wait for the destination to be ready to receive a message
-//	    RCCE_wait_until(*ready, RCCE_FLAG_SET);
-//	    RCCE_flag_write(ready, RCCE_FLAG_UNSET, RCCE_IAM);
-//	  }
-//
-//	  remainder = remainder%RCCE_LINE_SIZE;
-//	  if (!remainder) return(RCCE_SUCCESS);
-//
-//	  // remainder is less than a cache line. This must be copied into appropriately sized
-//	  // intermediate space before it can be sent to the receiver
-//	  bufptr = privbuf + (size/chunk)*chunk + nbytes;
-//	  nbytes = RCCE_LINE_SIZE;
-//	  // copy private data to own comm buffer
-//	#ifdef SCC
-//	  memcpy_put(padline,bufptr,remainder);
-//	#else
-//	  memcpy(padline,bufptr,remainder);
-//	#endif
-//	  RCCE_put(combuf, (t_vcharp)padline, nbytes, RCCE_IAM);
-//	  RCCE_flag_write(sent, RCCE_FLAG_SET, dest);
-//	  // wait for the destination to be ready to receive a message
-//	  RCCE_wait_until(*ready, RCCE_FLAG_SET);
-//	  RCCE_flag_write(ready, RCCE_FLAG_UNSET, RCCE_IAM);
-//
-//	  return(RCCE_SUCCESS);
-//	}
 }
 
 
@@ -561,98 +479,7 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   PutFree( mbox, node);
 }
 
-void LpelMailboxRecv_overMPB(
-	  t_vcharp privbuf,    // destination buffer in local private memory (receive buffer)
-//	  t_vcharp combuf,  // intermediate buffer in MPB
-//	  size_t chunk,     // size of MPB available for this message (bytes)
-	  //RCCE_FLAG *ready, // flag indicating whether receiver is ready
-	  //RCCE_FLAG *sent,  // flag indicating whether message has been sent by source
-	  size_t size,      // size of message (bytes)
-	  int source       // UE that sent the message
-	//  int *test         // if 1 upon entry, do nonblocking receive; if message available
-	                    // set to 1, otherwise to 0
-	  ) {
 
-//	  char padline[RCCE_LINE_SIZE]; // copy buffer, used if message not multiple of line size
-//	  size_t wsize,   // offset within receive buffer when pulling in "chunk" bytes
-//	       remainder, // bytes remaining to be received
-//	       nbytes;    // number of bytes to be received in single RCCE_get call
-//	  int first_test; // only use first chunk to determine if message has been received yet
-//	  char *bufptr;   // running pointer inside privbuf for current location
-//
-//	  first_test = 1;
-
-	  // receive data in units of available chunk size of MPB
-//	  for (wsize=0; wsize< (size/chunk)*chunk; wsize+=chunk) {
-//	    bufptr = privbuf + wsize;
-//	    nbytes = chunk;
-//	    // if function is called in test mode, check if first chunk has been sent already.
-//	    // If so, proceed as usual. If not, exit immediately
-//	    if (*test && first_test) {
-//	      first_test = 0;
-//	      if (!(*test = RCCE_probe(*sent))) return(RCCE_SUCCESS);
-//	    }
-	    //RCCE_wait_until(*sent, RCCE_FLAG_SET);
-	    //RCCE_flag_write(sent, RCCE_FLAG_UNSET, RCCE_IAM);
-	    // copy data from local MPB space to private memory
-	    RCCE_get2((t_vcharp)privbuf, RCCE_comm_buffer[source], size, source);
-
-	    // tell the source I have moved data out of its comm buffer
-	    //RCCE_flag_write(ready, RCCE_FLAG_SET, source);
-//	  }
-
-//	  remainder = size%chunk;
-//	  // if nothing is left over, we are done
-//	  if (!remainder) return(RCCE_SUCCESS);
-//
-//	  // receive remainder of data--whole cache lines
-//	  bufptr = privbuf + (size/chunk)*chunk;
-//	  nbytes = remainder - remainder%RCCE_LINE_SIZE;
-//	  if (nbytes) {
-//	    // if function is called in test mode, check if first chunk has been sent already.
-//	    // If so, proceed as usual. If not, exit immediately
-//	    if (*test && first_test) {
-//	      first_test = 0;
-//	      if (!(*test = RCCE_probe(*sent))) return(RCCE_SUCCESS);
-//	    }
-//	    RCCE_wait_until(*sent, RCCE_FLAG_SET);
-//	    RCCE_flag_write(sent, RCCE_FLAG_UNSET, RCCE_IAM);
-//	    // copy data from local MPB space to private memory
-//	    RCCE_get((t_vcharp)bufptr, combuf, nbytes, source);
-//
-//	    // tell the source I have moved data out of its comm buffer
-//	    RCCE_flag_write(ready, RCCE_FLAG_SET, source);
-//	  }
-//
-//	  remainder = remainder%RCCE_LINE_SIZE;
-//	  if (!remainder) return(RCCE_SUCCESS);
-//
-//	  // remainder is less than cache line. This must be copied into appropriately sized
-//	  // intermediate space before exact number of bytes get copied to the final destination
-//	  bufptr = privbuf + (size/chunk)*chunk + nbytes;
-//	  nbytes = RCCE_LINE_SIZE;
-//	    // if function is called in test mode, check if first chunk has been sent already.
-//	    // If so, proceed as usual. If not, exit immediately
-//	    if (*test && first_test) {
-//	      first_test = 0;
-//	      if (!(*test = RCCE_probe(*sent))) return(RCCE_SUCCESS);
-//	    }
-//	    RCCE_wait_until(*sent, RCCE_FLAG_SET);
-//	    RCCE_flag_write(sent, RCCE_FLAG_UNSET, RCCE_IAM);
-//	    // copy data from local MPB space to private memory
-//	    RCCE_get((t_vcharp)padline, combuf, nbytes, source);
-//	#ifdef SCC
-//	    memcpy_get(bufptr,padline,remainder);
-//	#else
-//	    memcpy(bufptr,padline,remainder);
-//	#endif
-//
-//	    // tell the source I have moved data out of its comm buffer
-//	    RCCE_flag_write(ready, RCCE_FLAG_SET, source);
-//
-//	  return(RCCE_SUCCESS);
-//	}
-}
 /**
  * @return 1 if there is an incoming msg, 0 otherwise
  * @note: does not need to be locked as a 'missed' msg
