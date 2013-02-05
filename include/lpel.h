@@ -118,7 +118,7 @@ typedef struct {
 
 
 void RCCE_init_fct();
-int LpelInit( lpel_config_t *cfg, int argc, char **argv);
+int LpelInit( lpel_config_t *cfg);
 void LpelCleanup( void);
 
 void LpelStart(void);
