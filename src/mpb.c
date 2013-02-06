@@ -17,7 +17,13 @@
 #include "SCC_API_test.h"
 #include "lpel.h"
 #include "mpb.h"
+#include "configuration.h"
 
+
+
+#define PAGE_SIZE           (16*1024*1024)
+
+int MPBDeviceFD; // File descriptor for message passing buffers.
 
 /******************************************************************************/
 /* Private functions                                                           */

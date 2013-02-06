@@ -49,7 +49,7 @@ static pthread_key_t workerctx_key;
 static pthread_key_t masterctx_key;
 #endif /* HAVE___THREAD */
 static int       NODE_ID=-1;
-static int _ID = readTileID();
+static int Node_ID;
 
 void LpelMasterInit( int size) {
 
@@ -65,7 +65,7 @@ void LpelMasterInit( int size) {
 #endif /* HAVE___THREAD */
 
 	master = (masterctx_t *) malloc(sizeof(masterctx_t));
-	master->mailbox = LpelMailboxCreate(NODE_ID);
+	LpelMailboxCreate(NODE_ID);
 	master->ready_tasks = LpelTaskqueueInit ();
 
 
@@ -101,7 +101,7 @@ void LpelMasterInit( int size) {
 #endif
 
 	/* mailbox */
-	wc->mailbox = LpelMailboxCreate();
+	//wc->mailbox = LpelMailboxCreate();
 	}
 }
 
@@ -531,7 +531,7 @@ workerctx_t *LpelCreateWrapperContext(int wid) {
 	//wp->marked_del = NULL;
 
 	/* mailbox */
-	wp->mailbox = LpelMailboxCreate();
+	//wp->mailbox = LpelMailboxCreate();
 	/* taskqueue of free tasks */
 	(void) pthread_create( &wp->thread, NULL, WrapperThread, wp);
 	(void) pthread_detach( wp->thread);
