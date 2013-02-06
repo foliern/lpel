@@ -22,6 +22,9 @@
 
 #define CTRUE				'1'
 #define CFALSE				'0'
+#define TRUE				1
+#define FALSE				0
+
 
 
 /******************************************************************************/
@@ -268,6 +271,7 @@ void LpelTaskSetRecLimit(lpel_task_t *t, int lim);
 #define WRITING_FLAG_OFFSET					(1<<0)	//0
 #define READING_FLAG_OFFSET					(1<<1)	//1
 #define MSG_TYPE_OFFSET						(1<<2)	//2
+#define FLAG_SIZE							1
 
 
 #endif /* _LPEL_H_ */

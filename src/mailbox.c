@@ -48,7 +48,7 @@
 
 t_vcharp  SCC_MESSAGE_PASSING_BUFFER[SCC_NR_NODES]; // starts of MPB, sorted by rank
 static int       NODE_ID=-1;           // rank of calling core (invalid by default)
-
+static int	MASTER=FALSE;
 
 
 // payload part of the MPBs starts at a specific address, not malloced space
@@ -91,8 +91,17 @@ worker_mailbox_t worker_mbox;
 /* Free node pool management functions                                        */
 /******************************************************************************/
 
+void setReadFlag(int dest){
+	if (MASTER)
+			MPB_write(master_mbox.writing_flag[dest], (t_vcharp) "1", FLAG_SIZE, dest);
+		else
+			MPB_write(worker_mbox.writing_flag, (t_vcharp) "1", FLAG_SIZE, dest);
 
+}
 
+void setWriteFlag(int Node_ID){
+
+}
 
 
 
@@ -111,7 +120,7 @@ void LpelMailboxCreate(int Node_ID)
 
 	if (Node_ID == SCC_MASTER_NODE)		//create MASTER Mailbox
 	{
-
+		MASTER=TRUE;
 
 
 		// initialize MPB starting addresses for all participating cores; allow one
@@ -161,11 +170,12 @@ void LpelMailboxSend_overMPB(
 		int dest          // UE that will receive the message
 	)
 {
+	setReadFlag(dest);
 
-	if (dest==NODE_ID)
-		MPB_write(worker_mbox.start_pointer, (t_vcharp) privbuf, size, dest);
-	else	
+	if (MASTER)
 		MPB_write(master_mbox.start_pointer[dest], (t_vcharp) privbuf, size, dest);
+	else
+		MPB_write(worker_mbox.start_pointer, (t_vcharp) privbuf, size, dest);
 			
 }
 
@@ -176,11 +186,12 @@ void LpelMailboxRecv_overMPB(
 	                    // set to 1, otherwise to 0
 	  )
 {
-	if (source=NODE_ID)
+	if (MASTER)
+		MPB_read((t_vcharp)privbuf,master_mbox.start_pointer[source], size, source);
+	else
 		// copy data from local MPB space to private memory
 		MPB_read((t_vcharp)privbuf,worker_mbox.start_pointer, size, source);
-	else
-		MPB_read((t_vcharp)privbuf,master_mbox.start_pointer[source], size, source);
+
 }
 
 
