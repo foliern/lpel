@@ -93,20 +93,34 @@ worker_mailbox_t worker_mbox;
 
 void setReadFlag(int dest){
 	if (MASTER)
-			MPB_write(master_mbox.writing_flag[dest], (t_vcharp) "1", FLAG_SIZE, dest);
+			MPB_write(master_mbox.writing_flag[dest], (t_vcharp) "1", FLAG_SIZE);
 		else
-			MPB_write(worker_mbox.writing_flag, (t_vcharp) "1", FLAG_SIZE, dest);
+			MPB_write(worker_mbox.writing_flag, (t_vcharp) "1", FLAG_SIZE);
+
+}
+
+void resetReadFlag(int dest){
+	if (MASTER)
+			MPB_write(master_mbox.writing_flag[dest], (t_vcharp) "0", FLAG_SIZE);
+		else
+			MPB_write(worker_mbox.writing_flag, (t_vcharp) "0", FLAG_SIZE);
 
 }
 
 void setWriteFlag(int dest){
 	if (MASTER)
-				MPB_write(master_mbox.reading_flag[dest], (t_vcharp) "1", FLAG_SIZE, dest);
+				MPB_write(master_mbox.reading_flag[dest], (t_vcharp) "1", FLAG_SIZE);
 			else
-				MPB_write(worker_mbox.reading_flag, (t_vcharp) "1", FLAG_SIZE, dest);
+				MPB_write(worker_mbox.reading_flag, (t_vcharp) "1", FLAG_SIZE);
 }
 
 
+void resetWriteFlag(int dest){
+	if (MASTER)
+				MPB_write(master_mbox.reading_flag[dest], (t_vcharp) "0", FLAG_SIZE);
+			else
+				MPB_write(worker_mbox.reading_flag, (t_vcharp) "0", FLAG_SIZE);
+}
 
 
 
@@ -177,7 +191,9 @@ void LpelMailboxSend_overMPB(
 	setWriteFlag(dest);
 
 	if (MASTER)
-		MPB_write(master_mbox.start_pointer[dest], (t_vcharp) privbuf, size, dest);
+		for (int i; i<size;i++)
+			MPB_write(master_mbox.start_pointer[dest]+i, (t_vcharp) privbuf+i, size);
+
 	else
 		MPB_write(worker_mbox.start_pointer, (t_vcharp) privbuf, size, dest);
 			
@@ -191,7 +207,7 @@ void LpelMailboxRecv_overMPB(
 	  )
 {
 	if (MASTER)
-		MPB_read((t_vcharp)privbuf,master_mbox.start_pointer[source], size, source);
+		MPB_read((t_vcharp)privbuf,master_mbox.start_pointer[source], size);
 	else
 		// copy data from local MPB space to private memory
 		MPB_read((t_vcharp)privbuf,worker_mbox.start_pointer, size, source);

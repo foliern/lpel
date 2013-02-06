@@ -35,7 +35,7 @@ int MPBDeviceFD; // File descriptor for message passing buffers.
 //--------------------------------------------------------------------------------------
 // invalidate (not flush!) lines in L1 that map to MPB lines
 //--------------------------------------------------------------------------------------
-void RC_cache_invalidate2()
+void SCC_cache_invalidate()
 {
 	__asm__ volatile ( ".byte 0x0f; .byte 0x0a;\n" ); // CL1FLUSHMB
 	return;
@@ -181,15 +181,10 @@ void MPB_write(
 			t_vcharp target, // target buffer, MPB
 			t_vcharp source, // source buffer, MPB or private memory, message to write into MPB
 			int num_bytes,
-			int ID
 			)
 {
-    // in non-GORY mode we only need to retain the MPB target shift; we
-    // already know the target is in the MPB, not private memory
-    //target = SCC_MESSAGE_PASSING_BUFFER[ID]+(target-SCC_MESSAGE_PASSING_BUFFER[ID]);
-
 	// do the actual copy
-	RC_cache_invalidate2();
+	SCC_cache_invalidate();
     //test address
     //target= (char *)0xb7551020;
 	*target=*source;
@@ -208,11 +203,10 @@ int MPB_read(
 		t_vcharp target, // target buffer, MPB or private memory
 		t_vcharp source, // source buffer, MPB
 		int num_bytes,   // number of bytes to copy (must be multiple of cache line size
-		int ID           // rank of source UE
 	)
 {
 	// do the actual copy
-	RC_cache_invalidate2();
+	SCC_cache_invalidate();
 
 	*target=*source;
 	//memcpy_get2((void *)target, (void *)source, num_bytes);
