@@ -99,8 +99,11 @@ void setReadFlag(int dest){
 
 }
 
-void setWriteFlag(int Node_ID){
-
+void setWriteFlag(int dest){
+	if (MASTER)
+				MPB_write(master_mbox.reading_flag[dest], (t_vcharp) "1", FLAG_SIZE, dest);
+			else
+				MPB_write(worker_mbox.reading_flag, (t_vcharp) "1", FLAG_SIZE, dest);
 }
 
 
@@ -171,6 +174,7 @@ void LpelMailboxSend_overMPB(
 	)
 {
 	setReadFlag(dest);
+	setWriteFlag(dest);
 
 	if (MASTER)
 		MPB_write(master_mbox.start_pointer[dest], (t_vcharp) privbuf, size, dest);
