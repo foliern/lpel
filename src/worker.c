@@ -121,7 +121,7 @@ void LpelMasterCleanup( void) {
 	/* cleanup the data structures */
 	for( i=0; i<num_workers; i++) {
 		wc = WORKER_PTR(i);
-		LpelMailboxDestroy(wc->mailbox);
+		//LpelMailboxDestroy(wc->mailbox);
 		free(wc);
 	}
 	/* free workers tables */
@@ -130,13 +130,15 @@ void LpelMasterCleanup( void) {
 
 	/* clean up master's mailbox */
 	workermsg_t msg;
-	while (LpelMailboxHasIncoming(MASTER_PTR->mailbox)) {
+	/*while (LpelMailboxHasIncoming(MASTER_PTR->mailbox)) {
 		LpelMailboxRecv(MASTER_PTR->mailbox, &msg);
 		assert(msg.type == MSG_TASKREQ);
 	}
 
 	LpelMailboxDestroy(master->mailbox);
+	*/
 	LpelTaskqueueDestroy(master->ready_tasks);
+	
 	free(master);
 
 #ifndef HAVE___THREAD
@@ -150,7 +152,7 @@ void LpelMasterSpawn( void) {
 	int i;
 	int temp_mpb;
 	int processor_ID;
-	char *cond_message= "C";
+	char *cond_message= "T";
 	t_vchar worker_message;
 	/* master */
 
@@ -193,7 +195,7 @@ void LpelMasterSpawn( void) {
 void LpelMasterTerminate(void) {
 	workermsg_t msg;
 	msg.type = MSG_TERMINATE;
-	LpelMailboxSend(MASTER_PTR->mailbox, &msg);
+	//LpelMailboxSend(MASTER_PTR->mailbox, &msg);
 	LpelWorkerBroadcast(&msg);
 }
 
@@ -203,10 +205,10 @@ void LpelStartTask( lpel_task_t *t) {
 	 msg.body.task = t;
 
 	if (t->worker_context != NULL) {	// wrapper
-		LpelMailboxSend(t->worker_context->mailbox, &msg);
+	//	LpelMailboxSend(t->worker_context->mailbox, &msg);
 	}
 	else {
-		LpelMailboxSend(MASTER_PTR->mailbox, &msg);
+	//	LpelMailboxSend(MASTER_PTR->mailbox, &msg);
 	}
 }
 
@@ -216,7 +218,7 @@ static void returnTask( lpel_task_t *t) {
 	workermsg_t msg;
 	msg.type = MSG_TASKRET;
 	msg.body.task = t;
-	LpelMailboxSend(MASTER_PTR->mailbox, &msg);
+//	LpelMailboxSend(MASTER_PTR->mailbox, &msg);
 }
 
 
@@ -224,7 +226,7 @@ static void requestTask( workerctx_t *wc) {
 	workermsg_t msg;
 	msg.type = MSG_TASKREQ;
 	msg.body.from_worker = wc->wid;
-	LpelMailboxSend(MASTER_PTR->mailbox, &msg);
+//	LpelMailboxSend(MASTER_PTR->mailbox, &msg);
 #ifdef USE_LOGGING
 	if (wc->mon && MON_CB(worker_tskreq)) {
 		MON_CB(worker_tskreq)(wc->mon);
@@ -238,7 +240,7 @@ static void sendTask( int wid, lpel_task_t *t) {
 	workermsg_t msg;
 	msg.type = MSG_TASKASSIGN;
 	msg.body.task = t;
-	LpelMailboxSend(WORKER_PTR(wid)->mailbox, &msg);
+//	LpelMailboxSend(WORKER_PTR(wid)->mailbox, &msg);
 }
 
 static void sendWakeup( mailbox_t *mb, lpel_task_t *t)
@@ -246,7 +248,7 @@ static void sendWakeup( mailbox_t *mb, lpel_task_t *t)
 	workermsg_t msg;
 	msg.type = MSG_TASKWAKEUP;
 	msg.body.task = t;
-	LpelMailboxSend(mb, &msg);
+//	LpelMailboxSend(mb, &msg);
 }
 
 /*******************************************************************************
@@ -298,7 +300,7 @@ static void MasterLoop( void)
 	do {
 		workermsg_t msg;
 
-		LpelMailboxRecv(MASTER_PTR->mailbox, &msg);
+//		LpelMailboxRecv(MASTER_PTR->mailbox, &msg);
 		lpel_task_t *t;
 		int wid;
 		switch( msg.type) {
@@ -349,7 +351,7 @@ static void MasterLoop( void)
 			t = msg.body.task;
 			if (t->state != TASK_RETURNED) {		// task has not been returned yet
 				PRT_DBG("master: put message back\n");
-				LpelMailboxSend(MASTER_PTR->mailbox, &msg);		//task is not blocked yet (the other worker is a bit slow, put back to the mailbox for processing later
+//				LpelMailboxSend(MASTER_PTR->mailbox, &msg);		//task is not blocked yet (the other worker is a bit slow, put back to the mailbox for processing later
 				break;
 			}
 			PRT_DBG("master: unblock task %d\n", t->uid);
@@ -446,7 +448,7 @@ static void WrapperLoop( workerctx_t *wp)
 			mctx_switch(&wp->mctx, &t->mctx);
 		} else {
 			/* no ready tasks */
-			LpelMailboxRecv(wp->mailbox, &msg);
+		//	LpelMailboxRecv(wp->mailbox, &msg);
 			switch(msg.type) {
 			case MSG_TASKASSIGN:
 				t = msg.body.task;
@@ -511,7 +513,7 @@ static void *WrapperThread( void *arg)
 	LpelThreadAssign( wp->wid);
 	WrapperLoop( wp);
 
-	LpelMailboxDestroy(wp->mailbox);
+	//LpelMailboxDestroy(wp->mailbox);
 	free( wp);
 
 #ifdef USE_MCTX_PCL
@@ -554,7 +556,7 @@ void LpelWorkerBroadcast(workermsg_t *msg)
 	for( i=0; i<num_workers; i++) {
 		wc = WORKER_PTR(i);
 		/* send */
-		LpelMailboxSend(wc->mailbox, msg);
+		//LpelMailboxSend(wc->mailbox, msg);
 	}
 }
 
@@ -569,7 +571,7 @@ static void WorkerLoop( workerctx_t *wc)
 
   workermsg_t msg;
   do {
-  	  LpelMailboxRecv(wc->mailbox, &msg);
+  	 // LpelMailboxRecv(wc->mailbox, &msg);
 
   	  switch( msg.type) {
   	  case MSG_TASKASSIGN:

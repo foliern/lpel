@@ -263,7 +263,7 @@ void LpelTaskSetRecLimit(lpel_task_t *t, int lim);
 #define MPB_BUFF_SIZE_MAX                   (1<<13)
 #define MPB_BUFF_SIZE						(1<<13) //8000
 #define MPB_META_DATA_OFFSET(ID)			(ID % 2) * MPB_BUFF_SIZE
-#define MPB_BUFFER_OFFSET					(1<<6)	//32
+#define MPB_BUFFER_OFFSET					(1<<5)	//32
 #define SCC_MASTER_NODE						0
 #define WRITING_FLAG_OFFSET					(1<<0)	//0
 #define READING_FLAG_OFFSET					(1<<1)	//1
