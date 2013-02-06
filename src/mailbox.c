@@ -132,8 +132,8 @@ void LpelMailboxCreate(int Node_ID)
 			master_mbox.writing_flag[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+WRITING_FLAG_OFFSET;
 			master_mbox.reading_flag[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+READING_FLAG_OFFSET;
 			master_mbox.msg_type[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]		+MSG_TYPE_OFFSET;
-			//worker_mbox->writing_flag[ue]=(char *)FALSE;
-			//worker_mbox->reading_flag[ue]=(char *)FALSE;
+			//worker_mbox.writing_flag[ue]=(char *)CTRUE;
+			//worker_mbox.reading_flag[ue]=(char *)CTRUE;
 
 		}
 
@@ -149,8 +149,8 @@ void LpelMailboxCreate(int Node_ID)
 		worker_mbox.writing_flag= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+WRITING_FLAG_OFFSET;
 		worker_mbox.reading_flag= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+READING_FLAG_OFFSET;
 		worker_mbox.msg_type= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]		+MSG_TYPE_OFFSET;
-		worker_mbox.writing_flag=(char *)CFALSE;
-		worker_mbox.reading_flag=(char *)CFALSE;
+		//worker_mbox.writing_flag=(char *)CTRUE;
+		//worker_mbox.reading_flag=(char *)CTRUE;
 
 }
 
@@ -162,7 +162,7 @@ void LpelMailboxSend_overMPB(
 	)
 {
 
-	if (dest=NODE_ID)
+	if (dest==NODE_ID)
 		MPB_write(worker_mbox.start_pointer, (t_vcharp) privbuf, size, dest);
 	else	
 		MPB_write(master_mbox.start_pointer[dest], (t_vcharp) privbuf, size, dest);
