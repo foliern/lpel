@@ -20,7 +20,8 @@
 #define LPEL_ERR_ASSIGN      2 /* Cannot assign thread to processors */
 #define LPEL_ERR_EXCL        3 /* Cannot assign core exclusively */
 
-
+#define CTRUE				'1'
+#define CFALSE				'0'
 
 
 /******************************************************************************/
@@ -253,16 +254,20 @@ void LpelTaskSetRecLimit(lpel_task_t *t, int lim);
 /*  SCC CONSTANTS                                                         */
 /******************************************************************************/
 
-#define DLPEL_MAXNP                         48
+#define DLPEL_ACTIVE_NODES						48
+#define SCC_NR_NODES                        48
 #define DLPEL_SUCCESS                       0
 //#define MPB_LINE_SIZE                     5
 #define MPB_LINE_SIZE                     (1<<LOG2_LINE_SIZE)
 // RCCE_BUFF_SIZE_MAX is space per UE, which is half of the space per tile
-#define MPB_BUFF_SIZE_MAX                 (1<<13)
-#define MPB_BUFF_SIZE						16000*8
-#define MPB_META_DATA_OFFSET(ID)			(ID % 2)*8000*8
-#define MPB_BUFFER_OFFSET					32
-
+#define MPB_BUFF_SIZE_MAX                   (1<<13)
+#define MPB_BUFF_SIZE						(1<<13) //8000
+#define MPB_META_DATA_OFFSET(ID)			(ID % 2) * MPB_BUFF_SIZE
+#define MPB_BUFFER_OFFSET					(1<<6)	//32
+#define SCC_MASTER_NODE						0
+#define WRITING_FLAG_OFFSET					(1<<0)	//0
+#define READING_FLAG_OFFSET					(1<<1)	//1
+#define MSG_TYPE_OFFSET						(1<<2)	//2
 
 
 #endif /* _LPEL_H_ */

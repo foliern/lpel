@@ -36,17 +36,17 @@
 #define false				0
 #define LUT(loc, idx)       (*((volatile uint32_t*)(&luts[loc][idx])))
 //because from 0 to < 48
-#define ACTIVE_NODES		48
+
 
 //......................................................................................
 // GLOBAL VARIABLES USED FOR MPB
 //......................................................................................
 
 
-int       SCC_COREID[RCCE_MAXNP]; // array of physical core IDs for all participating cores, sorted
-int       MPB_BUFF_SIZE;        // available MPB size
-t_vcharp  SCC_MESSAGE_PASSING_BUFFER[RCCE_MAXNP]; // starts of MPB, sorted by rank
-int       NODE_ID=-1;           // rank of calling core (invalid by default)
+//int       SCC_COREID[RCCE_MAXNP]; // array of physical core IDs for all participating cores, sorted
+
+t_vcharp  SCC_MESSAGE_PASSING_BUFFER[SCC_NR_NODES]; // starts of MPB, sorted by rank
+static int       NODE_ID=-1;           // rank of calling core (invalid by default)
 
 
 
@@ -80,61 +80,16 @@ static inline void lock(int core) { while (!(*locks[core] & 0x01)); }
 
 static inline void unlock(int core) { *locks[core] = 0; }
 
+master_mailbox_t master_mbox;
+worker_mailbox_t worker_mbox;
 
-/* mailbox structures */
 
-typedef struct mailbox_node_t {
-  struct mailbox_node_t *next;
-  workermsg_t msg;
-} mailbox_node_t;
 
-struct mailbox_t {
-	char writing_flag;
-	char handling_flag;
-	volatile unsigned char *start_pointer;
-	volatile unsigned char *end_pointer;
-
-  //pthread_mutex_t  lock_free;
-  //pthread_mutex_t  lock_inbox;
-  //pthread_cond_t   notempty;
-  //mailbox_node_t  *list_free;
-  //mailbox_node_t  *list_inbox;
-};
 
 
 /******************************************************************************/
 /* Free node pool management functions                                        */
 /******************************************************************************/
-
-static mailbox_node_t *GetFree( mailbox_t *mbox)
-{
-  mailbox_node_t *node;
-
-  pthread_mutex_lock( &mbox->lock_free);
-  if (mbox->list_free != NULL) {
-    /* pop free node off */
-    node = mbox->list_free;
-    mbox->list_free = node->next; /* can be NULL */
-  } else {
-    /* allocate new node */
-    node = (mailbox_node_t *)malloc( sizeof( mailbox_node_t));
-  }
-  pthread_mutex_unlock( &mbox->lock_free);
-
-  return node;
-}
-
-static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
-{
-  pthread_mutex_lock( &mbox->lock_free);
-  if ( mbox->list_free == NULL) {
-    node->next = NULL;
-  } else {
-    node->next = mbox->list_free;
-  }
-  mbox->list_free = node;
-  pthread_mutex_unlock( &mbox->lock_free);
-}
 
 
 
@@ -183,13 +138,13 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
   {
     // "Allocate" MPB, using memory mapping of physical addresses
     t_vcharp retval;
-    //MPBalloc2(&retval, X_PID(SCC_COREID[ue]), Y_PID(SCC_COREID[ue]), Z_PID(SCC_COREID[ue]),
+    //MPBalloc2(&retval, X_PID([ue]), Y_PID(SCC_COREID[ue]), Z_PID(SCC_COREID[ue]),
     //         (X_PID(SCC_COREID[ue])) && //== X_PID(SCC_COREID[RCCE_IAM])) &&
     //         (Y_PID(SCC_COREID[ue]))// == Y_PID(SCC_COREID[RCCE_IAM]))
-            );
+    //        );
             MPBalloc2(&retval, X_PID(ue), Y_PID(ue), Z_PID(ue),
-                         (X_PID(ue) && //== X_PID(SCC_COREID[RCCE_IAM])) &&
-                         (Y_PID(ue)// == Y_PID(SCC_COREID[RCCE_IAM]))
+                         X_PID(ue) && //== X_PID(SCC_COREID[RCCE_IAM])) &&
+                         Y_PID(ue)// == Y_PID(SCC_COREID[RCCE_IAM]))
                         );
 
     return retval;
@@ -277,7 +232,7 @@ inline static void *memcpy_get2(void *dest, const void *src, size_t count)
 //--------------------------------------------------------------------------------------
 
 
-    int RCCE_put2(
+void Write_to_MPB(
                         t_vcharp target, // target buffer, MPB
                         t_vcharp source, // source buffer, MPB or private memory, message to write into MPB
                         int num_bytes,
@@ -294,7 +249,7 @@ inline static void *memcpy_get2(void *dest, const void *src, size_t count)
         //target= (char *)0xb7551020;
 	*target=*source;        
 //        memcpy_put2((void *)target, (void *)source, num_bytes);
-                return(RCCE_SUCCESS);
+//      return();
     }
 
 
@@ -303,106 +258,49 @@ inline static void *memcpy_get2(void *dest, const void *src, size_t count)
 /******************************************************************************/
 
 
-void LpelMailboxCreate(void)
+void LpelMailboxCreate(int Node_ID)
 {
+	NODE_ID=Node_ID;
 
-   //mailbox_t *mbox = (mailbox_t *)malloc(sizeof(mailbox_t));
-
-  //pthread_mutex_init( &mbox->lock_free,  NULL);
-  //pthread_mutex_init( &mbox->lock_inbox, NULL);
-  //pthread_cond_init(  &mbox->notempty,   NULL);
-  //mbox->list_free  = NULL;
-  //mbox->list_inbox = NULL;
+	if (Node_ID == SCC_MASTER_NODE)		//create MASTER Mailbox
+	{
 
 
-  NODE_ID=readTileID();
-  // initialize MPB starting addresses for all participating cores; allow one
-  // dummy cache line at front of MPB for fooling write combine buffer in case
-  // of single-byte MPB access
-  //RCCE_fool_write_combine_buffer = RC_COMM_BUFFER_START(RCCE_IAM);
-  for (int ue=0; ue < ACTIVE_NODES; ue++){
-	 //SCC_COREID[ue]=ue;
-	  SCC_MESSAGE_PASSING_BUFFER[ue] = RC_COMM_BUFFER_START2(ue) + MPB_META_DATA_OFFSET(NODE_ID);
-  }
-  // gross MPB size is set equal to maximum
-  //MPB_BUFF_SIZE = MPB_BUFF_SIZE_MAX - RCCE_LINE_SIZE;
 
-  // initialize RCCE_malloc
-  //RCCE_malloc_init2(SCC_MESSAGE_PASSING_BUFFER[NODE_ID],MPB_BUFF_SIZE);
+		// initialize MPB starting addresses for all participating cores; allow one
+		// dummy cache line at front of MPB for fooling write combine buffer in case
+		// of single-byte MPB access
+		//RCCE_fool_write_combine_buffer = RC_COMM_BUFFER_START(RCCE_IAM);
+		for (int ue=0; ue < DLPEL_ACTIVE_NODES; ue++){
+		//SCC_COREID[ue]=ue;
+			SCC_MESSAGE_PASSING_BUFFER[ue] = RC_COMM_BUFFER_START2(ue) 		+MPB_META_DATA_OFFSET(ue);
 
-  // in the simplified API MPB memory allocation merely uses running pointers
-    //RCCE_flags_start = mem;
-    my_mpb_ptr    = SCC_MESSAGE_PASSING_BUFFER[NODE_ID];
+			master_mbox.start_pointer[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+MPB_BUFFER_OFFSET;
+			master_mbox.end_pointer[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]		+MPB_BUFFER_OFFSET;
+			master_mbox.writing_flag[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+WRITING_FLAG_OFFSET;
+			master_mbox.reading_flag[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+READING_FLAG_OFFSET;
+			master_mbox.msg_type[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]		+MSG_TYPE_OFFSET;
+			//worker_mbox->writing_flag[ue]=(char *)FALSE;
+			//worker_mbox->reading_flag[ue]=(char *)FALSE;
 
-  //if SHMADD & SHMDBG are not defined
-  //RCCE_shmalloc_init(RC_SHM_BUFFER_START(),RCCE_SHM_SIZE_MAX);
-  return mbox;
+		}
+
+	} else								//create WORKER Mailbox
+
+
+		SCC_MESSAGE_PASSING_BUFFER[NODE_ID] = RC_COMM_BUFFER_START2(NODE_ID) + MPB_META_DATA_OFFSET(NODE_ID);
+
+		worker_mbox.start_pointer= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+MPB_BUFFER_OFFSET;
+		worker_mbox.end_pointer= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+MPB_BUFFER_OFFSET;
+		worker_mbox.writing_flag= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+WRITING_FLAG_OFFSET;
+		worker_mbox.reading_flag= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+READING_FLAG_OFFSET;
+		worker_mbox.msg_type= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]		+MSG_TYPE_OFFSET;
+		worker_mbox.writing_flag=(char *)CFALSE;
+		worker_mbox.reading_flag=(char *)CFALSE;
+
 }
 
 
-
-void LpelMailboxDestroy( mailbox_t *mbox)
-{
-  mailbox_node_t *node;
-
-  assert( mbox->list_inbox == NULL);
-  #if 0
-  pthread_mutex_lock( &mbox->lock_inbox);
-  while (mbox->list_inbox != NULL) {
-    /* pop node off */
-    node = mbox->list_inbox;
-    mbox->list_inbox = node->next; /* can be NULL */
-    /* free the memory for the node */
-    free( node);
-  }
-  pthread_mutex_unlock( &mbox->lock_inbox);
-  #endif
-
-  /* free all free nodes */
-  pthread_mutex_lock( &mbox->lock_free);
-  while (mbox->list_free != NULL) {
-    /* pop free node off */
-    node = mbox->list_free;
-    mbox->list_free = node->next; /* can be NULL */
-    /* free the memory for the node */
-    free( node);
-  }
-  pthread_mutex_unlock( &mbox->lock_free);
-
-  /* destroy sync primitives */
-  pthread_mutex_destroy( &mbox->lock_free);
-  pthread_mutex_destroy( &mbox->lock_inbox);
-  pthread_cond_destroy(  &mbox->notempty);
-
-  free(mbox);
-}
-
-void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
-{
-  /* get a free node from recepient */
-  mailbox_node_t *node = GetFree( mbox);
-
-  /* copy the message */
-  node->msg = *msg;
-
-  /* put node into inbox */
-  pthread_mutex_lock( &mbox->lock_inbox);
-  if ( mbox->list_inbox == NULL) {
-    /* list is empty */
-    mbox->list_inbox = node;
-    node->next = node; /* self-loop */
-
-    pthread_cond_signal( &mbox->notempty);
-
-  } else {
-    /* insert stream between last node=list_inbox
-       and first node=list_inbox->next */
-    node->next = mbox->list_inbox->next;
-    mbox->list_inbox->next = node;
-    mbox->list_inbox = node;
-  }
-  pthread_mutex_unlock( &mbox->lock_inbox);
-}
 
 
 //--------------------------------------------------------------------------------------
@@ -424,7 +322,7 @@ int RCCE_get2(
 
 	*target=*source;
 	//memcpy_get2((void *)target, (void *)source, num_bytes);
-	return(RCCE_SUCCESS);
+	return(1);
 }
 
 void LpelMailboxSend_overMPB(
@@ -433,7 +331,7 @@ void LpelMailboxSend_overMPB(
 		int dest          // UE that will receive the message
 	)
 {
-	RCCE_put2(SCC_MESSAGE_PASSING_BUFFER[dest], (t_vcharp) privbuf, size, dest);
+	Write_to_MPB(SCC_MESSAGE_PASSING_BUFFER[dest], (t_vcharp) privbuf, size, dest);
 
 }
 
@@ -449,43 +347,36 @@ void LpelMailboxRecv_overMPB(
 
 }
 
-
-void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
+void LpelMailboxSend(workermsg_t *msg)
 {
-  mailbox_node_t *node;
 
-  /* get node from inbox */
-  pthread_mutex_lock( &mbox->lock_inbox);
-  while( mbox->list_inbox == NULL) {
-      pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
-  }
-
-  assert( mbox->list_inbox != NULL);
-
-  /* get first node (handle points to last) */
-  node = mbox->list_inbox->next;
-  if ( node == mbox->list_inbox) {
-    /* self-loop, just single node */
-    mbox->list_inbox = NULL;
-  } else {
-    mbox->list_inbox->next = node->next;
-  }
-  pthread_mutex_unlock( &mbox->lock_inbox);
-
-  /* copy the message */
-  *msg = node->msg;
-
-  /* put node into free pool */
-  PutFree( mbox, node);
+//	Write_to_MPB(worker_mbox. start_pointer, (t_vcharp) msg->body.task, size, dest)
+//  /* get a free node from recepient */
+//  mailbox_node_t *node = GetFree( mbox);
+//
+//  /* copy the message */
+//  node->msg = *msg;
+//
+//  /* put node into inbox */
+//  pthread_mutex_lock( &mbox->lock_inbox);
+//  if ( mbox->list_inbox == NULL) {
+//    /* list is empty */
+//    mbox->list_inbox = node;
+//    node->next = node; /* self-loop */
+//
+//    pthread_cond_signal( &mbox->notempty);
+//
+//  } else {
+//    /* insert stream between last node=list_inbox
+//       and first node=list_inbox->next */
+//    node->next = mbox->list_inbox->next;
+//    mbox->list_inbox->next = node;
+//    mbox->list_inbox = node;
+//  }
+//  pthread_mutex_unlock( &mbox->lock_inbox);
 }
 
 
-/**
- * @return 1 if there is an incoming msg, 0 otherwise
- * @note: does not need to be locked as a 'missed' msg
- *        will be eventually fetched in the next worker loop
- */
-int LpelMailboxHasIncoming( mailbox_t *mbox)
-{
-  return ( mbox->list_inbox != NULL);
-}
+
+
+

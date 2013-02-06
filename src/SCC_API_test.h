@@ -242,9 +242,9 @@
 
 // Lock registers
 #define LOCK_BIT 00
-
 // MPB pointer type
 typedef volatile unsigned char* t_vcharp;
+
 
 // #########################################################################################
 //  _____                 _   _

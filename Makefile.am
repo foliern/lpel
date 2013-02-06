@@ -34,6 +34,8 @@ liblpel_la_SOURCES = \
 	src/lpel_main.h \
 	src/readTileID.c \
 	src/readTileID.h \
+	src/mpb.c \
+	src/mpb.h \
 	src/SCC_API_test.h \
 	src/worker.c \
 	src/worker.h \

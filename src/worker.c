@@ -48,13 +48,15 @@ static __thread masterctx_t *masterctx;
 static pthread_key_t workerctx_key;
 static pthread_key_t masterctx_key;
 #endif /* HAVE___THREAD */
+static int       NODE_ID=-1;
+static int _ID = readTileID();
 
 void LpelMasterInit( int size) {
 
 	int i;
 	assert(0 <= size);
 	num_workers = size - 1;
-
+	NODE_ID = readTileID();
 
 	/** create master */
 #ifndef HAVE___THREAD
@@ -63,7 +65,7 @@ void LpelMasterInit( int size) {
 #endif /* HAVE___THREAD */
 
 	master = (masterctx_t *) malloc(sizeof(masterctx_t));
-	master->mailbox = LpelMailboxCreate();
+	master->mailbox = LpelMailboxCreate(NODE_ID);
 	master->ready_tasks = LpelTaskqueueInit ();
 
 
