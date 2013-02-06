@@ -195,22 +195,25 @@ void LpelMailboxSend_overMPB(
 			MPB_write(master_mbox.start_pointer[dest]+i, (t_vcharp) privbuf+i, size);
 
 	else
-		MPB_write(worker_mbox.start_pointer, (t_vcharp) privbuf, size, dest);
+		MPB_write(worker_mbox.start_pointer, (t_vcharp) privbuf, size);
 			
 }
 
 void LpelMailboxRecv_overMPB(
-	  t_vcharp privbuf,    // destination buffer in local private memory (receive buffer)
+	  char *privbuf,
+		//t_vcharp privbuf,    // destination buffer in local private memory (receive buffer)
 	  size_t size,      // size of message (bytes)
 	  int source       // UE that sent the message
 	                    // set to 1, otherwise to 0
 	  )
 {
 	if (MASTER)
-		MPB_read((t_vcharp)privbuf,master_mbox.start_pointer[source], size);
+	//	for (int i; i<size;i++)
+			MPB_read((t_vcharp)privbuf ,master_mbox.start_pointer[source], size);
 	else
 		// copy data from local MPB space to private memory
-		MPB_read((t_vcharp)privbuf,worker_mbox.start_pointer, size, source);
+	//	for (int i; i<size;i++)
+		MPB_read((t_vcharp)privbuf ,worker_mbox.start_pointer , size);
 
 }
 

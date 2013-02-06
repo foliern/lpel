@@ -180,7 +180,7 @@ t_vcharp MPB_comm_buffer_start(int ue)
 void MPB_write(
 			t_vcharp target, // target buffer, MPB
 			t_vcharp source, // source buffer, MPB or private memory, message to write into MPB
-			int num_bytes,
+			int num_bytes
 			)
 {
 	// do the actual copy
@@ -202,13 +202,18 @@ void MPB_write(
 int MPB_read(
 		t_vcharp target, // target buffer, MPB or private memory
 		t_vcharp source, // source buffer, MPB
-		int num_bytes,   // number of bytes to copy (must be multiple of cache line size
+		int num_bytes   // number of bytes to copy (must be multiple of cache line size
 	)
 {
 	// do the actual copy
 	SCC_cache_invalidate();
-
-	*target=*source;
+	for (int i; i<num_bytes;i++){
+		target++;
+		source++;
+		*target=*source;
+	}
+	target++;
+	*target='\n';
 	//memcpy_get2((void *)target, (void *)source, num_bytes);
 	return(1);
 }

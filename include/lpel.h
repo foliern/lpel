@@ -268,8 +268,8 @@ void LpelTaskSetRecLimit(lpel_task_t *t, int lim);
 #define MPB_META_DATA_OFFSET(ID)			(ID % 2) * MPB_BUFF_SIZE
 #define MPB_BUFFER_OFFSET					(1<<5)	//32
 #define SCC_MASTER_NODE						0
-#define WRITING_FLAG_OFFSET					(1<<0)	//0
-#define READING_FLAG_OFFSET					(1<<1)	//1
+#define WRITING_FLAG_OFFSET					(0<<0)	//0
+#define READING_FLAG_OFFSET					(1<<0)	//1
 #define MSG_TYPE_OFFSET						(1<<2)	//2
 #define FLAG_SIZE							1
 
