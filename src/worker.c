@@ -152,7 +152,8 @@ void LpelMasterSpawn( void) {
 	int i;
 	int temp_mpb;
 	int processor_ID;
-	char *cond_message= "eigentlichneziemlichcoolesachedieserMPB0123456789abcdefghijklmnopqrstuvwxyz";
+//	char *cond_message= "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+	char *cond_message="43218765inawaythisMPBisnotbad...letssayheisreallycool0123456789abcdefghijklmnopqrstuvwxyZ!!!";
 	char *worker_message;
 	worker_message=malloc(sizeof(cond_message));
 	

@@ -185,10 +185,10 @@ void MPB_write(
 {
 	// do the actual copy
 	SCC_cache_invalidate();
-    //test address
-    //target= (char *)0xb7551020;
-	*target=*source;
-	// memcpy_put2((void *)target, (void *)source, num_bytes);
+    	//test address
+    	//target= (char *)0xb7551020;
+	//*target=*source;
+	MPB_memcpy_put((void *)target, (void *)source, num_bytes);
 	//return();
 }
 
@@ -207,14 +207,14 @@ int MPB_read(
 {
 	// do the actual copy
 	SCC_cache_invalidate();
-	for (int i; i<num_bytes;i++){
-		target++;
-		source++;
-		*target=*source;
-	}
-	target++;
-	*target='\n';
-	//memcpy_get2((void *)target, (void *)source, num_bytes);
+	//	for (int i; i<num_bytes;i++){
+	//	target++;
+	//	source++;
+//		*target=*source;
+	//}
+	//target++;
+	//*target='\n';
+	MPB_memcpy_get((void *)target, (void *)source, num_bytes);
 	return(1);
 }
 

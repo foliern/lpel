@@ -147,19 +147,17 @@ void LpelMailboxCreate(int Node_ID)
 		for (int ue=0; ue < DLPEL_ACTIVE_NODES; ue++){
 		//SCC_COREID[ue]=ue;
 			if ((ue % 2) == 1){
-				PRT_DBG("Note %d is ungerade \n", ue);
+//				PRT_DBG("Note %d is ungerade \n", ue);
                 	        SCC_MESSAGE_PASSING_BUFFER[ue] = MPB_comm_buffer_start(ue) + MPB_BUFF_SIZE;
 		        }else{
                         	SCC_MESSAGE_PASSING_BUFFER[ue] = MPB_comm_buffer_start(ue);
 			}
 			master_mbox.start_pointer[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+MPB_BUFFER_OFFSET;
-			PRT_DBG("ADRESSE Node %d: %x \n",ue, master_mbox.start_pointer[ue]);
+//			PRT_DBG("ADRESSE Node %d: %x \n",ue, master_mbox.start_pointer[ue]);
 			master_mbox.end_pointer[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]		+MPB_BUFFER_OFFSET;
 			master_mbox.writing_flag[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+WRITING_FLAG_OFFSET;
 			master_mbox.reading_flag[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+READING_FLAG_OFFSET;
 			master_mbox.msg_type[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]		+MSG_TYPE_OFFSET;
-			//worker_mbox.writing_flag[ue]=(char *)CTRUE;
-			//worker_mbox.reading_flag[ue]=(char *)CTRUE;
 
 		}
 
@@ -170,13 +168,11 @@ void LpelMailboxCreate(int Node_ID)
 			SCC_MESSAGE_PASSING_BUFFER[NODE_ID] = MPB_comm_buffer_start(NODE_ID);
 
 		worker_mbox.start_pointer= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+MPB_BUFFER_OFFSET;
-		PRT_DBG("ADRESSE Node %d: %x \n",NODE_ID, worker_mbox.start_pointer);
+//		PRT_DBG("ADRESSE Node %d: %x \n",NODE_ID, worker_mbox.start_pointer);
 		worker_mbox.end_pointer= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+MPB_BUFFER_OFFSET;
 		worker_mbox.writing_flag= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+WRITING_FLAG_OFFSET;
 		worker_mbox.reading_flag= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]	+READING_FLAG_OFFSET;
 		worker_mbox.msg_type= SCC_MESSAGE_PASSING_BUFFER[NODE_ID]		+MSG_TYPE_OFFSET;
-		//worker_mbox.writing_flag=(char *)CTRUE;
-		//worker_mbox.reading_flag=(char *)CTRUE;
 
 }
 
@@ -191,9 +187,9 @@ void LpelMailboxSend_overMPB(
 	setWriteFlag(dest);
 
 	if (MASTER)
-		for (int i; i<size;i++)
-			MPB_write(master_mbox.start_pointer[dest]+i, (t_vcharp) privbuf+i, size);
-
+	//	for (int i; i<size;i++)
+	//		MPB_write(master_mbox.start_pointer[dest]+i, (t_vcharp) privbuf+i, size);
+		MPB_write(master_mbox.start_pointer[dest], (t_vcharp) privbuf, size);
 	else
 		MPB_write(worker_mbox.start_pointer, (t_vcharp) privbuf, size);
 			
@@ -208,7 +204,7 @@ void LpelMailboxRecv_overMPB(
 	  )
 {
 	if (MASTER)
-	//	for (int i; i<size;i++)
+		//for (int i; i<size;i++)
 			MPB_read((t_vcharp)privbuf ,master_mbox.start_pointer[source], size);
 	else
 		// copy data from local MPB space to private memory

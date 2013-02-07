@@ -101,9 +101,17 @@ AX_PTHREAD
 if test "x$ax_pthread_ok" = "xno"; then
    AC_MSG_ERROR([Cannot build without a working POSIX thread implementation.])
 fi
-RCCE_LIBS=/shared/foliern/rcce/bin/SCC_LINUX/libRCCE_bigflags_nongory_nopwrmgmt.a 
+
 LIBS="$LIBS $PTHREAD_LIBS $RCCE_LIBS"
-CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+
+AC_ARG_ENABLE([CFLAGS_for_asm], [AS_HELP_STRING([--enable-CFLAGS_for_asm],
+    [Enable enable some CFLAGS Options for to complie asm function in mpb.c (default is disabled)])],
+    [CFLAGS_for_asm=true], [CFLAGS_for_asm=false])
+if test x$CFLAGS_for_asm = xtrue; then
+	CFLAGS="$CFLAGS $PTHREAD_CFLAGS -DSINGLEBITFLAGS -DSCC -static -march=pentium -mtune=pentium -I./include/lpel" 
+else
+	 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+fi
 
 AC_CHECK_FUNCS([sysconf])
 AC_CHECK_FUNCS([pthread_spin_init])
