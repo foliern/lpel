@@ -124,10 +124,12 @@ void MPB_malloc(t_vcharp *MPB, int x, int y, int core, int isOwnMPB)
 		  *MPB = NULL;
 		  return;
 	  }
-	  if ((MPBDeviceFD=open("/dev/rckmpb", O_RDWR))<0) {
+
+	  because i initialize it into the Mailbox_init()
+	/*  if ((MPBDeviceFD=open("/dev/rckmpb", O_RDWR))<0) {
 			PRT_DBG("Error opening /dev/rckmpb!!!");
 			exit(-1);
-		}
+		}*/
 
 
 	  MappedAddr = (t_vcharp) mmap(NULL, MPBSIZE, PROT_WRITE|PROT_READ, MAP_SHARED, MPBDeviceFD, alignedAddr);
