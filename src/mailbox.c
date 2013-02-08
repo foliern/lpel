@@ -195,6 +195,17 @@ void LpelMailboxSend_overMPB(
 			
 }
 
+
+
+inline void cpy_mpb_to_mem(int node, void *dst, int size)
+{
+
+
+    flush();
+    memcpy(dst, (void*) (master_mbox.start_pointer[node]), size);
+    flush();
+}
+
 void LpelMailboxRecv_overMPB(
 	  char *privbuf,
 		//t_vcharp privbuf,    // destination buffer in local private memory (receive buffer)
@@ -204,15 +215,17 @@ void LpelMailboxRecv_overMPB(
 	  )
 {
 	if (MASTER)
-		//for (int i; i<size;i++)
-			MPB_read((t_vcharp)privbuf ,master_mbox.start_pointer[source], size);
-	else
+		//for (int i=0; i<size;i++)
+		//	MPB_read((t_vcharp)privbuf+i,master_mbox.start_pointer[source]+(1<<3)+i,size);
+		cpy_mpb_to_mem(source, privbuf, size);		
+	else{
 		// copy data from local MPB space to private memory
 	//	for (int i; i<size;i++)
-		MPB_read((t_vcharp)privbuf ,worker_mbox.start_pointer , size);
-
+		//MPB_read((t_vcharp)privbuf ,worker_mbox.start_pointer , size);
+	flush();
+	memcpy(privbuf, (void*) (worker_mbox.start_pointer), size);
 }
-
+}
 
 
 

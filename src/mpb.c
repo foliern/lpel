@@ -210,11 +210,11 @@ int MPB_read(
 	//	for (int i; i<num_bytes;i++){
 	//	target++;
 	//	source++;
-//		*target=*source;
+		*target=*source;
 	//}
 	//target++;
 	//*target='\n';
-	MPB_memcpy_get((void *)target, (void *)source, num_bytes);
+//	MPB_memcpy_get((void *)target, (void *)source, num_bytes);
 	return(1);
 }
 

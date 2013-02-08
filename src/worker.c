@@ -65,7 +65,7 @@ void LpelMasterInit( int size) {
 #endif /* HAVE___THREAD */
 
 	master = (masterctx_t *) malloc(sizeof(masterctx_t));
-	LpelMailboxCreate(NODE_ID);
+	//LpelMailboxCreate(NODE_ID);
 	master->ready_tasks = LpelTaskqueueInit ();
 
 
@@ -161,26 +161,28 @@ void LpelMasterSpawn( void) {
 
 	processor_ID = readTileID();
 	temp_mpb=4;
+	
+	LpelMailboxCreate(processor_ID);
 
 	if (processor_ID == 0) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
-		(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
+	//	(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
 
 
 		LpelMailboxSend_overMPB(cond_message, strlen(cond_message),temp_mpb);
 		PRT_DBG("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, temp_mpb, strlen(cond_message));
 		LpelMailboxRecv_overMPB(worker_message, strlen(cond_message),temp_mpb);
-		PRT_DBG("Nachricht aus MPB von Node %d: %s \n",temp_mpb, worker_message);
+		PRT_DBG("Nachricht aus MPB von Node %d: %s !!! \n",temp_mpb, worker_message);
 	} else {
 		// worker_message= "init Messag2";
 //		 *wc = WORKER_PTR(0);
 		PRT_DBG("I am processor %i, the WORKER \n",processor_ID);
-                (void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR);        /* spawn joinable thread */
+          //      (void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR);        /* spawn joinable thread */
 //                LpelMailboxSend_overMPB(1, &cond_message, sizeof(cond_message));
 //		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
 		LpelMailboxRecv_overMPB(worker_message, strlen(cond_message),temp_mpb);
-		PRT_DBG("Nachricht aus MPB von Node %d: %s \n",temp_mpb, worker_message);
+		PRT_DBG("Nachricht aus MPB von Node %d: %s !!! \n",temp_mpb, worker_message);
 	}
 
 //	PRT_DBG("I am the MASTER! \n");
@@ -191,7 +193,7 @@ void LpelMasterSpawn( void) {
 //		workerctx_t *wc = WORKER_PTR(i);
 //		PRT_DBG("I am the SLAVE NR.:%i \n",i);
 //		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
-
+	abort();
 }
 
 
@@ -423,7 +425,7 @@ static void *MasterThread( void *arg)
   LpelThreadAssign( LPEL_MAP_MASTER);
 
   // master loop, no monitor for master
-  MasterLoop();
+  //MasterLoop();
 
 
 #ifdef USE_MCTX_PCL
