@@ -47,16 +47,17 @@
 //int       SCC_COREID[RCCE_MAXNP]; // array of physical core IDs for all participating cores, sorted
 
 t_vcharp  SCC_MESSAGE_PASSING_BUFFER[SCC_NR_NODES]; // starts of MPB, sorted by rank
-static int       NODE_ID=-1;           // rank of calling core (invalid by default)
+static int       node_ID=-1;           // rank of calling core (invalid by default)
 static int	MASTER=FALSE;
+// Variables
+int NCMDeviceFD; // File descriptor for non-cachable memory (e.g. config regs).
+int MPBDeviceFD; // File descriptor for message passing buffers.
 
 
 // payload part of the MPBs starts at a specific address, not malloced space
 //t_vcharp RCCE_buff_ptr;
 t_vcharp my_mpb_ptr;
 // maximum chunk size of message payload is also specified
-
-int MPBDeviceFD; // File descriptor for message passing buffers.
 
 //......................................................................................
 // END GLOBAL VARIABLES USED FOR MPB
@@ -130,12 +131,31 @@ void resetWriteFlag(int dest){
 /******************************************************************************/
 
 
-void LpelMailboxCreate(int Node_ID)
+void LpelMailboxCreate(void)
 {
-	NODE_ID=Node_ID;
+
 	int offset;
 
-	if (Node_ID == SCC_MASTER_NODE)		//create MASTER Mailbox
+
+	// Open driver device "/dev/rckncm" for memory mapped register access
+	// or access to other non cachable memory locations...
+	if ((NCMDeviceFD=open("/dev/rckncm", O_RDWR|O_SYNC))<0) {
+		perror("open");
+		exit(-1);
+	}
+
+	// Open driver device "/dev/rckmpb" for message passing buffer access...
+	if ((MPBDeviceFD=open("/dev/rckmpb", O_RDWR))<0) {
+		perror("open");
+	    exit(-1);
+	}
+
+    // Success message
+	PRT_DBG("Successfully opened RCKMEM driver devices!\n");
+
+	node_ID=readTileID();
+
+	if (node_ID == SCC_MASTER_NODE)		//create MASTER Mailbox
 	{
 		MASTER=TRUE;
 

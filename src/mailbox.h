@@ -29,7 +29,7 @@ typedef struct {
 
 } worker_mailbox_t;
 
-void LpelMailboxCreate(int Node_ID);
+void LpelMailboxCreate();
 //void LpelMailboxDestroy(mailbox_t *mbox);
 //void LpelMailboxSend(mailbox_t *mbox, workermsg_t *msg);
 //void LpelMailboxRecv(mailbox_t *mbox, workermsg_t *msg);

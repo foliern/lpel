@@ -162,7 +162,7 @@ void LpelMasterSpawn( void) {
 	processor_ID = readTileID();
 	temp_mpb=4;
 	
-	LpelMailboxCreate(processor_ID);
+	LpelMailboxCreate();
 
 	if (processor_ID == 0) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
