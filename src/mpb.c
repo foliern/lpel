@@ -23,7 +23,59 @@
 
 #define PAGE_SIZE           (16*1024*1024)
 
+/* open-only flags */
+#define	O_RDONLY	0x0000		/* open for reading only */
+#define	O_WRONLY	0x0001		/* open for writing only */
+#define	O_RDWR		0x0002		/* open for reading and writing */
+#define	O_ACCMODE	0x0003		/* mask for above modes */
+#define	O_SYNC		0x0080		/* synch I/O file integrity */
+
+/*
+ * Protections are chosen from these bits, or-ed together
+ */
+#define	PROT_NONE	0x00	/* [MC2] no permissions */
+#define	PROT_READ	0x01	/* [MC2] pages can be read */
+#define	PROT_WRITE	0x02	/* [MC2] pages can be written */
+#define	PROT_EXEC	0x04	/* [MC2] pages can be executed */
+
+/*
+ * Flags contain sharing type and options.
+ * Sharing types; choose one.
+ */
+#define	MAP_SHARED	0x0001		/* [MF|SHM] share changes */
+#define	MAP_PRIVATE	0x0002		/* [MF|SHM] changes are private */
+#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+#define	MAP_COPY	MAP_PRIVATE	/* Obsolete */
+#endif	/* (!_POSIX_C_SOURCE || _DARWIN_C_SOURCE) */
+
+#define LOCAL_LUT   0x14
+#define REMOTE_LUT  (LOCAL_LUT + local_pages)
+
+//#define	NULL __DARWIN_NULL
+
 int MPBDeviceFD; // File descriptor for message passing buffers.
+
+typedef union block {
+  struct {
+    union block *next;
+    size_t size;
+  } hdr;
+  uint32_t align;   // Forces proper allignment
+} block_t;
+
+typedef struct {
+  unsigned char free;
+  unsigned char size;
+} lut_state_t;
+
+void *remote;
+unsigned char local_pages;
+
+static void *local;
+static int mem, cache;
+static block_t *freeList;
+static lut_state_t *lutState;
+static unsigned char remote_pages;
 
 /******************************************************************************/
 /* Private functions                                                           */
@@ -146,6 +198,34 @@ void MPB_malloc(t_vcharp *MPB, int x, int y, int core, int isOwnMPB)
 /* Public functions                                                           */
 /******************************************************************************/
 
+void SCCInit(unsigned char size)
+{
+  local_pages = size;
+  remote_pages = remap ? MAX_PAGES - size : 1;
+
+  /* Open driver device "/dev/rckdyn011" to map memory in write-through mode */
+  mem = open("/dev/rckdyn011", O_RDWR|O_SYNC);
+  if (mem < 0) SNetUtilDebugFatal("Opening /dev/rckdyn011 failed!");
+  cache = open("/dev/rckdcm", O_RDWR|O_SYNC);
+  if (cache < 0) SNetUtilDebugFatal("Opening /dev/rckdcm failed!");
+
+  local = mmap(NULL, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
+  if (local == NULL) SNetUtilDebugFatal("Couldn't map memory!");
+
+  remote = mmap(NULL, remote_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, REMOTE_LUT << 24);
+  if (remote == NULL) SNetUtilDebugFatal("Couldn't map memory!");
+
+  freeList = local;
+  freeList->hdr.next = freeList;
+  freeList->hdr.size = (size * PAGE_SIZE) / sizeof(block_t);
+
+  if (remap) {
+    lutState = SNetMemAlloc(remote_pages * sizeof(lut_state_t));
+    lutState[0].free = 1;
+    lutState[0].size = remote_pages;
+    lutState[remote_pages - 1] = lutState[0];
+  }
+}
 
 
 

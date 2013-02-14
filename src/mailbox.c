@@ -18,12 +18,7 @@
 #include "mpb.h"
 #include <signal.h>
 
-#define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
-#define PAGE_SIZE           (16*1024*1024)
-#define LINUX_PRIV_PAGES    (20)
-#define PAGES_PER_CORE      (41)
-#define MAX_PAGES           (172)
-#define IRQ_BIT             (0x01 << GLCFG_XINTR_BIT)
+
 
 #define B_OFFSET            64
 #define FOOL_WRITE_COMBINE  (mpbs[node_location][0] = 1)
@@ -297,9 +292,9 @@ void LpelMailboxSend_overMPB(
 	if (MASTER)
 	//	for (int i; i<size;i++)
 	//		MPB_write(master_mbox.start_pointer[dest]+i, (t_vcharp) privbuf+i, size);
-		MPB_write(master_mbox.start_pointer[dest], (t_vcharp) privbuf, size);
+		MPB_write(mpbs[dest], (t_vcharp) privbuf, size);
 	else
-		MPB_write(worker_mbox.start_pointer, (t_vcharp) privbuf, size);
+		MPB_write(mpbs[dest], (t_vcharp) privbuf, size);
 			
 }
 
@@ -310,7 +305,7 @@ inline void cpy_mpb_to_mem(int node, void *dst, int size)
 
 
     flush();
-    memcpy(dst, (void*) (master_mbox.start_pointer[node]), size);
+    memcpy(dst, (void*) (mpbs[node]), size);
     flush();
 }
 
@@ -331,7 +326,7 @@ void LpelMailboxRecv_overMPB(
 	//	for (int i; i<size;i++)
 		//MPB_read((t_vcharp)privbuf ,worker_mbox.start_pointer , size);
 	flush();
-	memcpy(privbuf, (void*) (worker_mbox.start_pointer), size);
+	memcpy(privbuf, (void*) (mpbs[source]), size);
 	}
 }
 

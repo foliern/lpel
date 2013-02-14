@@ -273,5 +273,12 @@ void LpelTaskSetRecLimit(lpel_task_t *t, int lim);
 #define MSG_TYPE_OFFSET						(1<<2)	//2
 #define FLAG_SIZE							1
 
+#define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
+#define PAGE_SIZE           (16*1024*1024)
+#define LINUX_PRIV_PAGES    (20)
+#define PAGES_PER_CORE      (41)
+#define MAX_PAGES           (172)
+#define IRQ_BIT             (0x01 << GLCFG_XINTR_BIT)
+
 
 #endif /* _LPEL_H_ */
