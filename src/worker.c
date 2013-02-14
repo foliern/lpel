@@ -173,9 +173,9 @@ void LpelMasterSpawn( void) {
 		lut_entry = readLUT(0x080);
 		printf("LUT entry: %u\n",lut_entry);
 
-		LpelMailboxSend_overMPB(cond_message, strlen(cond_message),temp_mpb);
+		LpelMailboxSend_overMPB(cond_message, strlen(cond_message)+1,temp_mpb);
 		PRT_DBG("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, temp_mpb, strlen(cond_message));
-		LpelMailboxRecv_overMPB(worker_message, strlen(cond_message),temp_mpb);
+		LpelMailboxRecv_overMPB(worker_message, strlen(cond_message)+1,temp_mpb);
 		PRT_DBG("Nachricht aus MPB von Node %d: %s !!! \n",temp_mpb, worker_message);
 	} else {
 		// worker_message= "init Messag2";
@@ -187,8 +187,11 @@ void LpelMasterSpawn( void) {
 	lut_entry = readLUT(0x080);	
 	printf("LUT entry: %u\n",lut_entry);
 	
-		LpelMailboxRecv_overMPB(worker_message, strlen(cond_message),temp_mpb);
+		LpelMailboxRecv_overMPB(worker_message, strlen(cond_message)+1,temp_mpb);
+		
+		worker_message[strlen(cond_message)-1]='\0';
 		PRT_DBG("Nachricht aus MPB von Node %d: %s !!! \n",temp_mpb, worker_message);
+		PRT_DBG("Länge send M: %d\n Länge received M: %s\n",strlen(cond_message), strlen(worker_message));
 	}
 
 //	PRT_DBG("I am the MASTER! \n");

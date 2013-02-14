@@ -261,7 +261,7 @@ typedef volatile unsigned char* t_vcharp;
 // Parameter: printMessages (0: No messages / 1: Messages enabled)
 // Return value: %
 // 
-void InitAPI(int printMessages);
+//void InitAPI(int printMessages);
 
 // SetConfigBit writes a bit to a specified config register using read-modify-write. Only use
 // function to access memory locations that are not (!) performance critical (e.g. Tile-ID).

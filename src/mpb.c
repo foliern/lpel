@@ -24,19 +24,19 @@
 #define PAGE_SIZE           (16*1024*1024)
 
 /* open-only flags */
-#define	O_RDONLY	0x0000		/* open for reading only */
-#define	O_WRONLY	0x0001		/* open for writing only */
-#define	O_RDWR		0x0002		/* open for reading and writing */
-#define	O_ACCMODE	0x0003		/* mask for above modes */
-#define	O_SYNC		0x0080		/* synch I/O file integrity */
+//#define	O_RDONLY	0x0000		/* open for reading only */
+//#define	O_WRONLY	0x0001		/* open for writing only */
+//#define	O_RDWR		0x0002		/* open for reading and writing */
+//#define	O_ACCMODE	0x0003		/* mask for above modes */
+//#define	O_SYNC		0x0080		/* synch I/O file integrity */
 
 /*
  * Protections are chosen from these bits, or-ed together
  */
-#define	PROT_NONE	0x00	/* [MC2] no permissions */
-#define	PROT_READ	0x01	/* [MC2] pages can be read */
-#define	PROT_WRITE	0x02	/* [MC2] pages can be written */
-#define	PROT_EXEC	0x04	/* [MC2] pages can be executed */
+//#define	PROT_NONE	0x00	/* [MC2] no permissions */
+//#define	PROT_READ	0x01	/* [MC2] pages can be read */
+//#define	PROT_WRITE	0x02	/* [MC2] pages can be written */
+//#define	PROT_EXEC	0x04	/* [MC2] pages can be executed */
 
 /*
  * Flags contain sharing type and options.
@@ -194,6 +194,24 @@ void MPB_malloc(t_vcharp *MPB, int x, int y, int core, int isOwnMPB)
 	  *MPB = MappedAddr+pageOffset;
 }
 
+void *SNetMemAlloc( size_t s) {
+  
+  void *ptr;
+
+  if( s == 0) {
+    ptr = NULL;
+  }
+  else {
+    ptr = malloc( s);
+    if( ptr == NULL) {
+      printf("\n\n** Fatal Error ** : Unable to Allocate Memory.\n\n");
+      exit(1);
+    }
+  }
+
+  return( ptr);
+}
+
 /******************************************************************************/
 /* Public functions                                                           */
 /******************************************************************************/
@@ -205,15 +223,15 @@ void SCCInit(unsigned char size)
 
   /* Open driver device "/dev/rckdyn011" to map memory in write-through mode */
   mem = open("/dev/rckdyn011", O_RDWR|O_SYNC);
-  if (mem < 0) SNetUtilDebugFatal("Opening /dev/rckdyn011 failed!");
+  if (mem < 0) printf("Opening /dev/rckdyn011 failed!");
   cache = open("/dev/rckdcm", O_RDWR|O_SYNC);
-  if (cache < 0) SNetUtilDebugFatal("Opening /dev/rckdcm failed!");
+  if (cache < 0) printf("Opening /dev/rckdcm failed!");
 
   local = mmap(NULL, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
-  if (local == NULL) SNetUtilDebugFatal("Couldn't map memory!");
+  if (local == NULL) printf("Couldn't map memory!");
 
   remote = mmap(NULL, remote_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, REMOTE_LUT << 24);
-  if (remote == NULL) SNetUtilDebugFatal("Couldn't map memory!");
+  if (remote == NULL) printf("Couldn't map memory!");
 
   freeList = local;
   freeList->hdr.next = freeList;

@@ -279,6 +279,6 @@ void LpelTaskSetRecLimit(lpel_task_t *t, int lim);
 #define PAGES_PER_CORE      (41)
 #define MAX_PAGES           (172)
 #define IRQ_BIT             (0x01 << GLCFG_XINTR_BIT)
-
+extern int remap;
 
 #endif /* _LPEL_H_ */
