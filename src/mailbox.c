@@ -15,7 +15,7 @@
 #include "configuration.h"
 #include "scc.h"
 #include "mailbox.h"
-#include "mpb.h"
+
 //#include <signal.h>
 
 
@@ -46,69 +46,11 @@ t_vcharp my_mpb_ptr;
 
 
 
-//extern bool remap;
-int node_location;
-t_vcharp mpbs[CORES];
-t_vcharp locks[CORES];
-volatile int *irq_pins[CORES];
-volatile uint64_t *luts[CORES];
-//int remap=false;
-static int num_nodes=0;
-
-int PAGE_SIZE_temp;
-//extern volatile int *irq_pins[CORES];
-//extern volatile uint64_t *luts[CORES];
-/*
-static inline int min(int x, int y) { return x < y ? x : y; }
-
-// Flush MPBT from L1. 
-static inline void flush() { __asm__ volatile ( ".byte 0x0f; .byte 0x0a;\n" ); }
-
-static inline void lock(int core) { while (!(*locks[core] & 0x01)); }
-
-static inline void unlock(int core) { *locks[core] = 0; }
-*/
-master_mailbox_t master_mbox;
-worker_mailbox_t worker_mbox;
-
-
-
-
-
 /******************************************************************************/
 /* Free node pool management functions                                        */
 /******************************************************************************/
 
-void setReadFlag(int dest){
-	if (MASTER)
-			MPB_write(master_mbox.writing_flag[dest], (t_vcharp) "1", FLAG_SIZE);
-		else
-			MPB_write(worker_mbox.writing_flag, (t_vcharp) "1", FLAG_SIZE);
 
-}
-
-void resetReadFlag(int dest){
-	if (MASTER)
-			MPB_write(master_mbox.writing_flag[dest], (t_vcharp) "0", FLAG_SIZE);
-		else
-			MPB_write(worker_mbox.writing_flag, (t_vcharp) "0", FLAG_SIZE);
-
-}
-
-void setWriteFlag(int dest){
-	if (MASTER)
-				MPB_write(master_mbox.reading_flag[dest], (t_vcharp) "1", FLAG_SIZE);
-			else
-				MPB_write(worker_mbox.reading_flag, (t_vcharp) "1", FLAG_SIZE);
-}
-
-
-void resetWriteFlag(int dest){
-	if (MASTER)
-				MPB_write(master_mbox.reading_flag[dest], (t_vcharp) "0", FLAG_SIZE);
-			else
-				MPB_write(worker_mbox.reading_flag, (t_vcharp) "0", FLAG_SIZE);
-}
 
 // MPBalloc allocates MPBSIZE bytes of MessagePassing buffer Memory at MPB_ADDR(x,y,core).
 // 
@@ -361,16 +303,6 @@ void LpelMailboxSend_overMPB(
 }
 
 
-
-inline void cpy_mpb_to_mem(int node, void *dst, int size)
-{
-
-
-    flush();
-    memcpy(dst, (void*) (mpbs[node]), size);
-    flush();
-}
-
 void LpelMailboxRecv_overMPB(
 	  char *privbuf,
 		//t_vcharp privbuf,    // destination buffer in local private memory (receive buffer)
@@ -392,46 +324,6 @@ void LpelMailboxRecv_overMPB(
 	}*/
 }
 
-unsigned int readLUT(unsigned int lutSlot) {
-
-int NCMDeviceFD;
-// NCMDeviceFD is the file descriptor for non-cacheable memory (e.g. config regs).
-
-unsigned int result;
-t_vcharp     MappedAddr;
-unsigned int myCoreID, alignedAddr, pageOffset, ConfigAddr;
-
-   myCoreID = readTileID();
-   if((myCoreID%2)==1)
-      ConfigAddr = CRB_OWN+LUT1 + (lutSlot*0x08);
-   else
-      ConfigAddr = CRB_OWN+LUT0 + (lutSlot*0x08);
-
-   PAGE_SIZE_temp  = getpagesize();
-	printf("PAGE_SIZE_temp %i\n",PAGE_SIZE_temp);
-   if ((NCMDeviceFD=open("/dev/rckncm", O_RDWR|O_SYNC))<0) {
-    perror("open"); exit(-1);
-   }
-
-   alignedAddr = ConfigAddr & (~(PAGE_SIZE_temp-1));
-   pageOffset  = ConfigAddr - alignedAddr;
-	printf("alignedAddr: %u\n",alignedAddr);
-	printf("pageOffset: %u\n",pageOffset);
-
-   MappedAddr = (t_vcharp) mmap(NULL, PAGE_SIZE_temp, PROT_WRITE|PROT_READ,
-      MAP_SHARED, NCMDeviceFD, alignedAddr);
-
-	printf("MappedAddr: %x\n", MappedAddr);
-
-   if (MappedAddr == MAP_FAILED) {
-      perror("mmap");exit(-1);
-   }
-
-  result = *(unsigned int*)(MappedAddr+pageOffset);
-  munmap((void*)MappedAddr, PAGE_SIZE_temp);
-
-  return result;
-}
 
 
 

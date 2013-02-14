@@ -5,13 +5,14 @@
 
 typedef struct snet_ref snet_ref_t;
 
-#include "info.h"
+//#include "info.h"
 #include "stream.h"
 #include "bool.h"
 
 /* Provided by common distribution interface in src/distrib/common */
-void SNetDistribInit(int argc, char** argv, snet_info_t *info);
-void SNetDistribStart(void);
+void SNetDistribImplementationInit();
+
+/*void SNetDistribStart(void);
 void SNetDistribStop(void);
 void SNetDistribWaitExit(snet_info_t *info);
 
@@ -29,11 +30,11 @@ void SNetRefDestroy(snet_ref_t *ref);
 
 
 /* Implementation specific functions in src/distrib/implementation */
-void SNetDistribGlobalStop(void);
+/*void SNetDistribGlobalStop(void);
 
 int SNetDistribGetNodeId(void);
 bool SNetDistribIsNodeLocation(int location);
-bool SNetDistribIsRootNode(void);
+bool SNetDistribIsRootNode(void);*/
 
 void SNetDistribPack(void *src, ...);
 void SNetDistribUnpack(void *dst, ...);

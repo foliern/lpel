@@ -3,49 +3,12 @@
 #include <stdio.h>
 #include <stdint.h> /*for uint16_t*/
 
-#include "SCCAPI.h"
+#include "SCC_API.h"
 #include "scc.h"
 #include "bool.h"
 
-int node_location;
-t_vcharp mpbs[CORES];
-t_vcharp locks[CORES];
 
-void SccInit(void *info){
-
-  (void) info; /* NOT USED */
-  int x, y, z, address;
-
-  InitAPI(0);
-  z = ReadConfigReg(CRB_OWN+MYTILEID);
-  x = (z >> 3) & 0x0f; // bits 06:03
-  y = (z >> 7) & 0x0f; // bits 10:07
-  z = z & 7; // bits 02:00
-  node_location = PID(x, y, z);
- 
-  for (unsigned char cpu = 0; cpu < CORES; cpu++) {
-    x = X_PID(cpu);
-    y = Y_PID(cpu);
-    z = Z_PID(cpu);
-
-    if (cpu == node_location) address = CRB_OWN;
-    else address = CRB_ADDR(x, y);
-    
-    locks[cpu] = (t_vcharp) MallocConfigReg(address + (z ? LOCK1 : LOCK0));
-    MPBalloc(&mpbs[cpu], x, y, z, cpu == node_location);
-  }
-}
-
-int SccGetNodeId(void) { 
-  return node_location; 
-}
-
-bool SccIsRootNode(void) {
-  return node_location == 0; 
-}
-
-
-inline void cpy_mpb_to_mem(int node, void *dst, int size)
+void cpy_mpb_to_mem(int node, void *dst, int size)
 {
   int start, end, cpy;
 
@@ -69,7 +32,7 @@ inline void cpy_mpb_to_mem(int node, void *dst, int size)
   FOOL_WRITE_COMBINE;
 }
 
-inline void cpy_mem_to_mpb(int node, void *src, int size)
+void cpy_mem_to_mpb(int node, void *src, int size)
 {
   int start, end, free;
 

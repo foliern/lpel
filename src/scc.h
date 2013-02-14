@@ -6,8 +6,13 @@
 #include <stdint.h>
 
 #include "SCC_API.h"
-//#include "bool.h"
+#include "bool.h"
 
+
+#define PAGE_SIZE           (16*1024*1024)
+#define LINUX_PRIV_PAGES    (20)
+#define PAGES_PER_CORE      (41)
+#define MAX_PAGES           (172)
 
 #define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
 #define IRQ_BIT             (0x01 << GLCFG_XINTR_BIT)
@@ -20,6 +25,8 @@
 #define WRITING(i)          (*(mpbs[i] + B_OFFSET + 5))
 #define B_START             (B_OFFSET + 32)
 #define B_SIZE              (MPBSIZE - B_START)
+
+#define LUT(loc, idx)       (*((volatile uint32_t*)(&luts[loc][idx])))
 
 //added by Simon start
 
@@ -38,11 +45,9 @@
 #define MSG_TYPE_OFFSET						(1<<2)	//2
 #define FLAG_SIZE							1
 
-typedef int bool;
-
 //added by Simon end
 
-
+extern bool remap;
 extern int node_location;
 
 extern t_vcharp mpbs[CORES];
@@ -58,13 +63,8 @@ static inline void lock(int core) { while (!(*locks[core] & 0x01)); }
 static inline void unlock(int core) { *locks[core] = 0; }
 
 
-void SccInit(void *info);
-
-int SccGetNodeId(void);
-bool SccIsRootNode(void);
-
-extern inline void cpy_mpb_to_mem(int node, void *dst, int size);
-extern inline void cpy_mem_to_mpb(int node, void *src, int size);
+void cpy_mpb_to_mem(int node, void *dst, int size);
+void cpy_mem_to_mpb(int node, void *src, int size);
 
 #endif /*SCC_H*/
 

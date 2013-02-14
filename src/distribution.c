@@ -1,10 +1,11 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "SCC_API.h"
 #include "distribution.h"
-#include "distribcommon.h"
+//#include "distribcommon.h"
 #include "scc.h"
 #include "sccmalloc.h"
 #include "readTileID.h"
@@ -37,7 +38,8 @@ void SNetDistribImplementationInit()
   num_nodes = DLPEL_ACTIVE_NODES;
 
   if (num_nodes == 0) {
-    SNetUtilDebugFatal("Number of nodes not specified using -np flag!\n");
+    //SNetUtilDebugFatal("Number of nodes not specified using -np flag!\n");
+	  printf("Number of nodes not specified using -np flag!\n");
   }
 
   sigemptyset(&signal_mask);
@@ -45,7 +47,13 @@ void SNetDistribImplementationInit()
   sigaddset(&signal_mask, SIGUSR2);
   pthread_sigmask(SIG_BLOCK, &signal_mask, NULL);
 
+  //***************************
+
   InitAPI(0);
+
+  //***************************
+
+
   z = ReadConfigReg(CRB_OWN+MYTILEID);
   x = (z >> 3) & 0x0f; // bits 06:03
   y = (z >> 7) & 0x0f; // bits 10:07
@@ -95,13 +103,17 @@ void SNetDistribImplementationInit()
   HANDLING(node_location) = 1;
   WRITING(node_location) = false;
 
+  //***************************
+
   SCCInit(num_pages);
+
+  //***************************
 
   FOOL_WRITE_COMBINE;
   unlock(node_location);
 }
 
-void SNetDistribGlobalStop(void)
+/*void SNetDistribGlobalStop(void)
 {
   snet_comm_type_t exit_status = snet_stop;
 
@@ -130,9 +142,11 @@ bool SNetDistribIsNodeLocation(int loc) { return node_location == loc; }
 
 bool SNetDistribIsRootNode(void) { return node_location == 0; }
 
+
+*/
 void SNetDistribPack(void *src, ...)
 {
-  bool isData;
+  /*bool isData;
   va_list args;
   lut_addr_t *addr;
   unsigned char node;
@@ -168,12 +182,12 @@ void SNetDistribPack(void *src, ...)
     }
   } else {
     cpy_mem_to_mpb(addr->node, src, size);
-  }
+  }*/
 }
 
 void SNetDistribUnpack(void *dst, ...)
 {
-  bool isData;
+  /*bool isData;
   size_t size;
   va_list args;
   lut_addr_t *addr;
@@ -204,5 +218,5 @@ void SNetDistribUnpack(void *dst, ...)
     *(void**) dst = SCCAddr2Ptr(*addr);
   } else {
     cpy_mpb_to_mem(node_location, dst, size);
-  }
+  }*/
 }
