@@ -39,7 +39,7 @@ liblpel_la_SOURCES = \
 	src/memcpy.h \
 	src/memfun.c \
 	src/memfun.h \
-	src/SCC_API.h \
+	src/SCC_API.c \
 	src/SCC_API.h \
 	src/scc.c \
 	src/scc.h \
