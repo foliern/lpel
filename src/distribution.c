@@ -105,7 +105,7 @@ void SNetDistribImplementationInit()
 
   //***************************
 
-  SCCInit(num_pages);
+  //SCCInit(num_pages);
 
   //***************************
 

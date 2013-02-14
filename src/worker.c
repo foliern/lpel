@@ -153,40 +153,47 @@ void LpelMasterSpawn( void) {
 	int i;
 	int temp_mpb;
 	int processor_ID;
-	char *send_message="43218765inawaythisMPBisnotbad...letssayheisreallycool0123456789abcdefghijklmnopqrstuvwxyZ!!!";
-	send_message[sizeof(send_message)-1]=0;
-	char *receive_message;
-	receive_message=(char *)malloc(sizeof(send_message));
-	//unsigned int lut_entry;
-	/* master */
-
-	processor_ID = readTileID();
-	temp_mpb=4;
-
 	
-	LpelMailboxCreate();
+	
+	int size=200;
+	char *buf = (char*) malloc (size);
+ 	char *result = (char*) malloc (size);
 
+	LpelMailboxCreate();	
+	PRT_DBG("Init Sucessfull\n");
+
+	strcpy(buf,"MPB0: Hallo World why is this MPB not working like it should!!!");
+	printf("send: %s\n",buf);
+	cpy_mem_to_mpb(0,(void *)buf,size); //copy buffer content to MPB of core 1
+	PRT_DBG("write to MPB 0 sucessfull\n");
+	
+	strcpy(buf,"MPB1: Hallo World why is this MPB not working like it should!!!");
+	printf("send: %s\n",buf);
+	cpy_mem_to_mpb(1,(void *)buf,size); //copy buffer content to MPB of core 1
+	PRT_DBG("write to MPB 1 sucessfull\n");
+	
+	strcpy(buf,"MPB2: Hallo World why is this MPB not working like it should!!!");
+	printf("send: %s\n",buf);
+	cpy_mem_to_mpb(2,(void *)buf,size); //copy buffer content to MPB of core 1
+	PRT_DBG("write to MPB 2 sucessfull\n");
+	
+  	cpy_mpb_to_mem(0,(void*)result,strlen(buf));
+	printf("receive M from MPB 0: %s\n",result);
+	cpy_mpb_to_mem(1,(void*)result,strlen(buf));
+        printf("receive M from MPB 1: %s\n",result);
+	cpy_mpb_to_mem(2,(void*)result,strlen(buf));
+        printf("receive M from MPB 2: %s\n",result);
 
 
 	if (processor_ID == 0) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
 
-		LpelMailboxSend_overMPB(send_message, sizeof(send_message),temp_mpb);
-		PRT_DBG("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", send_message, temp_mpb, sizeof(send_message));
-		LpelMailboxRecv_overMPB(receive_message, sizeof(receive_message),temp_mpb);
-		PRT_DBG("Nachricht aus MPB von Node %d: %s !!! \n",temp_mpb, receive_message);
-
 	} else {
 
 		PRT_DBG("I am processor %i, the WORKER \n",processor_ID);
-	
-		LpelMailboxRecv_overMPB(receive_message, sizeof(receive_message),temp_mpb);
-
-		PRT_DBG("Nachricht aus MPB von Node %d: %s !!! \n",temp_mpb, receive_message);
-		PRT_DBG("Länge send M: %d\n Länge received M: %s\n",sizeof(receive_message), sizeof(send_message));
 	}
-	free(send_message);
-	free(receive_message);
+	free(buf);
+	free(result);
 
 //	PRT_DBG("I am the MASTER! \n");
 //	(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
