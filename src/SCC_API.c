@@ -39,7 +39,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
-typedef volatile unsigned char * t_vcharp;
+//typedef volatile unsigned char * t_vcharp;
 #include "SCC_API.h"
 
 // Variables
