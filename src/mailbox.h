@@ -3,6 +3,7 @@
 
 #include "SCC_API.h"
 #include "workermsg.h"
+#include "scc.h"
 
 typedef struct mailbox_t mailbox_t;
 

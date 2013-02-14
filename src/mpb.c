@@ -14,7 +14,8 @@
 #include <unistd.h>
 //to use uint64_t
 #include <stdint.h>
-#include "SCC_API_test.h"
+#include "SCC_API.h"
+#include "scc.h"
 #include "lpel.h"
 #include "mpb.h"
 #include "configuration.h"

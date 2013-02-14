@@ -14,7 +14,7 @@
  #include <stdlib.h>
  //#define CRB_OWN   0xf8000000
  //#define MYTILEID  0x100
- #include "SCC_API_test.h"
+ #include "SCC_API.h"
  #include "readTileID.h"
 #include "configuration.h"
 

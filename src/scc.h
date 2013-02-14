@@ -38,7 +38,7 @@
 #define MSG_TYPE_OFFSET						(1<<2)	//2
 #define FLAG_SIZE							1
 
-#define int bool
+typedef int bool;
 
 //added by Simon end
 

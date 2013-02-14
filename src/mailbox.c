@@ -52,22 +52,22 @@ t_vcharp mpbs[CORES];
 t_vcharp locks[CORES];
 volatile int *irq_pins[CORES];
 volatile uint64_t *luts[CORES];
-int remap=false;
+//int remap=false;
 static int num_nodes=0;
 
 int PAGE_SIZE_temp;
 //extern volatile int *irq_pins[CORES];
 //extern volatile uint64_t *luts[CORES];
-
+/*
 static inline int min(int x, int y) { return x < y ? x : y; }
 
-/* Flush MPBT from L1. */
+// Flush MPBT from L1. 
 static inline void flush() { __asm__ volatile ( ".byte 0x0f; .byte 0x0a;\n" ); }
 
 static inline void lock(int core) { while (!(*locks[core] & 0x01)); }
 
 static inline void unlock(int core) { *locks[core] = 0; }
-
+*/
 master_mailbox_t master_mbox;
 worker_mailbox_t worker_mbox;
 
@@ -182,6 +182,7 @@ int ReadConfigReg(unsigned int ConfigAddr) {
   result = *(int*)(MappedAddr+pageOffset);
   munmap((void*)MappedAddr, PAGE_SIZE_temp);
   return result;
+*/
 }
 
 

@@ -40,6 +40,12 @@
 // 
 // #########################################################################################
 
+//added by Simon start
+
+typedef volatile unsigned char * t_vcharp;
+
+//added by Simon end
+
 // Define start address of pagetable (PAGE_DIR_BASE should be equal to or above to STACK_TOP setting 
 // in "../../bootcode/bootImage/defines.h" and needs to be 1025*4KB below the max private address) 
 // and the number of available private slots... E.g.:
