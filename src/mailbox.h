@@ -1,7 +1,7 @@
 #ifndef _MAILBOX_H_
 #define _MAILBOX_H_
 
-#include "SCC_API_test.h"
+#include "SCC_API.h"
 #include "workermsg.h"
 
 typedef struct mailbox_t mailbox_t;

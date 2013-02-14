@@ -23,7 +23,9 @@
 #include "mailbox.h"
 #include "lpel/monitor.h"
 #include "readTileID.h"
-#include "SCC_API_test.h"
+#include "SCC_API.h"
+#include "distribution.h"
+#include "scc.h"
 
 #define WORKER_PTR(i) (workers[(i)])
 #define MASTER_PTR	master
@@ -162,7 +164,7 @@ void LpelMasterSpawn( void) {
 	processor_ID = readTileID();
 	temp_mpb=4;
 
-	
+	SNetDistribImplementationInit();
 	
 	LpelMailboxCreate();
 

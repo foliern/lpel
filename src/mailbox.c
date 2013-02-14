@@ -10,28 +10,15 @@
 #include <unistd.h>
 //to use uint64_t
 #include <stdint.h>
-#include "SCC_API_test.h"
+#include "SCC_API.h"
 #include "readTileID.h"
 #include "configuration.h"
-#include "lpel.h"
+#include "scc.h"
 #include "mailbox.h"
 #include "mpb.h"
-#include <signal.h>
+//#include <signal.h>
 
 
-
-#define B_OFFSET            64
-#define FOOL_WRITE_COMBINE  (mpbs[node_location][0] = 1)
-#define START(i)            (*((volatile uint16_t *) (mpbs[i] + B_OFFSET)))
-#define END(i)              (*((volatile uint16_t *) (mpbs[i] + B_OFFSET + 2)))
-#define HANDLING(i)         (*(mpbs[i] + B_OFFSET + 4))
-#define WRITING(i)          (*(mpbs[i] + B_OFFSET + 5))
-#define B_START             (B_OFFSET + 32)
-#define B_SIZE              (MPBSIZE - B_START)
-#define true				1
-#define false				0
-#define LUT(loc, idx)       (*((volatile uint32_t*)(&luts[loc][idx])))
-//because from 0 to < 48
 
 
 //......................................................................................
@@ -41,7 +28,7 @@
 
 //int       SCC_COREID[RCCE_MAXNP]; // array of physical core IDs for all participating cores, sorted
 
-t_vcharp  SCC_MESSAGE_PASSING_BUFFER[SCC_NR_NODES]; // starts of MPB, sorted by rank
+t_vcharp  SCC_MESSAGE_PASSING_BUFFER[CORES]; // starts of MPB, sorted by rank
 static int       node_ID=-1;           // rank of calling core (invalid by default)
 static int	MASTER=FALSE;
 // Variables
@@ -129,7 +116,7 @@ void resetWriteFlag(int dest){
 //            x,y,core              - Position of tile (x,y) and core...
 // 
 void MPBalloc(t_vcharp *MPB, int x, int y, int core, int isOwnMPB) {
-  t_vcharp MappedAddr;
+ /* t_vcharp MappedAddr;
   // enable local MPB bypass (if trusted) by uncommenting next two lines and commenting
   // out the two after that
   //  unsigned int alignedAddr = (isOwnMPB?(MPB_OWN+(MPBSIZE*core)):MPB_ADDR(x,y,core)) & (~(PAGE_SIZE-1));
@@ -197,34 +184,7 @@ int ReadConfigReg(unsigned int ConfigAddr) {
   return result;
 }
 
-// InitAPI opens the RCKMEM device drivers. This routine needs to be invoked
-// once before using any other API functions! The successmessage can be disabled.
-// 
-// Parameter: printMessages (0: No messages / 1: Messages enabled)
-// Return value: %
-// 
-void InitAPI(int printMessages) {
-  // Open driver device "/dev/rckncm" for memory mapped register access
 
-  if ((NCMDeviceFD=open("/dev/rckncm", O_RDWR|O_SYNC))<0) {
-    perror("open");
-    exit(-1);
-  }
-
-  // Open driver device "/dev/rckmpb" for message passing buffer access...
-  if ((MPBDeviceFD=open("/dev/rckmpb", O_RDWR))<0) {
-      perror("open");
-      exit(-1);
-  }
-
-  
-  // Store page size
-  PAGE_SIZE_temp = getpagesize();
-  
-  // Success message
-  if (printMessages) printf("Successfully opened RCKMEM driver devices!\n");
-  return;
-}
 
 /******************************************************************************/
 /* Public functions                                                           */
@@ -234,7 +194,7 @@ void InitAPI(int printMessages) {
 void LpelMailboxCreate(void)
 {
   //(void) info; /* NOT USED */
-  int x, y, z, address;
+ /* int x, y, z, address;
   sigset_t signal_mask;
   unsigned char num_pages;
 
@@ -242,7 +202,7 @@ void LpelMailboxCreate(void)
 	
 	num_nodes=DLPEL_ACTIVE_NODES;
 
-
+*/
  /* for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-np") == 0 && ++i < argc) {
       num_nodes = atoi(argv[i]);
@@ -255,7 +215,7 @@ void LpelMailboxCreate(void)
     SNetUtilDebugFatal("Number of nodes not specified using -np flag!\n");
   }*/
 
-  sigemptyset(&signal_mask);
+/*  sigemptyset(&signal_mask);
   sigaddset(&signal_mask, SIGUSR1);
   sigaddset(&signal_mask, SIGUSR2);
   pthread_sigmask(SIG_BLOCK, &signal_mask, NULL);
@@ -306,7 +266,7 @@ void LpelMailboxCreate(void)
   flush();
   START(node_location) = 0;
   END(node_location) = 0;
-  /* Start with an initial handling run to avoid a cross-core race. */
+  // Start with an initial handling run to avoid a cross-core race.
   HANDLING(node_location) = 1;
   WRITING(node_location) = false;
 
@@ -314,6 +274,7 @@ void LpelMailboxCreate(void)
 
   FOOL_WRITE_COMBINE;
   unlock(node_location);
+  */
 }
 /*{
 
@@ -386,7 +347,7 @@ void LpelMailboxSend_overMPB(
 		int dest          // UE that will receive the message
 	)
 {
-	setReadFlag(dest);
+	/*setReadFlag(dest);
 	setWriteFlag(dest);
 
 	if (MASTER)
@@ -395,7 +356,7 @@ void LpelMailboxSend_overMPB(
 		MPB_write(mpbs[dest], (t_vcharp) privbuf, size);
 	else
 		MPB_write(mpbs[dest], (t_vcharp) privbuf, size);
-			
+	*/
 }
 
 
@@ -417,7 +378,7 @@ void LpelMailboxRecv_overMPB(
 	                    // set to 1, otherwise to 0
 	  )
 {
-	if (MASTER)
+	/*if (MASTER)
 		//for (int i=0; i<size;i++)
 		//	MPB_read((t_vcharp)privbuf+i,master_mbox.start_pointer[source]+(1<<3)+i,size);
 		cpy_mpb_to_mem(source, privbuf, size);		
@@ -427,7 +388,7 @@ void LpelMailboxRecv_overMPB(
 		//MPB_read((t_vcharp)privbuf ,worker_mbox.start_pointer , size);
 	flush();
 	memcpy(privbuf, (void*) (mpbs[source]), size);
-	}
+	}*/
 }
 
 unsigned int readLUT(unsigned int lutSlot) {

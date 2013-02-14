@@ -121,7 +121,7 @@ typedef struct {
 #define LPEL_FLAG_SOSI				(1<<2)
 
 
-void RCCE_init_fct();
+//void RCCE_init_fct();
 int LpelInit( lpel_config_t *cfg);
 void LpelCleanup( void);
 
@@ -257,28 +257,6 @@ void LpelTaskSetRecLimit(lpel_task_t *t, int lim);
 /*  SCC CONSTANTS                                                         */
 /******************************************************************************/
 
-#define DLPEL_ACTIVE_NODES						48
-#define SCC_NR_NODES                        48
-#define DLPEL_SUCCESS                       0
-//#define MPB_LINE_SIZE                     5
-#define MPB_LINE_SIZE                     (1<<LOG2_LINE_SIZE)
-// RCCE_BUFF_SIZE_MAX is space per UE, which is half of the space per tile
-#define MPB_BUFF_SIZE_MAX                   (1<<13)
-#define MPB_BUFF_SIZE						(1<<13) //8000
-#define MPB_META_DATA_OFFSET(ID)			(ID % 2) * MPB_BUFF_SIZE
-#define MPB_BUFFER_OFFSET					(1<<5)	//32
-#define SCC_MASTER_NODE						0
-#define WRITING_FLAG_OFFSET					(0<<0)	//0
-#define READING_FLAG_OFFSET					(1<<0)	//1
-#define MSG_TYPE_OFFSET						(1<<2)	//2
-#define FLAG_SIZE							1
 
-#define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
-#define PAGE_SIZE           (16*1024*1024)
-#define LINUX_PRIV_PAGES    (20)
-#define PAGES_PER_CORE      (41)
-#define MAX_PAGES           (172)
-#define IRQ_BIT             (0x01 << GLCFG_XINTR_BIT)
-extern int remap;
 
 #endif /* _LPEL_H_ */
