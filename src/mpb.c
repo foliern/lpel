@@ -125,7 +125,7 @@ void MPB_malloc(t_vcharp *MPB, int x, int y, int core, int isOwnMPB)
 		  return;
 	  }
 
-	  because i initialize it into the Mailbox_init()
+	 // because i initialize it into the Mailbox_init()
 	/*  if ((MPBDeviceFD=open("/dev/rckmpb", O_RDWR))<0) {
 			PRT_DBG("Error opening /dev/rckmpb!!!");
 			exit(-1);

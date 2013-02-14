@@ -156,11 +156,13 @@ void LpelMasterSpawn( void) {
 	char *cond_message="43218765inawaythisMPBisnotbad...letssayheisreallycool0123456789abcdefghijklmnopqrstuvwxyZ!!!";
 	char *worker_message;
 	worker_message=malloc(sizeof(cond_message));
-	
+	unsigned int lut_entry;
 	/* master */
 
 	processor_ID = readTileID();
 	temp_mpb=4;
+
+	
 	
 	LpelMailboxCreate();
 
@@ -168,7 +170,8 @@ void LpelMasterSpawn( void) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
 	//	(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
-
+		lut_entry = readLUT(0x080);
+		printf("LUT entry: %u\n",lut_entry);
 
 		LpelMailboxSend_overMPB(cond_message, strlen(cond_message),temp_mpb);
 		PRT_DBG("Nachricht: %s in MPB von Node %d geschrieben, size: %u\n", cond_message, temp_mpb, strlen(cond_message));
@@ -181,6 +184,9 @@ void LpelMasterSpawn( void) {
           //      (void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR);        /* spawn joinable thread */
 //                LpelMailboxSend_overMPB(1, &cond_message, sizeof(cond_message));
 //		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
+	lut_entry = readLUT(0x080);	
+	printf("LUT entry: %u\n",lut_entry);
+	
 		LpelMailboxRecv_overMPB(worker_message, strlen(cond_message),temp_mpb);
 		PRT_DBG("Nachricht aus MPB von Node %d: %s !!! \n",temp_mpb, worker_message);
 	}

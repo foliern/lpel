@@ -37,7 +37,7 @@ void LpelMailboxCreate();
 
 void LpelMailboxSend_overMPB(char *privbuf, size_t size, int dest);
 void LpelMailboxRecv_overMPB(char *privbuf, size_t size, int source);  
-
+unsigned int readLUT(unsigned int lutSlot);
 
 
 #endif /* _MAILBOX_H_ */
