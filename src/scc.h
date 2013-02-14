@@ -52,6 +52,9 @@ extern int node_location;
 
 extern t_vcharp mpbs[CORES];
 extern t_vcharp locks[CORES];
+extern volatile int *irq_pins[CORES];
+extern volatile uint64_t *luts[CORES];
+
 
 static inline int min(int x, int y) { return x < y ? x : y; }
 

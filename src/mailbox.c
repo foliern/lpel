@@ -13,10 +13,12 @@
 #include "SCC_API.h"
 #include "readTileID.h"
 #include "configuration.h"
-#include "scc.h"
 #include "mailbox.h"
 
-//#include <signal.h>
+#include "distribution.h"
+//for mpb, locks, LUT, irq_pins
+#include "scc.h"
+
 
 
 
@@ -25,20 +27,6 @@
 // GLOBAL VARIABLES USED FOR MPB
 //......................................................................................
 
-
-//int       SCC_COREID[RCCE_MAXNP]; // array of physical core IDs for all participating cores, sorted
-
-t_vcharp  SCC_MESSAGE_PASSING_BUFFER[CORES]; // starts of MPB, sorted by rank
-static int       node_ID=-1;           // rank of calling core (invalid by default)
-static int	MASTER=FALSE;
-// Variables
-int NCMDeviceFD; // File descriptor for non-cachable memory (e.g. config regs).
-int MPBDeviceFD; // File descriptor for message passing buffers
-
-// payload part of the MPBs starts at a specific address, not malloced space
-//t_vcharp RCCE_buff_ptr;
-t_vcharp my_mpb_ptr;
-// maximum chunk size of message payload is also specified
 
 //......................................................................................
 // END GLOBAL VARIABLES USED FOR MPB
@@ -136,152 +124,9 @@ int ReadConfigReg(unsigned int ConfigAddr) {
 
 void LpelMailboxCreate(void)
 {
-  //(void) info; /* NOT USED */
- /* int x, y, z, address;
-  sigset_t signal_mask;
-  unsigned char num_pages;
-
-
+	SNetDistribImplementationInit();
 	
-	num_nodes=DLPEL_ACTIVE_NODES;
-
-*/
- /* for (int i = 0; i < argc; i++) {
-    if (strcmp(argv[i], "-np") == 0 && ++i < argc) {
-      num_nodes = atoi(argv[i]);
-    } else if (strcmp(argv[i], "-sccremap") == 0) {
-      remap = true;
-    }
-  }
-
-  if (num_nodes == 0) {
-    SNetUtilDebugFatal("Number of nodes not specified using -np flag!\n");
-  }*/
-
-/*  sigemptyset(&signal_mask);
-  sigaddset(&signal_mask, SIGUSR1);
-  sigaddset(&signal_mask, SIGUSR2);
-  pthread_sigmask(SIG_BLOCK, &signal_mask, NULL);
-
-  InitAPI(0);
-  z = ReadConfigReg(CRB_OWN+MYTILEID);
-  x = (z >> 3) & 0x0f; // bits 06:03
-  y = (z >> 7) & 0x0f; // bits 10:07
-  z = z & 7; // bits 02:00
-  node_location = PID(x, y, z);
-
-  for (unsigned char cpu = 0; cpu < CORES; cpu++) {
-    x = X_PID(cpu);
-    y = Y_PID(cpu);
-    z = Z_PID(cpu);
-
-    if (cpu == node_location) address = CRB_OWN;
-    else address = CRB_ADDR(x, y);
-
-    irq_pins[cpu] = MallocConfigReg(address + (z ? GLCFG1 : GLCFG0));
-    luts[cpu] = (uint64_t*) MallocConfigReg(address + (z ? LUT1 : LUT0));
-    locks[cpu] = (t_vcharp) MallocConfigReg(address + (z ? LOCK1 : LOCK0));
-    MPBalloc(&mpbs[cpu], x, y, z, cpu == node_location);
-  }
-
-  num_pages = PAGES_PER_CORE - LINUX_PRIV_PAGES;
-  int max_pages = remap ? MAX_PAGES/2 : MAX_PAGES - 1;
-
-  for (int i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
-    for (int lut = 0; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
-      LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node_location + i * num_nodes, lut);
-    }
-  }
-
-  int extra = ((CORES % num_nodes) * PAGES_PER_CORE) / num_nodes;
-  int node = num_nodes + (node_location * extra) / PAGES_PER_CORE;
-  int lut = (node_location * extra) % PAGES_PER_CORE;
-
-  for (int i = 0; i < extra && num_pages < max_pages; i++ ) {
-    LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node, lut + i);
-
-    if (lut + i + 1 == PAGES_PER_CORE) {
-      lut = 0;
-      node++;
-    }
-  }
-
-  flush();
-  START(node_location) = 0;
-  END(node_location) = 0;
-  // Start with an initial handling run to avoid a cross-core race.
-  HANDLING(node_location) = 1;
-  WRITING(node_location) = false;
-
-  SCCInit(num_pages);
-
-  FOOL_WRITE_COMBINE;
-  unlock(node_location);
-  */
 }
-/*{
-
-	int offset;
-
-
-	// Open driver device "/dev/rckncm" for memory mapped register access
-	// or access to other non cachable memory locations...
-	if ((NCMDeviceFD=open("/dev/rckncm", O_RDWR|O_SYNC))<0) {
-		perror("open");
-		exit(-1);
-	}
-
-	// Open driver device "/dev/rckmpb" for message passing buffer access...
-	if ((MPBDeviceFD=open("/dev/rckmpb", O_RDWR))<0) {
-		perror("open");
-	    exit(-1);
-	}
-
-    // Success message
-	PRT_DBG("Successfully opened RCKMEM driver devices!\n");
-
-	node_ID=readTileID();
-
-	if (node_ID == SCC_MASTER_NODE)		//create MASTER Mailbox
-	{
-		MASTER=TRUE;
-
-
-		// initialize MPB starting addresses for all participating cores; allow one
-		// dummy cache line at front of MPB for fooling write combine buffer in case
-		// of single-byte MPB access
-		//RCCE_fool_write_combine_buffer = RC_COMM_BUFFER_START(RCCE_IAM);
-		for (int ue=0; ue < DLPEL_ACTIVE_NODES; ue++){
-		//SCC_COREID[ue]=ue;
-			if ((ue % 2) == 1){
-//				PRT_DBG("Note %d is ungerade \n", ue);
-                	        SCC_MESSAGE_PASSING_BUFFER[ue] = MPB_comm_buffer_start(ue) + MPB_BUFF_SIZE;
-		        }else{
-                        	SCC_MESSAGE_PASSING_BUFFER[ue] = MPB_comm_buffer_start(ue);
-			}
-			master_mbox.start_pointer[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+MPB_BUFFER_OFFSET;
-//			PRT_DBG("ADRESSE Node %d: %x \n",ue, master_mbox.start_pointer[ue]);
-			master_mbox.end_pointer[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]		+MPB_BUFFER_OFFSET;
-			master_mbox.writing_flag[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+WRITING_FLAG_OFFSET;
-			master_mbox.reading_flag[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]	+READING_FLAG_OFFSET;
-			master_mbox.msg_type[ue]= SCC_MESSAGE_PASSING_BUFFER[ue]		+MSG_TYPE_OFFSET;
-
-		}
-
-	} else								//create WORKER Mailbox
-		if ((node_ID%2) == 1)
-			SCC_MESSAGE_PASSING_BUFFER[node_ID] = MPB_comm_buffer_start(node_ID) + MPB_BUFF_SIZE;
-		else
-			SCC_MESSAGE_PASSING_BUFFER[node_ID] = MPB_comm_buffer_start(node_ID);
-
-		worker_mbox.start_pointer= SCC_MESSAGE_PASSING_BUFFER[node_ID]	+MPB_BUFFER_OFFSET;
-//		PRT_DBG("ADRESSE Node %d: %x \n",NODE_ID, worker_mbox.start_pointer);
-		worker_mbox.end_pointer= SCC_MESSAGE_PASSING_BUFFER[node_ID]	+MPB_BUFFER_OFFSET;
-		worker_mbox.writing_flag= SCC_MESSAGE_PASSING_BUFFER[node_ID]	+WRITING_FLAG_OFFSET;
-		worker_mbox.reading_flag= SCC_MESSAGE_PASSING_BUFFER[node_ID]	+READING_FLAG_OFFSET;
-		worker_mbox.msg_type= SCC_MESSAGE_PASSING_BUFFER[node_ID]		+MSG_TYPE_OFFSET;
-
-}*/
 
 
 void LpelMailboxSend_overMPB(
@@ -290,6 +135,8 @@ void LpelMailboxSend_overMPB(
 		int dest          // UE that will receive the message
 	)
 {
+
+	cpy_mem_to_mpb(dest, privbuf,size);
 	/*setReadFlag(dest);
 	setWriteFlag(dest);
 
@@ -300,6 +147,8 @@ void LpelMailboxSend_overMPB(
 	else
 		MPB_write(mpbs[dest], (t_vcharp) privbuf, size);
 	*/
+
+
 }
 
 
@@ -311,6 +160,8 @@ void LpelMailboxRecv_overMPB(
 	                    // set to 1, otherwise to 0
 	  )
 {
+
+	cpy_mpb_to_mem(source, privbuf, size);
 	/*if (MASTER)
 		//for (int i=0; i<size;i++)
 		//	MPB_read((t_vcharp)privbuf+i,master_mbox.start_pointer[source]+(1<<3)+i,size);

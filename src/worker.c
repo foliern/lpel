@@ -24,7 +24,6 @@
 #include "lpel/monitor.h"
 #include "readTileID.h"
 #include "SCC_API.h"
-#include "distribution.h"
 #include "scc.h"
 
 #define WORKER_PTR(i) (workers[(i)])
@@ -158,13 +157,12 @@ void LpelMasterSpawn( void) {
 	char *cond_message="43218765inawaythisMPBisnotbad...letssayheisreallycool0123456789abcdefghijklmnopqrstuvwxyZ!!!";
 	char *worker_message;
 	worker_message=malloc(sizeof(cond_message));
-	unsigned int lut_entry;
+	//unsigned int lut_entry;
 	/* master */
 
 	processor_ID = readTileID();
 	temp_mpb=4;
 
-	SNetDistribImplementationInit();
 	
 	LpelMailboxCreate();
 
@@ -172,7 +170,7 @@ void LpelMasterSpawn( void) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
 	//	(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
 
-		lut_entry = readLUT(0x080);
+		//lut_entry = readLUT(0x080);
 		printf("LUT entry: %u\n",lut_entry);
 
 		LpelMailboxSend_overMPB(cond_message, strlen(cond_message)+1,temp_mpb);
@@ -186,7 +184,7 @@ void LpelMasterSpawn( void) {
           //      (void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR);        /* spawn joinable thread */
 //                LpelMailboxSend_overMPB(1, &cond_message, sizeof(cond_message));
 //		(void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
-	lut_entry = readLUT(0x080);	
+	//lut_entry = readLUT(0x080);
 	printf("LUT entry: %u\n",lut_entry);
 	
 		LpelMailboxRecv_overMPB(worker_message, strlen(cond_message)+1,temp_mpb);
