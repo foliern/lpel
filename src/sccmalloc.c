@@ -9,6 +9,12 @@
 #include "memfun.h"
 #include "scc.h"
 #include "sccmalloc.h"
+#include "bool.h"
+#include "configuration.h"
+
+
+
+
 
 typedef union block {
   struct {
@@ -71,10 +77,15 @@ void SCCInit(unsigned char size)
 
   /* Open driver device "/dev/rckdyn011" to map memory in write-through mode */
   mem = open("/dev/rckdyn011", O_RDWR|O_SYNC);
-  if (mem < 0) printf("Opening /dev/rckdyn011 failed!");
+  PRT_DBG("mem: %i\n", mem);
+  if (mem < 0) {
+	printf("Opening /dev/rckdyn011 failed!\n");
+  }	
   cache = open("/dev/rckdcm", O_RDWR|O_SYNC);
-  if (cache < 0) printf("Opening /dev/rckdcm failed!");
-
+  PRT_DBG("cache: %i\n",cache);
+  if (cache < 0) {
+	 printf("Opening /dev/rckdcm failed!\n");
+  }
   local = mmap(NULL, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
   if (local == NULL) printf("Couldn't map memory!");
 

@@ -30,9 +30,9 @@
 
 //added by Simon start
 
-#define DLPEL_ACTIVE_NODES					48
-#define DLPEL_SUCCESS                       0
-//#define MPB_LINE_SIZE                     5
+#define DLPEL_ACTIVE_NODES			4	
+#define DLPEL_SUCCESS                   	0
+//#define MPB_LINE_SIZE                     	5
 #define MPB_LINE_SIZE                     	(1<<LOG2_LINE_SIZE)
 // RCCE_BUFF_SIZE_MAX is space per UE, which is half of the space per tile
 #define MPB_BUFF_SIZE_MAX                   (1<<13)
