@@ -10,6 +10,8 @@
 #include "sccmalloc.h"
 #include "readTileID.h"
 
+#include <stdarg.h>
+
 int node_location;
 t_vcharp mpbs[CORES];
 t_vcharp locks[CORES];
@@ -120,27 +122,27 @@ void SNetDistribImplementationInit()
   unlock(node_location);
 }
 
-/*void SNetDistribGlobalStop(void)
+void SNetDistribGlobalStop(void)
 {
-  snet_comm_type_t exit_status = snet_stop;
+/*  snet_comm_type_t exit_status = snet_stop;
 
   for (int i = num_nodes - 1; i >= 0; i--) {
     start_write_node(i);
     cpy_mem_to_mpb(i, &exit_status, sizeof(snet_comm_type_t));
     stop_write_node(i);
-  }
+  }*/
 }
 
 void SNetDistribLocalStop(void)
 {
-  for (unsigned char cpu = 0; cpu < CORES; cpu++) {
+  /*for (unsigned char cpu = 0; cpu < CORES; cpu++) {
     FreeConfigReg((int*) irq_pins[cpu]);
     FreeConfigReg((int*) locks[cpu]);
     FreeConfigReg((int*) luts[cpu]);
     MPBunalloc(&mpbs[cpu]);
   }
 
-  SCCStop();
+  SCCStop();*/
 }
 
 int SNetDistribGetNodeId(void) { return node_location; }
@@ -150,10 +152,10 @@ bool SNetDistribIsNodeLocation(int loc) { return node_location == loc; }
 bool SNetDistribIsRootNode(void) { return node_location == 0; }
 
 
-*/
+
 void SNetDistribPack(void *src, ...)
 {
-  /*bool isData;
+  bool isData;
   va_list args;
   lut_addr_t *addr;
   unsigned char node;
@@ -189,12 +191,12 @@ void SNetDistribPack(void *src, ...)
     }
   } else {
     cpy_mem_to_mpb(addr->node, src, size);
-  }*/
+  }
 }
 
 void SNetDistribUnpack(void *dst, ...)
 {
-  /*bool isData;
+  bool isData;
   size_t size;
   va_list args;
   lut_addr_t *addr;
@@ -225,5 +227,5 @@ void SNetDistribUnpack(void *dst, ...)
     *(void**) dst = SCCAddr2Ptr(*addr);
   } else {
     cpy_mpb_to_mem(node_location, dst, size);
-  }*/
+  }
 }

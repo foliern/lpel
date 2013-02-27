@@ -25,6 +25,9 @@
 #include "readTileID.h"
 #include "SCC_API.h"
 #include "scc.h"
+#include "memfun.h"
+#include "sccmalloc.h"
+#include "distribution.h"
 
 #define WORKER_PTR(i) (workers[(i)])
 #define MASTER_PTR	master
@@ -154,7 +157,7 @@ void LpelMasterSpawn( void) {
 	int temp_mpb;
 	int processor_ID;
 	
-	
+	processor_ID= readTileID();
 	int size=200;
 	char *buf = (char*) malloc (size);
  	char *result = (char*) malloc (size);
@@ -185,15 +188,29 @@ void LpelMasterSpawn( void) {
         printf("receive M from MPB 2: %s\n",result);
 
 
+	lpel_task_t *test_task= malloc(sizeof(lpel_task_t));
+	test_task->size=33;
+	/*typedef struct {
+  	  	  unsigned char node		//describes to which node the LUT entry is moved
+  	  	  	  	  	  , lut;		//describes which LUT entry is moved
+  	  	  uint32_t offset;
+		} lut_addr_t;*/
+	lut_addr_t buffer;
+	buffer.node=(int)4;
+
 	if (processor_ID == 0) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
-
+		SNetDistribPack(test_task, buffer, sizeof(test_task), false);
 	} else {
 
 		PRT_DBG("I am processor %i, the WORKER \n",processor_ID);
+		SNetDistribUnpack(test_task, buffer, false, sizeof(test_task));
 	}
+
 	free(buf);
 	free(result);
+
+
 
 //	PRT_DBG("I am the MASTER! \n");
 //	(void) pthread_create( &master->thread, NULL, MasterThread, MASTER_PTR); 	/* spawn joinable thread */
