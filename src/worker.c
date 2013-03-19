@@ -187,29 +187,36 @@ void LpelMasterSpawn( void) {
 	cpy_mpb_to_mem(2,(void*)result,strlen(buf));
         printf("receive M from MPB 2: %s\n",result);
 
-
-	lpel_task_t *test_task= malloc(sizeof(lpel_task_t));
-	test_task->size=33;
-	/*typedef struct {
+/*
+	lpel_task_t *test_task= SCCMallocPtr(sizeof(lpel_task_t));
+	//test_task->size=33;
+*/	/*typedef struct {
   	  	  unsigned char node		//describes to which node the LUT entry is moved
   	  	  	  	  	  , lut;		//describes which LUT entry is moved
   	  	  uint32_t offset;
 		} lut_addr_t;*/
-	lut_addr_t buffer;
-	buffer.node=(int)4;
+/*	lut_addr_t *buffer= malloc(sizeof(lut_addr_t));
+	
+	buffer->node=(unsigned char)4;
 
 	if (processor_ID == 0) {
 		PRT_DBG("I am processor %i, the CONDUCTOR! \n", processor_ID);
-		SNetDistribPack(test_task, buffer, sizeof(test_task), false);
+		
+		test_task->size=33;
+		SNetDistribPack(test_task, buffer, sizeof(test_task), true);
+		printf("buffer->node: %i\n", buffer->node);
+		printf("test_task->size: %i",test_task->size);
 	} else {
 
 		PRT_DBG("I am processor %i, the WORKER \n",processor_ID);
-		SNetDistribUnpack(test_task, buffer, false, sizeof(test_task));
+		SNetDistribUnpack(test_task,buffer, true, sizeof(test_task));
+		 printf("buffer->node: %i\n", buffer->node);
+                printf("test_task->size: %i",test_task->size);
 	}
 
 	free(buf);
 	free(result);
-
+*/
 
 
 //	PRT_DBG("I am the MASTER! \n");
