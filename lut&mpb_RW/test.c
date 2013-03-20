@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -6,11 +7,11 @@
 #include "RCCE_memcpy.c"
 
 // includes for the LUT mapping
-#include "distribution.h"
-#include "SCC_API.h"
-#include "scc.h"
-#include "sccmalloc.h"
-
+#include "includes/distribution.h"
+//#include "includes/SCC_API.h"
+#include "includes/scc.h"
+#include "includes/sccmalloc.h"
+#include <stdarg.h>
 t_vcharp mpbs[48];
 
 int node_location;
@@ -22,7 +23,12 @@ volatile uint64_t *luts[CORES];
 bool remap =false;
 static int num_nodes = 0;
 
-
+// test task
+typedef struct task_t {
+  int task_dest;
+  char *task_info[1000];
+  int task_origin;
+} task_t;
 
 
 void readFromMpb(int core, int size){
@@ -116,8 +122,11 @@ int main(int argc, char **argv){
     int max_pages = remap ? MAX_PAGES/2 : MAX_PAGES - 1;
 
     printf("First for loops\n");
-    for (int i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
-      for (int lut = 0; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
+    
+   int i, lut;
+ 
+   for (i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
+      for (lut = 0; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
         printf("Copy to %i  node's LUT entry Nr.: %i / %x from (node_location+i*num_nodes)= %i node's LUT entry Nr.: %i / %x.  Condition: num_pages: %i < max_pages: %i\n",
                   node_location, LINUX_PRIV_PAGES + num_pages,LINUX_PRIV_PAGES+num_pages, node_location + i * num_nodes,  lut, lut, num_pages, max_pages);
   	LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node_location + i * num_nodes, lut);
@@ -126,16 +135,17 @@ int main(int argc, char **argv){
 
     int extra = ((CORES % num_nodes) * PAGES_PER_CORE) / num_nodes;
     int node = num_nodes + (node_location * extra) / PAGES_PER_CORE;
-    int lut = (node_location * extra) % PAGES_PER_CORE;
+    int lut2 = (node_location * extra) % PAGES_PER_CORE;
 
     printf("Second for loop\n");
-    for (int i = 0; i < extra && num_pages < max_pages; i++ ) {
+    i=0;
+    for (i = 0; i < extra && num_pages < max_pages; i++ ) {
   	printf("Copy to %i  node's LUT entry Nr.: %i from (node_location+i*num_nodes)= %i node's LUT entry Nr.: %i\n",
-                  node_location, LINUX_PRIV_PAGES + num_pages, node_location + i * num_nodes,  lut);
-      LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node, lut + i);
+                  node_location, LINUX_PRIV_PAGES + num_pages, node_location + i * num_nodes,  lut2);
+      LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node, lut2 + i);
 
       if (lut + i + 1 == PAGES_PER_CORE) {
-        lut = 0;
+        lut2 = 0;
         node++;
       }
     }
@@ -152,7 +162,7 @@ int main(int argc, char **argv){
 
 //***********************************************
 
-    //SCCInit(num_pages);
+    SCCInit(num_pages);
 
 //***********************************************
 
@@ -174,13 +184,43 @@ int main(int argc, char **argv){
       size = atoi(argv[3]);
       printf("core=%d size=%d char=%s\n\n",core,size,argv[4]);
       writeToMpb(core,size,argv[4]);
-    }else{
+    }else if (argc == 4 && !strcmp("lutsend",argv[1])){ //lut send over mpb
+	//create a task in the local prvate memory
+	printf("allocate ptr\n");
+	task_t *test_task= SCCMallocPtr(sizeof(task_t));
+	printf("ptrallocated\n");
+	test_task->task_dest=atoi(argv[2]);
+	memcpy(test_task->task_info,argv[3],100);
+	test_task->task_origin=node_location;
+	//create lut address struct, declaration of lut_addr_t in malloc.h 
+	printf("debugging check\n");
+
+
+	lut_addr_t *addr=(lut_addr_t*)malloc(sizeof(lut_addr_t));
+	*addr= SCCPtr2Addr(test_task);
+
+	printf("addr->node: %d addr->lut: %d addr->offset %u\n",addr->node, addr->lut, addr->offset);
+//	*addr= SCCPtr2Addr(SCCMallocPtr(sizeof(task_t)));
+
+
+	printf("send LUT entry: \n dest=%d info=%s origin=%d\n\n",test_task->task_dest,test_task->task_info,test_task->task_origin);
+	// send lut entry
+	size=sizeof(task_t);
+	//SNetDistribPack(test_task,buffer, sizeof(test_task), true);
+      cpy_mem_to_mpb(atoi(argv[2]), addr, sizeof(lut_addr_t));
+      cpy_mem_to_mpb(atoi(argv[2]), &size, sizeof(size_t)); 
+   }else{
       fprintf(stderr, "Usage:\n"
           "%s test <destination core> \n"
           "read <source core ID> <data size> \n"
-          "write <destination core ID> <data size> (<char to write> || <string to write>) \n", argv[0]);
-      exit(1);
+          "write <destination core ID> <data size> (<char to write> || <string to write>) \n"
+    	  "lutsend <destination core ID> (<char to write> || <string to write>) \n", argv[0]);
+       exit(1);
     }
+
+
+
+
 
   return 0;
 }

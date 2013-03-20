@@ -3,154 +3,18 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "SCC_API.h"
+//#include "SCC_API.h"
 #include "distribution.h"
-//#include "distribcommon.h"
 #include "scc.h"
 #include "sccmalloc.h"
-#include "readTileID.h"
-
+#include "../config.h"
+#include <stdint.h>
+#include "bool.h"
 #include <stdarg.h>
 
-int node_location;
-t_vcharp mpbs[CORES];
-t_vcharp locks[CORES];
-volatile int *irq_pins[CORES];
-volatile uint64_t *luts[CORES];
+extern  node_location;
 
-bool remap = false;
-static int num_nodes = 0;
-
-//void SNetDistribImplementationInit(int argc, char **argv, snet_info_t *info)
-void SNetDistribImplementationInit()
-{
-  //(void) info; /* NOT USED */
-  int x, y, z, address;
-  sigset_t signal_mask;
-  unsigned char num_pages;
-
-  remap= true;
-  /*for (int i = 0; i < argc; i++) {
-    if (strcmp(argv[i], "-np") == 0 && ++i < argc) {
-      num_nodes = atoi(argv[i]);
-    } else if (strcmp(argv[i], "-sccremap") == 0) {
-      remap = true;
-    }
-  }*/
-  //DLPEL_ACTIVE_NODES are set in scc.h
-  num_nodes = DLPEL_ACTIVE_NODES;
-
-  if (num_nodes == 0) {
-    //SNetUtilDebugFatal("Number of nodes not specified using -np flag!\n");
-	  printf("Number of nodes not specified using -np flag!\n");
-  }
-
-  sigemptyset(&signal_mask);
-  sigaddset(&signal_mask, SIGUSR1);
-  sigaddset(&signal_mask, SIGUSR2);
-  pthread_sigmask(SIG_BLOCK, &signal_mask, NULL);
-
-  //***************************
-
-  InitAPI(0);
-
-  //***************************
-
-
-  z = ReadConfigReg(CRB_OWN+MYTILEID);
-  x = (z >> 3) & 0x0f; // bits 06:03
-  y = (z >> 7) & 0x0f; // bits 10:07
-  z = z & 7; // bits 02:00
-  node_location = PID(x, y, z);
-
-  for (unsigned char cpu = 0; cpu < CORES; cpu++) {
-    x = X_PID(cpu);
-    y = Y_PID(cpu);
-    z = Z_PID(cpu);
-
-    if (cpu == node_location) address = CRB_OWN;
-    else address = CRB_ADDR(x, y);
-
-    irq_pins[cpu] = MallocConfigReg(address + (z ? GLCFG1 : GLCFG0));
-    luts[cpu] = (uint64_t*) MallocConfigReg(address + (z ? LUT1 : LUT0));
-    locks[cpu] = (t_vcharp) MallocConfigReg(address + (z ? LOCK1 : LOCK0));
-    MPBalloc(&mpbs[cpu], x, y, z, cpu == node_location);
-  }
-
-  num_pages = PAGES_PER_CORE - LINUX_PRIV_PAGES;
-  int max_pages = remap ? MAX_PAGES/2 : MAX_PAGES - 1;
- 
-  printf("First for loops\n");
-  for (int i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
-    for (int lut = 0; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
-      printf("Copy to %i  node's LUT entry Nr.: %i / %x from (node_location+i*num_nodes)= %i node's LUT entry Nr.: %i / %x.  Condition: num_pages: %i < max_pages: %i\n",
-                node_location, LINUX_PRIV_PAGES + num_pages,LINUX_PRIV_PAGES+num_pages, node_location + i * num_nodes,  lut, lut, num_pages, max_pages); 
-	LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node_location + i * num_nodes, lut);
-  }
-  }
-
-  int extra = ((CORES % num_nodes) * PAGES_PER_CORE) / num_nodes;
-  int node = num_nodes + (node_location * extra) / PAGES_PER_CORE;
-  int lut = (node_location * extra) % PAGES_PER_CORE;
-
-  printf("Second for loop\n");	
-  for (int i = 0; i < extra && num_pages < max_pages; i++ ) {
-	printf("Copy to %i  node's LUT entry Nr.: %i from (node_location+i*num_nodes)= %i node's LUT entry Nr.: %i\n",
-                node_location, LINUX_PRIV_PAGES + num_pages, node_location + i * num_nodes,  lut);
-    LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node, lut + i);
-
-    if (lut + i + 1 == PAGES_PER_CORE) {
-      lut = 0;
-      node++;
-    }
-  }
-
-  flush();
-  START(node_location) = 0;
-  END(node_location) = 0;
-  /* Start with an initial handling run to avoid a cross-core race. */
-  HANDLING(node_location) = 1;
-  WRITING(node_location) = false;
-
-  //***************************
-
-  //SCCInit(num_pages);
-
-  //***************************
-
-  FOOL_WRITE_COMBINE;
-  unlock(node_location);
-}
-
-void SNetDistribGlobalStop(void)
-{
-/*  snet_comm_type_t exit_status = snet_stop;
-
-  for (int i = num_nodes - 1; i >= 0; i--) {
-    start_write_node(i);
-    cpy_mem_to_mpb(i, &exit_status, sizeof(snet_comm_type_t));
-    stop_write_node(i);
-  }*/
-}
-
-void SNetDistribLocalStop(void)
-{
-  /*for (unsigned char cpu = 0; cpu < CORES; cpu++) {
-    FreeConfigReg((int*) irq_pins[cpu]);
-    FreeConfigReg((int*) locks[cpu]);
-    FreeConfigReg((int*) luts[cpu]);
-    MPBunalloc(&mpbs[cpu]);
-  }
-
-  SCCStop();*/
-}
-
-int SNetDistribGetNodeId(void) { return node_location; }
-
-bool SNetDistribIsNodeLocation(int loc) { return node_location == loc; }
-
-bool SNetDistribIsRootNode(void) { return node_location == 0; }
-
+extern bool remap;
 
 
 void SNetDistribPack(void *src, ...)
@@ -167,11 +31,19 @@ void SNetDistribPack(void *src, ...)
   isData = va_arg(args, bool);
   va_end(args);
 
+printf("addr->node:%s\n",addr->node);
+printf("addr->lut:%s\n",addr->lut);
+printf("addr->offset:%u\n",addr->offset);
+printf("size:%i\n",size);
+printf("remap:%d\n",remap);
+printf("isData:%d\n",isData);
+
   flush();
   if (isData) {
     if (remap) {
       node = addr->node;
       *addr = SCCPtr2Addr(src);
+      
       cpy_mem_to_mpb(node, addr, sizeof(lut_addr_t));
       cpy_mem_to_mpb(node, &size, sizeof(size_t));
     } else {
@@ -200,6 +72,7 @@ void SNetDistribUnpack(void *dst, ...)
   size_t size;
   va_list args;
   lut_addr_t *addr;
+  unsigned char i;
 
   va_start(args, dst);
   addr = va_arg(args, void*);
@@ -217,7 +90,7 @@ void SNetDistribUnpack(void *dst, ...)
       count = (size + addr->offset + PAGE_SIZE - 1) / PAGE_SIZE;
       lut = SCCMallocLut(count);
 
-      for (unsigned char i = 0; i < count; i++) {
+      for (i = 0; i < count; i++) {
         LUT(node_location, lut + i) = LUT(node, addr->lut + i);
       }
 

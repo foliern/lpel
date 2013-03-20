@@ -36,6 +36,8 @@ void cpy_mem_to_mpb(int node, void *src, int size)
 {
   int start, end, free;
 
+		printf("1");
+
   if (size >= B_SIZE) {
     printf("Message to big!");
     exit(3);
@@ -44,6 +46,8 @@ void cpy_mem_to_mpb(int node, void *src, int size)
   flush();
   WRITING(node) = true;
   FOOL_WRITE_COMBINE;
+
+	printf("2");
 
   while (size) {
     flush();
@@ -61,7 +65,11 @@ void cpy_mem_to_mpb(int node, void *src, int size)
       continue;
     }
 
+	printf("3");	
+
     memcpy((void*) (mpbs[node] + B_START + end), src, free);
+	
+	printf("4");
 
     flush();
     size -= free;

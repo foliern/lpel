@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <stdint.h> /*for uint16_t*/
 
-#include "SCC_API.h"
 #include "scc.h"
 #include "bool.h"
+#include "../RCCE_memcpy.c"
 
 
 void cpy_mpb_to_mem(int node, void *dst, int size)
@@ -61,7 +61,11 @@ void cpy_mem_to_mpb(int node, void *src, int size)
       continue;
     }
 
-    memcpy((void*) (mpbs[node] + B_START + end), src, free);
+//    memcpy((void*) (mpbs[node] + B_START + end), src, free);
+
+//cpy_mem_to_mpb
+	printf("memcpy_put:\n node: %d B_START+end: %d src: %s size: %d\n", node,B_START + end,src,free);
+	memcpy_put((void*) (mpbs[node] + B_START + end), src, free);
 
     flush();
     size -= free;

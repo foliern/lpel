@@ -169,21 +169,21 @@ void LpelMasterSpawn( void) {
 	printf("send: %s\n",buf);
 	cpy_mem_to_mpb(0,(void *)buf,size); //copy buffer content to MPB of core 1
 	PRT_DBG("write to MPB 0 sucessfull\n");
-	
+        cpy_mpb_to_mem(0,(void*)result,strlen(buf));
+        printf("receive M from MPB 0: %s\n",result);
+
 	strcpy(buf,"MPB1: Hallo World why is this MPB not working like it should!!!");
 	printf("send: %s\n",buf);
 	cpy_mem_to_mpb(1,(void *)buf,size); //copy buffer content to MPB of core 1
 	PRT_DBG("write to MPB 1 sucessfull\n");
+	cpy_mpb_to_mem(1,(void*)result,strlen(buf));
+        printf("receive M from MPB 1: %s\n",result);
 	
 	strcpy(buf,"MPB2: Hallo World why is this MPB not working like it should!!!");
 	printf("send: %s\n",buf);
 	cpy_mem_to_mpb(2,(void *)buf,size); //copy buffer content to MPB of core 1
 	PRT_DBG("write to MPB 2 sucessfull\n");
 	
-  	cpy_mpb_to_mem(0,(void*)result,strlen(buf));
-	printf("receive M from MPB 0: %s\n",result);
-	cpy_mpb_to_mem(1,(void*)result,strlen(buf));
-        printf("receive M from MPB 1: %s\n",result);
 	cpy_mpb_to_mem(2,(void*)result,strlen(buf));
         printf("receive M from MPB 2: %s\n",result);
 

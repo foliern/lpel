@@ -77,12 +77,12 @@ void SCCInit(unsigned char size)
 
   /* Open driver device "/dev/rckdyn011" to map memory in write-through mode */
   mem = open("/dev/rckdyn011", O_RDWR|O_SYNC);
-  PRT_DBG("mem: %i\n", mem);
+  printf("mem: %i\n", mem);
   if (mem < 0) {
 	printf("Opening /dev/rckdyn011 failed!\n");
   }	
   cache = open("/dev/rckdcm", O_RDWR|O_SYNC);
-  PRT_DBG("cache: %i\n",cache);
+  printf("cache: %i\n",cache);
   if (cache < 0) {
 	 printf("Opening /dev/rckdcm failed!\n");
   }
@@ -118,6 +118,7 @@ void *SCCMallocPtr(size_t size)
   size_t nunits;
   block_t *curr, *prev, *new;
 
+
   if (freeList == NULL) printf("Couldn't allocate memory!");
 
   prev = freeList;
@@ -127,24 +128,24 @@ void *SCCMallocPtr(size_t size)
   do {
     if (curr->hdr.size >= nunits) {
       if (curr->hdr.size == nunits) {
-
         if (prev == curr) prev = NULL;
         else prev->hdr.next = curr->hdr.next;
 
       } else if (curr->hdr.size > nunits) {
-        new = curr + nunits;
-        *new = *curr;
+	new = curr + nunits;
+	*new = *curr;
         new->hdr.size -= nunits;
-        curr->hdr.size = nunits;
+  	curr->hdr.size = nunits;
 
-        if (prev == curr) prev = new;
-        prev->hdr.next = new;
+        if (prev == curr) prev = new;{
+		prev->hdr.next = new;
+      	}
       }
-
       freeList = prev;
       return (void*) (curr + 1);
-    }
+     }
   } while (curr != freeList && (prev = curr, curr = curr->hdr.next));
+
 
   printf("Couldn't allocate memory!");
   return NULL;

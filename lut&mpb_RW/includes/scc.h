@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <stdint.h>
 
-#include "SCC_API.h"
+#include "../config.h"
 #include "bool.h"
 
 
