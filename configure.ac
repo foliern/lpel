@@ -5,14 +5,6 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.11 tar-ustar no-define foreign dist-bzip2 subdir-objects silent-rules])
 AM_SILENT_RULES([yes])
 
-
-AC_ARG_ENABLE([scc], [AS_HELP_STRING([--enable-scc],
-    [Enable the custom distribution layer for the SCC (default is disabled)])],
-    [scc=true], [scc=false])
-if test x$scc = xtrue; then
-	AC_DEFINE([SCC], [1], [Set to 1 to enable the SCC distribution layer])
-fi
-
 AC_PROG_CC_C99
 AC_USE_SYSTEM_EXTENSIONS
 AM_PROG_AS
@@ -101,17 +93,8 @@ AX_PTHREAD
 if test "x$ax_pthread_ok" = "xno"; then
    AC_MSG_ERROR([Cannot build without a working POSIX thread implementation.])
 fi
-
-LIBS="$LIBS $PTHREAD_LIBS $RCCE_LIBS"
-
-AC_ARG_ENABLE([CFLAGS_for_asm], [AS_HELP_STRING([--enable-CFLAGS_for_asm],
-    [Enable enable some CFLAGS Options for to complie asm function in mpb.c (default is disabled)])],
-    [CFLAGS_for_asm=true], [CFLAGS_for_asm=false])
-if test x$CFLAGS_for_asm = xtrue; then
-	CFLAGS="$CFLAGS $PTHREAD_CFLAGS -DSINGLEBITFLAGS -DSCC -static -march=pentium -mtune=pentium -I./include/lpel" 
-else
-	 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
-fi
+LIBS="$LIBS $PTHREAD_LIBS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 
 AC_CHECK_FUNCS([sysconf])
 AC_CHECK_FUNCS([pthread_spin_init])

@@ -145,7 +145,7 @@ static void testBasic(void)
   cfg.proc_others = 0;
   cfg.flags = 0;
 
-  //LpelInit(&cfg);
+  LpelInit(&cfg);
 
   /* create streams */
   sinp = LpelStreamCreate(0);

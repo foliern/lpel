@@ -167,7 +167,7 @@ static void testBasic(void)
   //cfg.flags = LPEL_FLAG_EXCLUSIVE | LPEL_FLAG_PINNED;
   cfg.flags = 0;
 
-  //LpelInit(&cfg);
+  LpelInit(&cfg);
 
   LpelStart();
   CreateRing();

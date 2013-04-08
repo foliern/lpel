@@ -1,46 +1,59 @@
-#include <fcntl.h>
+
 #include <stdlib.h>
 #include <pthread.h>
 #include <assert.h>
-#include <stdio.h>
-
-// for communication over MPB
-#include <sys/mman.h>
-#include <string.h>
-#include <unistd.h>
-//to use uint64_t
-#include <stdint.h>
-#include "SCC_API.h"
-#include "readTileID.h"
-#include "configuration.h"
 #include "mailbox.h"
 
-#include "distribution.h"
-//for mpb, locks, LUT, irq_pins
-#include "scc.h"
 
+/* mailbox structures */
 
+typedef struct mailbox_node_t {
+  struct mailbox_node_t *next;
+  workermsg_t msg;
+} mailbox_node_t;
 
-
-
-//......................................................................................
-// GLOBAL VARIABLES USED FOR MPB
-//......................................................................................
-
-
-//......................................................................................
-// END GLOBAL VARIABLES USED FOR MPB
-//......................................................................................
-
+struct mailbox_t {
+  pthread_mutex_t  lock_free;
+  pthread_mutex_t  lock_inbox;
+  pthread_cond_t   notempty;
+  mailbox_node_t  *list_free;
+  mailbox_node_t  *list_inbox;
+};
 
 
 /******************************************************************************/
 /* Free node pool management functions                                        */
 /******************************************************************************/
 
+static mailbox_node_t *GetFree( mailbox_t *mbox)
+{
+  mailbox_node_t *node;
 
+  pthread_mutex_lock( &mbox->lock_free);
+  if (mbox->list_free != NULL) {
+    /* pop free node off */
+    node = mbox->list_free;
+    mbox->list_free = node->next; /* can be NULL */
+  } else {
+    /* allocate new node */
+    node = (mailbox_node_t *)malloc( sizeof( mailbox_node_t));
+  }
+  pthread_mutex_unlock( &mbox->lock_free);
 
+  return node;
+}
 
+static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
+{
+  pthread_mutex_lock( &mbox->lock_free);
+  if ( mbox->list_free == NULL) {
+    node->next = NULL;
+  } else {
+    node->next = mbox->list_free;
+  }
+  mbox->list_free = node;
+  pthread_mutex_unlock( &mbox->lock_free);
+}
 
 
 
@@ -49,59 +62,120 @@
 /******************************************************************************/
 
 
-void LpelMailboxCreate(void)
+mailbox_t *LpelMailboxCreate(void)
 {
-	SNetDistribImplementationInit();
-	
-}
+  mailbox_t *mbox = (mailbox_t *)malloc(sizeof(mailbox_t));
 
+  pthread_mutex_init( &mbox->lock_free,  NULL);
+  pthread_mutex_init( &mbox->lock_inbox, NULL);
+  pthread_cond_init(  &mbox->notempty,   NULL);
+  mbox->list_free  = NULL;
+  mbox->list_inbox = NULL;
 
-void LpelMailboxSend_overMPB(
-		char *privbuf,    // source buffer in local private memory (send buffer)
-		size_t size,      // size of message (bytes)
-		int dest          // UE that will receive the message
-	)
-{
-
-	cpy_mem_to_mpb(dest, privbuf,size);
-	/*setReadFlag(dest);
-	setWriteFlag(dest);
-
-	if (MASTER)
-	//	for (int i; i<size;i++)
-	//		MPB_write(master_mbox.start_pointer[dest]+i, (t_vcharp) privbuf+i, size);
-		MPB_write(mpbs[dest], (t_vcharp) privbuf, size);
-	else
-		MPB_write(mpbs[dest], (t_vcharp) privbuf, size);
-	*/
-
-
-}
-
-
-void LpelMailboxRecv_overMPB(
-	  char *privbuf,
-		//t_vcharp privbuf,    // destination buffer in local private memory (receive buffer)
-	  size_t size,      // size of message (bytes)
-	  int source       // UE that sent the message
-	                    // set to 1, otherwise to 0
-	  )
-{
-
-	cpy_mpb_to_mem(source, privbuf, size);
-	/*if (MASTER)
-		//for (int i=0; i<size;i++)
-		//	MPB_read((t_vcharp)privbuf+i,master_mbox.start_pointer[source]+(1<<3)+i,size);
-		cpy_mpb_to_mem(source, privbuf, size);		
-	else{
-		// copy data from local MPB space to private memory
-	//	for (int i; i<size;i++)
-		//MPB_read((t_vcharp)privbuf ,worker_mbox.start_pointer , size);
-	flush();
-	memcpy(privbuf, (void*) (mpbs[source]), size);
-	}*/
+  return mbox;
 }
 
 
 
+void LpelMailboxDestroy( mailbox_t *mbox)
+{
+  mailbox_node_t *node;
 
+  assert( mbox->list_inbox == NULL);
+  #if 0
+  pthread_mutex_lock( &mbox->lock_inbox);
+  while (mbox->list_inbox != NULL) {
+    /* pop node off */
+    node = mbox->list_inbox;
+    mbox->list_inbox = node->next; /* can be NULL */
+    /* free the memory for the node */
+    free( node);
+  }
+  pthread_mutex_unlock( &mbox->lock_inbox);
+  #endif
+
+  /* free all free nodes */
+  pthread_mutex_lock( &mbox->lock_free);
+  while (mbox->list_free != NULL) {
+    /* pop free node off */
+    node = mbox->list_free;
+    mbox->list_free = node->next; /* can be NULL */
+    /* free the memory for the node */
+    free( node);
+  }
+  pthread_mutex_unlock( &mbox->lock_free);
+
+  /* destroy sync primitives */
+  pthread_mutex_destroy( &mbox->lock_free);
+  pthread_mutex_destroy( &mbox->lock_inbox);
+  pthread_cond_destroy(  &mbox->notempty);
+
+  free(mbox);
+}
+
+void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
+{
+  /* get a free node from recepient */
+  mailbox_node_t *node = GetFree( mbox);
+
+  /* copy the message */
+  node->msg = *msg;
+
+  /* put node into inbox */
+  pthread_mutex_lock( &mbox->lock_inbox);
+  if ( mbox->list_inbox == NULL) {
+    /* list is empty */
+    mbox->list_inbox = node;
+    node->next = node; /* self-loop */
+
+    pthread_cond_signal( &mbox->notempty);
+
+  } else {
+    /* insert stream between last node=list_inbox
+       and first node=list_inbox->next */
+    node->next = mbox->list_inbox->next;
+    mbox->list_inbox->next = node;
+    mbox->list_inbox = node;
+  }
+  pthread_mutex_unlock( &mbox->lock_inbox);
+}
+
+
+void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
+{
+  mailbox_node_t *node;
+
+  /* get node from inbox */
+  pthread_mutex_lock( &mbox->lock_inbox);
+  while( mbox->list_inbox == NULL) {
+      pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
+  }
+
+  assert( mbox->list_inbox != NULL);
+
+  /* get first node (handle points to last) */
+  node = mbox->list_inbox->next;
+  if ( node == mbox->list_inbox) {
+    /* self-loop, just single node */
+    mbox->list_inbox = NULL;
+  } else {
+    mbox->list_inbox->next = node->next;
+  }
+  pthread_mutex_unlock( &mbox->lock_inbox);
+
+  /* copy the message */
+  *msg = node->msg;
+
+  /* put node into free pool */
+  PutFree( mbox, node);
+}
+
+/**
+ * @return 1 if there is an incoming msg, 0 otherwise
+ * @note: does not need to be locked as a 'missed' msg
+ *        will be eventually fetched in the next worker loop
+ */
+int LpelMailboxHasIncoming( mailbox_t *mbox)
+{
+  return ( mbox->list_inbox != NULL);
+}

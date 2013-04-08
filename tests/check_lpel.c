@@ -66,7 +66,7 @@ lpel_stream_t *PipeElement(lpel_stream_t *in, int depth)
   out = LpelStreamCreate(0);
   ch = ChannelsCreate( in, out, depth);
   t = LpelTaskCreate( wid, Relay, ch, 8192);
-  mt = LpelMonTaskCreate(LpelTaskGetId(t), NULL, LPEL_MON_TASK_TIMES | LPEL_MON_TASK_STREAMS);
+  mt = LpelMonTaskCreate(LpelTaskGetID(t), NULL, LPEL_MON_TASK_TIMES | LPEL_MON_TASK_STREAMS);
   LpelTaskMonitor(t, mt);
   LpelTaskRun(t);
 
@@ -132,19 +132,19 @@ static void testBasic(void)
   cfg.flags = 0;
 
   LpelMonInit(&cfg.mon);
-  //LpelInit(&cfg);
+  LpelInit(&cfg);
 
 
   in = LpelStreamCreate(0);
   out = PipeElement(in, cfg.num_workers*20 - 1);
 
   outtask = LpelTaskCreate( -1, Outputter, out, 8192);
-  mt = LpelMonTaskCreate( LpelTaskGetId(outtask), "outtask", LPEL_MON_TASK_TIMES);
+  mt = LpelMonTaskCreate( LpelTaskGetID(outtask), "outtask", LPEL_MON_TASK_TIMES);
   LpelTaskMonitor(outtask, mt);
   LpelTaskRun(outtask);
 
   intask = LpelTaskCreate( -1, Inputter, in, 8192);
-  mt = LpelMonTaskCreate( LpelTaskGetId(intask), "intask", LPEL_MON_TASK_TIMES);
+  mt = LpelMonTaskCreate( LpelTaskGetID(intask), "intask", LPEL_MON_TASK_TIMES);
   LpelTaskMonitor(intask, mt);
   LpelTaskRun(intask);
 

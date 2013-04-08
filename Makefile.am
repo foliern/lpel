@@ -1,6 +1,6 @@
-SUBDIRS = include . 
+SUBDIRS = include . tests
 
-lib_LTLIBRARIES = liblpel_mon.la liblpel.la
+lib_LTLIBRARIES = liblpel.la liblpel_mon.la
 
 liblpel_la_SOURCES = \
 	src/arch/atomic-pthread.h \
@@ -32,21 +32,6 @@ liblpel_la_SOURCES = \
 	src/lpelcfg.h \
 	src/lpel_main.c \
 	src/lpel_main.h \
-	src/readTileID.c \
-	src/readTileID.h \
-	src/bool.h \
-	src/memcpy.c \
-	src/memcpy.h \
-	src/memfun.c \
-	src/memfun.h \
-	src/SCC_API.c \
-	src/SCC_API.h \
-	src/scc.c \
-	src/scc.h \
-	src/sccmalloc.c \
-	src/sccmalloc.h \
-	src/distribution.c \
-	src/distribution.h \
 	src/worker.c \
 	src/worker.h \
 	src/workermsg.h
