@@ -52,6 +52,8 @@ struct lpel_task_t {
   lpel_taskfunc_t func; /** function of the task */
   void *inarg;          /** input argument  */
   void *outarg;         /** output argument  */
+
+  lut_addr_t *addr;		// own lut entry
 };
 
 

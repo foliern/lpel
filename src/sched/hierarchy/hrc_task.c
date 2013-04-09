@@ -10,6 +10,14 @@
 #include "lpel/monitor.h"
 #include "taskpriority.h"
 
+// includes for the LUT mapping
+#include "include_lut/config.h"
+#include "include_lut/RCCE_memcpy.c"
+#include "include_lut/distribution.h"
+#include "include_lut/scc.h"
+#include "include_lut/sccmalloc.h"
+#include <stdarg.h>
+
 static atomic_t taskseq = ATOMIC_INIT(0);
 
 static double (*prior_cal) (int in, int out) = priorfunc1;
@@ -43,7 +51,15 @@ lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
 	assert( size >= TASK_MINSIZE );
 
 	/* aligned to page boundary */
-	t = valloc( size );
+
+// I use specific malloc to get the LUT entry position
+//	t = valloc( size );
+
+// specific malloc
+	t=SCCMallocPtr(sizeof(lpel_task_t));
+// assign LUT entry to the task
+	t->addr= SCCPtr2Addr(t);
+
 
 	/* calc stackaddr */
 	offset = (sizeof(lpel_task_t) + TASK_STACK_ALIGN-1) & ~(TASK_STACK_ALIGN-1);

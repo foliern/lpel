@@ -47,6 +47,8 @@ static pthread_key_t masterctx_key;
 
 
 
+
+
 /**
  * Initialise worker globally
  *
@@ -104,6 +106,8 @@ void LpelWorkersInit( int size) {
 
 	/* mailbox */
 	wc->mailbox = LpelMailboxCreate();
+
+	scc_init();
 	}
 }
 

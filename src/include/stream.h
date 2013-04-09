@@ -59,6 +59,8 @@ struct lpel_stream_t {
   atomic_t n_sem;           /** counter for elements in the stream */
   atomic_t e_sem;           /** counter for empty space in the stream */
   void *usr_data;           /** arbitrary user data */
+
+  lut_addr_t *addr;			// own lut entry
 };
 
 

@@ -20,8 +20,20 @@ liblpel_la_SOURCES = \
 	src/sched/decentralised/decen_worker.h \
 	src/sched/decentralised/decen_taskqueue.c \
 	src/sched/decentralised/decen_taskqueue.h \
-	src/sched/decentralised/decen_stream.c
-
+	src/sched/decentralised/decen_stream.c \
+	src/include_lut/bool.h \
+	src/include_lut/config.c \
+	src/include_lut/config.h \
+	src/include_lut/distribution.c \
+	src/include_lut/distribution.h \
+	src/include_lut/memfun.c \
+	src/include_lut/memfun.h \
+	src/include_lut/RCCE_memcpy.c \
+	src/include_lut/scc.c \
+	src/include_lut/scc.h \
+	src/include_lut/sccmalloc.c \
+	src/include_lut/sccmalloc.h
+	
 liblpel_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include
 
 liblpel_hrc_la_SOURCES = \

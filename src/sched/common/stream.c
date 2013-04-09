@@ -54,34 +54,6 @@
 
 static atomic_t stream_seq = ATOMIC_INIT(0);
 
-/**
- * Create a stream
- *
- * Allocate and initialize memory for a stream.
- *
- * @return pointer to the created stream
- */
-lpel_stream_t *LpelStreamCreate(int size)
-{
-  assert( size >= 0);
-  if (0==size) size = STREAM_BUFFER_SIZE;
-
-  /* allocate memory for both the stream struct and the buffer area */
-  lpel_stream_t *s = (lpel_stream_t *) malloc( sizeof(lpel_stream_t) );
-
-  /* reset buffer (including buffer area) */
-  s->buffer = LpelBufferInit( size);
-
-  s->uid = fetch_and_inc( &stream_seq);
-  PRODLOCK_INIT( &s->prod_lock );
-  atomic_init( &s->n_sem, 0);
-  atomic_init( &s->e_sem, size);
-  s->is_poll = 0;
-  s->prod_sd = NULL;
-  s->cons_sd = NULL;
-  s->usr_data = NULL;
-  return s;
-}
 
 /**
  * Destroy a stream
