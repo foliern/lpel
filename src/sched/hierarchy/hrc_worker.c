@@ -22,6 +22,9 @@
 #include "mailbox.h"
 #include "lpel/monitor.h"
 
+//to initialize MPB and LUT
+#include "lpel/src/scc_comm_func.h"
+
 #define WORKER_PTR(i) (workers[(i)])
 #define MASTER_PTR	master
 
