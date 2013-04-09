@@ -15,6 +15,9 @@ liblpel_la_SOURCES = \
 	src/arch/mctx-ucontext.h \
 	src/mailbox.c \
 	src/mailbox.h \
+	src/config.h \
+	src/config.c \
+	src/RCCE_memcpy.c \
 	src/configuration.h \
 	src/buffer.h \
 	src/buffer/bounded.c \
@@ -34,7 +37,16 @@ liblpel_la_SOURCES = \
 	src/lpel_main.h \
 	src/worker.c \
 	src/worker.h \
-	src/workermsg.h
+	src/workermsg.h \
+	src/LUTincludes/bool.h \
+	src/LUTincludes/distribution.c \
+	src/LUTincludes/distribution.h \
+	src/LUTincludes/memfun.h \
+	src/LUTincludes/memfun.c \
+	src/LUTincludes/scc.h \
+	src/LUTincludes/scc.c \
+	src/LUTincludes/sccmalloc.h \
+	src/LUTincludes/sccmalloc.c \
 liblpel_la_CPPFLAGS = -I$(top_srcdir)/include
 
 liblpel_mon_la_SOURCES = \
