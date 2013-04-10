@@ -7,7 +7,7 @@
 #include "distribution.h"
 #include "scc.h"
 #include "sccmalloc.h"
-#include "../config.h"
+#include "config.h"
 #include <stdint.h>
 #include "bool.h"
 #include <stdarg.h>

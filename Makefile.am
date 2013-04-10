@@ -1,4 +1,4 @@
-SUBDIRS = include . tests
+SUBDIRS = include . tests 
 
 lib_LTLIBRARIES = liblpel.la liblpel_mon.la liblpel_hrc.la
 
@@ -41,8 +41,13 @@ liblpel_hrc_la_SOURCES = \
 	src/sched/hierarchy/taskpriority.h \
 	src/sched/hierarchy/taskpriority.c \ 
 	src/sched/hierarchy/hrc_stream.c \
-	src/scc_comm_func.c \
-        src/scc_comm_func.h
+	src/include_lut/config.c \
+	src/include_lut/distribution.c \
+	src/include_lut/memfun.c \
+	src/include_lut/RCCE_memcpy.c \
+	src/include_lut/scc.c \
+	src/include_lut/scc_comm_func.c \
+	src/include_lut/sccmalloc.c  
 
 liblpel_hrc_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include -I$(top_srcdir)/src/include_lut
 
@@ -50,7 +55,7 @@ liblpel_hrc_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include -I
 liblpel_mon_la_SOURCES = \
 	modimpl/monitoring.c \
 	modimpl/monitoring.h
-liblpel_mon_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include_lut
+liblpel_mon_la_CPPFLAGS = -I$(top_srcdir)/include
 
 
 if USE_MCTX_PCL

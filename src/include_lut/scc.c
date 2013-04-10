@@ -5,7 +5,7 @@
 
 #include "scc.h"
 #include "bool.h"
-#include "../RCCE_memcpy.c"
+#include "RCCE_memcpy.c"
 
 
 void cpy_mpb_to_mem(int node, void *dst, int size)

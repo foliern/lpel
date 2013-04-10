@@ -10,7 +10,7 @@
 #include "scc.h"
 #include "sccmalloc.h"
 #include "bool.h"
-#include "configuration.h"
+//#include "configuration.h"
 
 
 
