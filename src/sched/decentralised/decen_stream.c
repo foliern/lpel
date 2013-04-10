@@ -14,7 +14,7 @@
 #include "lpel/monitor.h"
 
 
-
+static atomic_t stream_seq = ATOMIC_INIT(0);
 
 /**
  * Create a stream

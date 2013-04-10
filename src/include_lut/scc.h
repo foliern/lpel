@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <stdint.h>
 
-#include "../config.h"
+#include "config.h"
 #include "bool.h"
 
 

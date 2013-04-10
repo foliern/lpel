@@ -6,12 +6,12 @@
 #include "scc_comm_func.h"
 
 // includes for the LUT mapping
-#include "include_lut/bool.h"
-#include "include_lut/config.h"
-#include "include_lut/RCCE_memcpy.c"
-#include "include_lut/distribution.h"
-#include "include_lut/scc.h"
-#include "include_lut/sccmalloc.h"
+#include "bool.h"
+#include "config.h"
+#include "RCCE_memcpy.c"
+#include "distribution.h"
+#include "scc.h"
+#include "sccmalloc.h"
 #include <stdarg.h>
 
 

@@ -1,127 +1,163 @@
 src/sched/hierarchy/liblpel_hrc_la-hrc_worker.lo: \
- src/sched/hierarchy/hrc_worker.c /usr/include/stdlib.h \
- /usr/include/Availability.h /usr/include/AvailabilityInternal.h \
- /usr/include/_types.h /usr/include/sys/_types.h /usr/include/sys/cdefs.h \
- /usr/include/sys/_symbol_aliasing.h \
- /usr/include/sys/_posix_availability.h /usr/include/machine/_types.h \
- /usr/include/i386/_types.h /usr/include/sys/wait.h \
- /usr/include/sys/signal.h /usr/include/sys/appleapiopts.h \
- /usr/include/machine/signal.h /usr/include/i386/signal.h \
- /usr/include/i386/_structs.h /usr/include/sys/_structs.h \
- /usr/include/machine/_structs.h /usr/include/mach/i386/_structs.h \
- /usr/include/sys/resource.h /usr/include/machine/endian.h \
- /usr/include/i386/endian.h /usr/include/sys/_endian.h \
- /usr/include/libkern/_OSByteOrder.h \
- /usr/include/libkern/i386/_OSByteOrder.h /usr/include/alloca.h \
- /usr/include/machine/types.h /usr/include/i386/types.h \
- /usr/include/stdio.h /usr/include/secure/_stdio.h \
- /usr/include/secure/_common.h /usr/include/string.h \
- /usr/include/strings.h /usr/include/secure/_string.h \
- /opt/local/lib/gcc44/gcc/x86_64-apple-darwin11/4.4.6/include/stdarg.h \
- /usr/include/assert.h /usr/include/errno.h /usr/include/sys/errno.h \
- /usr/include/pthread.h /usr/include/pthread_impl.h /usr/include/sched.h \
- /usr/include/time.h /usr/include/_structs.h src/include/arch/mctx.h \
- src/include/arch/mctx-pcl.h /usr/local//include/pcl.h \
- src/include/arch/atomic.h src/include/arch/atomic-builtin.h \
- src/sched/hierarchy/hrc_worker.h include/lpel.h src/include/worker.h \
- src/include/arch/mctx.h src/include/task.h src/include/arch/atomic.h \
+ src/sched/hierarchy/hrc_worker.c \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdlib.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/features.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sys/cdefs.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/wordsize.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/gnu/stubs.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/gnu/stubs-32.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/lib/gcc/i586-unknown-linux-gnu/4.6.1/include/stddef.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/waitflags.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/waitstatus.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/endian.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/endian.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/byteswap.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/xlocale.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sys/types.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/types.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/typesizes.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/time.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sys/select.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/select.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/sigset.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/time.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sys/sysmacros.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/pthreadtypes.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/alloca.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdio.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/libio.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/_G_config.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/wchar.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/lib/gcc/i586-unknown-linux-gnu/4.6.1/include/stdarg.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/stdio_lim.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/sys_errlist.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/stdio.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/string.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/string.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/string2.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/assert.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/errno.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/errno.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/linux/errno.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/asm/errno.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/asm-generic/errno.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/asm-generic/errno-base.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/pthread.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sched.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/sched.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/setjmp.h \
+ src/include/arch/mctx.h src/include/arch/mctx-pcl.h \
+ /shared/foliern/snetInstall//include/pcl.h src/include/arch/atomic.h \
+ src/include/arch/atomic-builtin.h src/sched/hierarchy/hrc_worker.h \
+ include/lpel.h src/include/worker.h src/include/arch/mctx.h \
+ src/include/task.h src/include/arch/atomic.h src/include_lut/sccmalloc.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/lib/gcc/i586-unknown-linux-gnu/4.6.1/include/stdint.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdint.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/wchar.h \
  src/include/mailbox.h src/include/workermsg.h \
  src/sched/hierarchy/hrc_task.h include/hrc_lpel.h src/include/task.h \
  src/include/mailbox.h src/include/taskqueue.h src/include/lpel_main.h \
  src/include/lpelcfg.h src/include/stream.h src/include/buffer.h \
- src/include/arch/sysdep.h include/lpel/monitor.h
+ src/include/arch/sysdep.h include/lpel/monitor.h \
+ src/include_lut/scc_comm_func.h
 
-/usr/include/stdlib.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdlib.h:
 
-/usr/include/Availability.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/features.h:
 
-/usr/include/AvailabilityInternal.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sys/cdefs.h:
 
-/usr/include/_types.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/wordsize.h:
 
-/usr/include/sys/_types.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/gnu/stubs.h:
 
-/usr/include/sys/cdefs.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/gnu/stubs-32.h:
 
-/usr/include/sys/_symbol_aliasing.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/lib/gcc/i586-unknown-linux-gnu/4.6.1/include/stddef.h:
 
-/usr/include/sys/_posix_availability.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/waitflags.h:
 
-/usr/include/machine/_types.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/waitstatus.h:
 
-/usr/include/i386/_types.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/endian.h:
 
-/usr/include/sys/wait.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/endian.h:
 
-/usr/include/sys/signal.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/byteswap.h:
 
-/usr/include/sys/appleapiopts.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/xlocale.h:
 
-/usr/include/machine/signal.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sys/types.h:
 
-/usr/include/i386/signal.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/types.h:
 
-/usr/include/i386/_structs.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/typesizes.h:
 
-/usr/include/sys/_structs.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/time.h:
 
-/usr/include/machine/_structs.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sys/select.h:
 
-/usr/include/mach/i386/_structs.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/select.h:
 
-/usr/include/sys/resource.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/sigset.h:
 
-/usr/include/machine/endian.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/time.h:
 
-/usr/include/i386/endian.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sys/sysmacros.h:
 
-/usr/include/sys/_endian.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/pthreadtypes.h:
 
-/usr/include/libkern/_OSByteOrder.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/alloca.h:
 
-/usr/include/libkern/i386/_OSByteOrder.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdio.h:
 
-/usr/include/alloca.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/libio.h:
 
-/usr/include/machine/types.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/_G_config.h:
 
-/usr/include/i386/types.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/wchar.h:
 
-/usr/include/stdio.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/lib/gcc/i586-unknown-linux-gnu/4.6.1/include/stdarg.h:
 
-/usr/include/secure/_stdio.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/stdio_lim.h:
 
-/usr/include/secure/_common.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/sys_errlist.h:
 
-/usr/include/string.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/stdio.h:
 
-/usr/include/strings.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/string.h:
 
-/usr/include/secure/_string.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/string.h:
 
-/opt/local/lib/gcc44/gcc/x86_64-apple-darwin11/4.4.6/include/stdarg.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/string2.h:
 
-/usr/include/assert.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/assert.h:
 
-/usr/include/errno.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/errno.h:
 
-/usr/include/sys/errno.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/errno.h:
 
-/usr/include/pthread.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/linux/errno.h:
 
-/usr/include/pthread_impl.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/asm/errno.h:
 
-/usr/include/sched.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/asm-generic/errno.h:
 
-/usr/include/time.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/asm-generic/errno-base.h:
 
-/usr/include/_structs.h:
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/pthread.h:
+
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sched.h:
+
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/sched.h:
+
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/setjmp.h:
 
 src/include/arch/mctx.h:
 
 src/include/arch/mctx-pcl.h:
 
-/usr/local//include/pcl.h:
+/shared/foliern/snetInstall//include/pcl.h:
 
 src/include/arch/atomic.h:
 
@@ -138,6 +174,14 @@ src/include/arch/mctx.h:
 src/include/task.h:
 
 src/include/arch/atomic.h:
+
+src/include_lut/sccmalloc.h:
+
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/lib/gcc/i586-unknown-linux-gnu/4.6.1/include/stdint.h:
+
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdint.h:
+
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/wchar.h:
 
 src/include/mailbox.h:
 
@@ -164,3 +208,5 @@ src/include/buffer.h:
 src/include/arch/sysdep.h:
 
 include/lpel/monitor.h:
+
+src/include_lut/scc_comm_func.h:

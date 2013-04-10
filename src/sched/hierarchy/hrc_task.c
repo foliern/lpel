@@ -11,11 +11,11 @@
 #include "taskpriority.h"
 
 // includes for the LUT mapping
-#include "include_lut/config.h"
-#include "include_lut/RCCE_memcpy.c"
-#include "include_lut/distribution.h"
-#include "include_lut/scc.h"
-#include "include_lut/sccmalloc.h"
+#include "config.h"
+#include "RCCE_memcpy.c"
+#include "distribution.h"
+#include "scc.h"
+#include "sccmalloc.h"
 #include <stdarg.h>
 
 static atomic_t taskseq = ATOMIC_INIT(0);
@@ -58,7 +58,7 @@ lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
 // specific malloc
 	t=SCCMallocPtr(sizeof(lpel_task_t));
 // assign LUT entry to the task
-	t->addr= SCCPtr2Addr(t);
+	*t->addr= SCCPtr2Addr(t);
 
 
 	/* calc stackaddr */

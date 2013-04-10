@@ -20,21 +20,9 @@ liblpel_la_SOURCES = \
 	src/sched/decentralised/decen_worker.h \
 	src/sched/decentralised/decen_taskqueue.c \
 	src/sched/decentralised/decen_taskqueue.h \
-	src/sched/decentralised/decen_stream.c \
-	src/include_lut/bool.h \
-	src/include_lut/config.c \
-	src/include_lut/config.h \
-	src/include_lut/distribution.c \
-	src/include_lut/distribution.h \
-	src/include_lut/memfun.c \
-	src/include_lut/memfun.h \
-	src/include_lut/RCCE_memcpy.c \
-	src/include_lut/scc.c \
-	src/include_lut/scc.h \
-	src/include_lut/sccmalloc.c \
-	src/include_lut/sccmalloc.h
+	src/sched/decentralised/decen_stream.c 
 	
-liblpel_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include
+liblpel_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include -I$(top_srcdir)/src/include_lut
 
 liblpel_hrc_la_SOURCES = \
 	src/mailbox.c \
@@ -52,15 +40,17 @@ liblpel_hrc_la_SOURCES = \
 	src/sched/hierarchy/hrc_taskqueue.c \
 	src/sched/hierarchy/taskpriority.h \
 	src/sched/hierarchy/taskpriority.c \ 
-	src/sched/hierarchy/hrc_stream.c
+	src/sched/hierarchy/hrc_stream.c \
+	src/scc_comm_func.c \
+        src/scc_comm_func.h
 
-liblpel_hrc_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include
+liblpel_hrc_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include -I$(top_srcdir)/src/include_lut
 
 
 liblpel_mon_la_SOURCES = \
 	modimpl/monitoring.c \
 	modimpl/monitoring.h
-liblpel_mon_la_CPPFLAGS = -I$(top_srcdir)/include
+liblpel_mon_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include_lut
 
 
 if USE_MCTX_PCL

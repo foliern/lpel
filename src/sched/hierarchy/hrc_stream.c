@@ -15,14 +15,15 @@
 #include "lpel/monitor.h"
 
 // includes for the LUT mapping
-#include "include_lut/config.h"
-#include "include_lut/RCCE_memcpy.c"
-#include "include_lut/distribution.h"
-#include "include_lut/scc.h"
-#include "include_lut/sccmalloc.h"
+#include "config.h"
+#include "RCCE_memcpy.c"
+#include "distribution.h"
+#include "scc.h"
+#include "sccmalloc.h"
 #include <stdarg.h>
 
 
+static atomic_t stream_seq = ATOMIC_INIT(0);
 
 /**
  * Create a stream
@@ -43,7 +44,7 @@ lpel_stream_t *LpelStreamCreate(int size)
   // specific malloc
    lpel_stream_t *s=(lpel_stream_t *) SCCMallocPtr(sizeof(lpel_stream_t));
   // assign LUT entry to the task
-  	s->addr = SCCPtr2Addr(s);
+  	*s->addr = SCCPtr2Addr(s);
 
 
 
