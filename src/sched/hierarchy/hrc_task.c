@@ -58,8 +58,10 @@ lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
 // specific malloc
 	t=SCCMallocPtr(sizeof(lpel_task_t));
 // assign LUT entry to the task
-	*t->addr= SCCPtr2Addr(t);
-
+	lut_addr_t *temp_addr=(lut_addr_t*)malloc(sizeof(lut_addr_t));
+        *temp_addr=SCCPtr2Addr(t);
+	t->addr= temp_addr;
+	free(temp_addr);
 
 	/* calc stackaddr */
 	offset = (sizeof(lpel_task_t) + TASK_STACK_ALIGN-1) & ~(TASK_STACK_ALIGN-1);
