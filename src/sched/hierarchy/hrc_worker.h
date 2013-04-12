@@ -10,7 +10,7 @@
 #include "mailbox.h"
 #include "taskqueue.h"
 
-//#define _USE_DBG__
+#define _USE_DBG__
 
 #ifdef _USE_DBG__
 #define PRT_DBG printf

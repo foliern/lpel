@@ -25,6 +25,8 @@ struct mailbox_t {
 /* Free node pool management functions                                        */
 /******************************************************************************/
 
+//takes a node either from the list_free list or creates a new one
+
 static mailbox_node_t *GetFree( mailbox_t *mbox)
 {
   mailbox_node_t *node;
@@ -42,6 +44,8 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
 
   return node;
 }
+
+// add node to to list_free list at the first entry
 
 static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 {
@@ -113,9 +117,10 @@ void LpelMailboxDestroy( mailbox_t *mbox)
   free(mbox);
 }
 
-void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
+void LpelMailboxPush( mailbox_t *mbox, workermsg_t *msg)
 {
-  /* get a free node from recepient */
+  /* get a free node from recepient
+   * either from the list_free list or a new one gets created */
   mailbox_node_t *node = GetFree( mbox);
 
   /* copy the message */
@@ -141,7 +146,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 }
 
 
-void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
+void LpelMailboxPop( mailbox_t *mbox, workermsg_t *msg)
 {
   mailbox_node_t *node;
 
@@ -151,6 +156,9 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
       pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
   }
 
+  /*writes a message to stderror in case of expression == zero =>
+   *error in case of mbox->list_inbox is empty
+   */
   assert( mbox->list_inbox != NULL);
 
   /* get first node (handle points to last) */
@@ -168,6 +176,14 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
 
   /* put node into free pool */
   PutFree( mbox, node);
+}
+
+void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location){
+
+}
+
+void LpelMailboxSend_scc(int node_location, workermsg_t *msg){
+
 }
 
 /**

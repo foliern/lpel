@@ -14,6 +14,7 @@
 /******************************************************************************/
 #define LPEL_MAP_OTHERS		-1
 #define LPEL_MAP_MASTER		0
+#define LPEL_MAP_WORKER		0
 
 /******************************************************************************/
 /*  RETURN VALUES OF LPEL FUNCTIONS                                           */

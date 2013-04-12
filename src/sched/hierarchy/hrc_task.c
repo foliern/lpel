@@ -23,6 +23,8 @@ static atomic_t taskseq = ATOMIC_INIT(0);
 static double (*prior_cal) (int in, int out) = priorfunc1;
 
 
+
+
 int countRec(stream_elem_t *list);
 
 /**
