@@ -31,20 +31,20 @@
 int readTileID( void){
 
 	typedef volatile unsigned char* t_vcharp;
-	int PAGE_SIZE, NCMDeviceFD;
+	int PAGE_SIZE_var, NCMDeviceFD;
 	// NCMDeviceFD is the file descriptor for non-cacheable memory (e.g. config regs).
 	unsigned int result, tileID, coreID, x_val, y_val, coreID_mask=0x00000007, x_mask=0x00000078, y_mask=0x00000780;
 	t_vcharp MappedAddr;
 	unsigned int alignedAddr, pageOffset, ConfigAddr;
-	ConfigAddr = CRB_OWN+MYTILEID; PAGE_SIZE = getpagesize();
+	ConfigAddr = CRB_OWN+MYTILEID; PAGE_SIZE_var = getpagesize();
 	if ((NCMDeviceFD=open("/dev/rckncm", O_RDWR|O_SYNC))<0) { perror("open"); exit(-1);
 	}
-	alignedAddr = ConfigAddr & (~(PAGE_SIZE-1)); pageOffset = ConfigAddr - alignedAddr;
-	MappedAddr = (t_vcharp) mmap(NULL, PAGE_SIZE, PROT_WRITE|PROT_READ, MAP_SHARED, NCMDeviceFD, alignedAddr);
+	alignedAddr = ConfigAddr & (~(PAGE_SIZE_var-1)); pageOffset = ConfigAddr - alignedAddr;
+	MappedAddr = (t_vcharp) mmap(NULL, PAGE_SIZE_var, PROT_WRITE|PROT_READ, MAP_SHARED, NCMDeviceFD, alignedAddr);
 				if (MappedAddr == MAP_FAILED) {
 				   perror("mmap");exit(-1);
 	}
-	result = *(unsigned int*)(MappedAddr+pageOffset); munmap((void*)MappedAddr, PAGE_SIZE);
+	result = *(unsigned int*)(MappedAddr+pageOffset); munmap((void*)MappedAddr, PAGE_SIZE_var);
 	PRT_DBG("result = %x %d \n",result, result);
 				coreID = result & coreID_mask;
 				x_val  = (result & x_mask) >> 3;

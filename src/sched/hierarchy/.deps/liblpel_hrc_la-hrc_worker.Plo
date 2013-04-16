@@ -48,9 +48,10 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_worker.lo: \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/setjmp.h \
  src/include/arch/mctx.h src/include/arch/mctx-pcl.h \
  /shared/foliern/snetInstall//include/pcl.h src/include/arch/atomic.h \
- src/include/arch/atomic-builtin.h src/sched/hierarchy/hrc_worker.h \
- include/lpel.h src/include/worker.h src/include/arch/mctx.h \
- src/include/task.h src/include/arch/atomic.h src/include_lut/sccmalloc.h \
+ src/include/arch/atomic-builtin.h src/include_lut/bool.h \
+ src/sched/hierarchy/hrc_worker.h include/lpel.h src/include/worker.h \
+ src/include/arch/mctx.h src/include/task.h src/include/arch/atomic.h \
+ src/include_lut/sccmalloc.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/lib/gcc/i586-unknown-linux-gnu/4.6.1/include/stdint.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdint.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/wchar.h \
@@ -59,7 +60,8 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_worker.lo: \
  src/include/mailbox.h src/include/taskqueue.h src/include/lpel_main.h \
  src/include/lpelcfg.h src/include/stream.h src/include/buffer.h \
  src/include/arch/sysdep.h include/lpel/monitor.h \
- src/include/scc_comm_func.h
+ src/include_lut/readTileID.h src/include/scc_comm_func.h \
+ src/include_lut/mpb_comm.h
 
 /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdlib.h:
 
@@ -163,6 +165,8 @@ src/include/arch/atomic.h:
 
 src/include/arch/atomic-builtin.h:
 
+src/include_lut/bool.h:
+
 src/sched/hierarchy/hrc_worker.h:
 
 include/lpel.h:
@@ -209,4 +213,8 @@ src/include/arch/sysdep.h:
 
 include/lpel/monitor.h:
 
+src/include_lut/readTileID.h:
+
 src/include/scc_comm_func.h:
+
+src/include_lut/mpb_comm.h:

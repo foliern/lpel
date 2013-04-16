@@ -47,7 +47,9 @@ liblpel_hrc_la_SOURCES = \
 	src/include_lut/RCCE_memcpy.c \
 	src/include_lut/scc.c \
 	src/include_lut/scc_comm_func.c \
-	src/include_lut/sccmalloc.c  
+	src/include_lut/sccmalloc.c \
+	src/include_lut/readTileID.c \
+	src/include_lut/mpb_comm.c 
 
 liblpel_hrc_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include -I$(top_srcdir)/src/include_lut
 

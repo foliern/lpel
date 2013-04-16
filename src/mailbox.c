@@ -117,7 +117,7 @@ void LpelMailboxDestroy( mailbox_t *mbox)
   free(mbox);
 }
 
-void LpelMailboxPush( mailbox_t *mbox, workermsg_t *msg)
+void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 {
   /* get a free node from recepient
    * either from the list_free list or a new one gets created */
@@ -146,7 +146,7 @@ void LpelMailboxPush( mailbox_t *mbox, workermsg_t *msg)
 }
 
 
-void LpelMailboxPop( mailbox_t *mbox, workermsg_t *msg)
+void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
 {
   mailbox_node_t *node;
 
@@ -178,13 +178,6 @@ void LpelMailboxPop( mailbox_t *mbox, workermsg_t *msg)
   PutFree( mbox, node);
 }
 
-void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location){
-
-}
-
-void LpelMailboxSend_scc(int node_location, workermsg_t *msg){
-
-}
 
 /**
  * @return 1 if there is an incoming msg, 0 otherwise

@@ -22,6 +22,7 @@
 #include "stream.h"
 #include "mailbox.h"
 #include "lpel/monitor.h"
+#include "readTileID.h"
 
 //to initialize MPB and LUT
 #include "scc_comm_func.h"
@@ -137,12 +138,12 @@ void LpelWorkersInit( int size) {
 		// NOT SURE IF NEEDED OR NOT
 #ifdef USE_LOGGING
 		if (MON_CB(worker_create)) {
-			wc->mon = MON_CB(worker_create)(wc->wid);
+			worker->mon = MON_CB(worker_create)(worker->wid);
 		} else {
-			wc->mon = NULL;
+			worker->mon = NULL;
 		}
 #else
-			wc->mon = NULL;
+			worker->mon = NULL;
 #endif
 
 		/*mailbox*/
@@ -203,7 +204,7 @@ void LpelWorkersCleanup( void) {
 
 		workermsg_t msg;
 		while (LpelMailboxHasIncoming(MASTER_PTR->mailbox)) {
-			LpelMailboxPop(MASTER_PTR->mailbox, &msg);
+			LpelMailboxRecv(MASTER_PTR->mailbox, &msg);
 			assert(msg.type == WORKER_MSG_REQUEST);
 		}
 
@@ -244,7 +245,7 @@ void LpelWorkersSpawn( void) {
 void LpelWorkersTerminate(void) {
 	workermsg_t msg;
 	msg.type = WORKER_MSG_TERMINATE;
-	LpelMailboxPush(MASTER_PTR->mailbox, &msg);
+	LpelMailboxSend(MASTER_PTR->mailbox, &msg);
 
 	LpelWorkerBroadcast(&msg);
 }
@@ -271,13 +272,13 @@ void LpelWorkerRunTask( lpel_task_t *t) {
 	 */
 	if (t->worker_context != NULL) {	// wrapper
 		//NOT CLEAR WHAT HAPPENS HERE
-		LpelMailboxPush(t->worker_context->mailbox, &msg);
+		LpelMailboxSend(t->worker_context->mailbox, &msg);
 	}
 	else {
 		/* This function is exectued only by LpelTaskStart which will be executed only by the Master, which creates the task therefore
 		 * the task can directly be pushed into the Mailbox instead of sending it over the MPB to the Master
 		 */
-		LpelMailboxPush(MASTER_PTR->mailbox, &msg);
+		LpelMailboxSend(MASTER_PTR->mailbox, &msg);
 		//MPBmsgSend(MASTER,&msg);
 	}
 }
@@ -298,7 +299,7 @@ static void requestTask( workerctx_t *wc) {
 	msg.type = WORKER_MSG_REQUEST;
 	msg.body.from_worker = wc->wid;
 	//send over MPB because this function is called by workers
-	//LpelMailboxPush(MASTER_PTR->mailbox, &msg);
+	//LpelMailboxSend(MASTER_PTR->mailbox, &msg);
 	LpelMailboxSend_scc(MASTER, &msg);
 
 #ifdef USE_LOGGING
@@ -315,8 +316,8 @@ static void sendTask( int wid, lpel_task_t *t) {
 	msg.type = WORKER_MSG_ASSIGN;
 	msg.body.task = t;
 	//send Task to the worker
-	//LpelMailboxPush(WORKER_PTR(wid)->mailbox, &msg);
-	LpelMailboxSend_scc(wid,&msg)
+	//LpelMailboxSend(WORKER_PTR(wid)->mailbox, &msg);
+	LpelMailboxSend_scc(wid,&msg);
 }
 
 
@@ -326,7 +327,7 @@ static void sendWakeup( mailbox_t *mb, lpel_task_t *t)
 	workermsg_t msg;
 	msg.type = WORKER_MSG_WAKEUP;
 	msg.body.task = t;
-	LpelMailboxPush(mb, &msg);
+	LpelMailboxSend(mb, &msg);
 }
 
 /*******************************************************************************
@@ -380,7 +381,7 @@ static void MasterLoop( void)
 		workermsg_t msg;
 
 		LpelMailboxRecv_scc(MASTER_PTR->mailbox,MASTER);
-		LpelMailboxPop(MASTER_PTR->mailbox, &msg);
+		LpelMailboxRecv(MASTER_PTR->mailbox, &msg);
 		lpel_task_t *t;
 		int wid;
 		switch( msg.type) {
@@ -425,7 +426,7 @@ static void MasterLoop( void)
 			t = msg.body.task;
 			if (t->state != TASK_RETURNED) {		// task has not been returned yet
 				PRT_DBG("master: put message back\n");
-				LpelMailboxPush(MASTER_PTR->mailbox, &msg);		//task is not blocked yet (the other worker is a bit slow, put back to the mailbox for processing later
+				LpelMailboxSend(MASTER_PTR->mailbox, &msg);		//task is not blocked yet (the other worker is a bit slow, put back to the mailbox for processing later
 				break;
 			}
 			PRT_DBG("master: unblock task %d\n", t->uid);
@@ -521,7 +522,7 @@ static void WrapperLoop( workerctx_t *wp)
 			mctx_switch(&wp->mctx, &t->mctx);
 		} else {
 			/* no ready tasks */
-			LpelMailboxPop(wp->mailbox, &msg);
+			LpelMailboxRecv(wp->mailbox, &msg);
 			switch(msg.type) {
 			case WORKER_MSG_ASSIGN:
 				t = msg.body.task;
@@ -647,7 +648,7 @@ static void WorkerLoop( workerctx_t *wc)
   workermsg_t msg;
   do {
   		LpelMailboxRecv_scc(MASTER_PTR->mailbox,MASTER);
-  		LpelMailboxPop(wc->mailbox, &msg);
+  		LpelMailboxRecv(wc->mailbox, &msg);
   		lpel_task_t *t;
 
   	  switch( msg.type) {

@@ -56,7 +56,3 @@ void MPBmsgRecv( int recv, workermsg_t *msg)
 
 }
 
-int LpelMailboxHasIncoming( mailbox_t *mbox)
-{
-
-}
