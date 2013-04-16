@@ -20,7 +20,6 @@
 #include "sccmalloc.h"
 #include <stdarg.h>
 
-define MASTER 0
 
 static atomic_t taskseq = ATOMIC_INIT(0);
 

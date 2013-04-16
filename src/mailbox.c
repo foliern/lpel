@@ -151,9 +151,9 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   mailbox_node_t *node;
 
   /* get node from inbox */
-  pthread_mutex_lock( &mbox->lock_inbox);
+  //pthread_mutex_lock( &mbox->lock_inbox);
   while( mbox->list_inbox == NULL) {
-      pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
+    //  pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
   }
 
   /*writes a message to stderror in case of expression == zero =>
@@ -169,7 +169,7 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   } else {
     mbox->list_inbox->next = node->next;
   }
-  pthread_mutex_unlock( &mbox->lock_inbox);
+  //pthread_mutex_unlock( &mbox->lock_inbox);
 
   /* copy the message */
   *msg = node->msg;

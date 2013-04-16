@@ -53,9 +53,9 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_task.lo: \
  src/include/lpelcfg.h src/sched/hierarchy/hrc_worker.h \
  src/include/worker.h src/include/mailbox.h src/include/workermsg.h \
  src/include/mailbox.h src/include/taskqueue.h include/lpel/monitor.h \
- src/sched/hierarchy/taskpriority.h src/include_lut/config.h \
- src/include_lut/RCCE_memcpy.c src/include_lut/distribution.h \
- src/include_lut/scc.h \
+ src/sched/hierarchy/taskpriority.h src/include_lut/readTileID.h \
+ src/include_lut/config.h src/include_lut/RCCE_memcpy.c \
+ src/include_lut/distribution.h src/include_lut/scc.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/unistd.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/posix_opt.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/environments.h \
@@ -198,6 +198,8 @@ src/include/taskqueue.h:
 include/lpel/monitor.h:
 
 src/sched/hierarchy/taskpriority.h:
+
+src/include_lut/readTileID.h:
 
 src/include_lut/config.h:
 
