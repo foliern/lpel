@@ -9,6 +9,8 @@
 #include "hrc_worker.h"
 #include "lpel/monitor.h"
 #include "taskpriority.h"
+#include "hrc_worker.h"
+#include "readTileID.h"
 
 // includes for the LUT mapping
 #include "config.h"
@@ -18,6 +20,8 @@
 #include "sccmalloc.h"
 #include <stdarg.h>
 
+define MASTER 0
+
 static atomic_t taskseq = ATOMIC_INIT(0);
 
 static double (*prior_cal) (int in, int out) = priorfunc1;
@@ -26,6 +30,22 @@ static double (*prior_cal) (int in, int out) = priorfunc1;
 
 
 int countRec(stream_elem_t *list);
+
+lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
+		void *inarg, int size)
+{
+
+	lpel_task_t *t=NULL;
+
+		if (readTileID()==MASTER){
+			// node is MASTER NODE
+			t = LpelTaskCreate(map, func, inarg, size);
+		}
+	return t;
+
+}
+
+
 
 /**
  * Create a task.
@@ -40,7 +60,7 @@ int countRec(stream_elem_t *list);
  * @return the task handle of the created task (pointer to TCB)
  *
  */
-lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
+lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 		void *inarg, int size)
 {
 	lpel_task_t *t;
@@ -63,6 +83,12 @@ lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
 	lut_addr_t *temp_addr=(lut_addr_t*)malloc(sizeof(lut_addr_t));
         *temp_addr=SCCPtr2Addr(t);
 	t->addr= temp_addr;
+	//just some debugging print outs
+		PRT_DBG("NEW TASK INFORMATION:\n");
+		PRT_DBG("LUT node: %d\n",temp_addr->node);
+		PRT_DBG("LUT Nr.:  %c\n",temp_addr->lut);
+		PRT_DBG("LUT offset: %u\n",temp_addr->offset);
+
 	free(temp_addr);
 
 	/* calc stackaddr */
@@ -105,6 +131,7 @@ lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
 
 	return t;
 }
+
 
 
 

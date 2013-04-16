@@ -18,6 +18,8 @@
 #define PRT_DBG	//
 #endif
 
+#define MASTER 0
+#define WORKERS 4
 
 #define  WORKER_MSG_TERMINATE 	1
 #define  WORKER_MSG_WAKEUP			2		// send to both master and wrapper

@@ -13,6 +13,7 @@
 
 #include "stream.h"
 #include "lpel/monitor.h"
+#include "hrc_worker.h"
 
 // includes for the LUT mapping
 #include "config.h"

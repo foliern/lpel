@@ -39,8 +39,7 @@ int node_ID;
 #define WORKER_PTR worker
 
 #define MASTER_PTR	master
-#define MASTER 0
-#define WORKERS 4
+
 #define RoodNode(node_ID) (node_ID==MASTER ? true : false)
 
 static void *WorkerThread( void *arg);
