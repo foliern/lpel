@@ -45,14 +45,11 @@ void MPBCommunicationDestroy(void)
 
 }
 
-void MPBmsgSend( int dest, workermsg_t *msg)
-{
+void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location){
 
 }
 
-
-void MPBmsgRecv( int recv, workermsg_t *msg)
-{
+void LpelMailboxSend_scc(int node_location, workermsg_t *msg){
 
 }
 
