@@ -381,6 +381,7 @@ static void MasterLoop( void)
 
 		LpelMailboxRecv_scc(MASTER_PTR->mailbox,MASTER);
 		LpelMailboxRecv(MASTER_PTR->mailbox, &msg);
+		PRT_DBG("MSG received, handle it!\n");
 		lpel_task_t *t;
 		int wid;
 		switch( msg.type) {

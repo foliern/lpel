@@ -77,30 +77,18 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 // I use specific malloc to get the LUT entry position
 //	t = valloc( size );
 
-// specific malloc
+	// specific malloc
 	t=SCCMallocPtr(sizeof(lpel_task_t));
-// assign LUT entry to the task
-	 t->addr=SCCMallocPtr(sizeof(lut_addr_t));
-        
-	/*lut_addr_t a;
-	lpel_task_t *b=malloc(sizeof(lpel_task_t));
-	b->addr = &a;
-	*(b->addr)=SCCPtr2Addr(t);
-	*/
-
+	// specific malloc for addr pointer 
+	t->addr=SCCMallocPtr(sizeof(lut_addr_t));
+	// assign LUT entry to the task
 	*(t->addr)=SCCPtr2Addr(t);
-	//*(t->addr) = *temp_addr;/*
-	/*t->addr->lut= temp_addr->lut;
-	t->addr->node= &(temp_addr->node);
-	t->addr->offset=temp_addr->offset;*/
-	//just some debugging print outs
-		PRT_DBG("NEW TASK INFORMATION INSIDE CREATE:\n");
+	
+/*		PRT_DBG("NEW TASK INFORMATION INSIDE CREATE:\n");
 		PRT_DBG("LUT node: %d\n",t->addr->node);
 		PRT_DBG("LUT Nr.:  %d\n",t->addr->lut);
 		PRT_DBG("LUT offset: %u\n",t->addr->offset);
-
-	//free(temp_addr);
-
+*/
 	/* calc stackaddr */
 	offset = (sizeof(lpel_task_t) + TASK_STACK_ALIGN-1) & ~(TASK_STACK_ALIGN-1);
 	stackaddr = (char *) t + offset;

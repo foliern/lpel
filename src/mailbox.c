@@ -99,7 +99,7 @@ void LpelMailboxDestroy( mailbox_t *mbox)
   #endif
 
   /* free all free nodes */
-  pthread_mutex_lock( &mbox->lock_free);
+  //pthread_mutex_lock( &mbox->lock_free);
   while (mbox->list_free != NULL) {
     /* pop free node off */
     node = mbox->list_free;
@@ -107,12 +107,12 @@ void LpelMailboxDestroy( mailbox_t *mbox)
     /* free the memory for the node */
     free( node);
   }
-  pthread_mutex_unlock( &mbox->lock_free);
+  //pthread_mutex_unlock( &mbox->lock_free);
 
   /* destroy sync primitives */
-  pthread_mutex_destroy( &mbox->lock_free);
-  pthread_mutex_destroy( &mbox->lock_inbox);
-  pthread_cond_destroy(  &mbox->notempty);
+  //pthread_mutex_destroy( &mbox->lock_free);
+  //pthread_mutex_destroy( &mbox->lock_inbox);
+  //pthread_cond_destroy(  &mbox->notempty);
 
   free(mbox);
 }
@@ -151,9 +151,9 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   mailbox_node_t *node;
 
   /* get node from inbox */
-  //pthread_mutex_lock( &mbox->lock_inbox);
+  pthread_mutex_lock( &mbox->lock_inbox);
   while( mbox->list_inbox == NULL) {
-    //  pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
+      pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
   }
 
   /*writes a message to stderror in case of expression == zero =>
@@ -169,7 +169,7 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   } else {
     mbox->list_inbox->next = node->next;
   }
-  //pthread_mutex_unlock( &mbox->lock_inbox);
+  pthread_mutex_unlock( &mbox->lock_inbox);
 
   /* copy the message */
   *msg = node->msg;

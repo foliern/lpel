@@ -52,8 +52,6 @@ lut_addr_t SCCPtr2Addr(void *p)
   } else {
     printf("Invalid pointer\n");
   }
-	printf("DATA INSIDE SCCPtr2Addr");
-	printf("addr->node: %d addr->lut: %d addr->offset %u\n",node_location, lut, offset);
 
   lut_addr_t result = {node_location, lut, offset};
   return result;
