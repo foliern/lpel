@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include "mailbox.h"
-
+#include "mpb_comm.h"
 
 /* mailbox structures */
 

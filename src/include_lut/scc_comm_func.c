@@ -94,9 +94,11 @@ void scc_init(){
 
    for (i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
       for (lut = 0; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
-        printf("Copy to %i  node's LUT entry Nr.: %i / %x from (node_location+i*num_nodes)= %i node's LUT entry Nr.: %i / %x.  Condition: num_pages: %i < max_pages: %i\n",
+/*        printf("Copy to %i  node's LUT entry Nr.: %i / %x from (node_location+i*num_nodes)= %i node's LUT entry Nr.: %i / %x.  Condition: num_pages: %i < max_pages: %i\n",
                   node_location, LINUX_PRIV_PAGES + num_pages,LINUX_PRIV_PAGES+num_pages, node_location + i * num_nodes,  lut, lut, num_pages, max_pages);
-  	LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node_location + i * num_nodes, lut);
+*/ 
+
+ 	LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node_location + i * num_nodes, lut);
     }
     }
 

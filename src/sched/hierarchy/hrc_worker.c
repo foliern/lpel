@@ -646,7 +646,7 @@ static void WorkerLoop( workerctx_t *wc)
 
   workermsg_t msg;
   do {
-  		LpelMailboxRecv_scc(MASTER_PTR->mailbox,MASTER);
+  		LpelMailboxRecv_scc(WORKER_PTR->mailbox,wc->wid);
   		LpelMailboxRecv(wc->mailbox, &msg);
   		lpel_task_t *t;
 

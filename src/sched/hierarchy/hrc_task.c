@@ -26,7 +26,8 @@ static atomic_t taskseq = ATOMIC_INIT(0);
 static double (*prior_cal) (int in, int out) = priorfunc1;
 
 
-
+lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
+                void *inarg, int size);
 
 int countRec(stream_elem_t *list);
 
@@ -38,7 +39,7 @@ lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
 
 		if (readTileID()==MASTER){
 			// node is MASTER NODE
-			t = LpelTaskCreate(map, func, inarg, size);
+			t = LpelMasterTaskCreate(map, func, inarg, size);
 		}
 	return t;
 
@@ -79,16 +80,26 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 // specific malloc
 	t=SCCMallocPtr(sizeof(lpel_task_t));
 // assign LUT entry to the task
-	lut_addr_t *temp_addr=(lut_addr_t*)malloc(sizeof(lut_addr_t));
-        *temp_addr=SCCPtr2Addr(t);
-	t->addr= temp_addr;
-	//just some debugging print outs
-		PRT_DBG("NEW TASK INFORMATION:\n");
-		PRT_DBG("LUT node: %d\n",temp_addr->node);
-		PRT_DBG("LUT Nr.:  %c\n",temp_addr->lut);
-		PRT_DBG("LUT offset: %u\n",temp_addr->offset);
+	 t->addr=SCCMallocPtr(sizeof(lut_addr_t));
+        
+	/*lut_addr_t a;
+	lpel_task_t *b=malloc(sizeof(lpel_task_t));
+	b->addr = &a;
+	*(b->addr)=SCCPtr2Addr(t);
+	*/
 
-	free(temp_addr);
+	*(t->addr)=SCCPtr2Addr(t);
+	//*(t->addr) = *temp_addr;/*
+	/*t->addr->lut= temp_addr->lut;
+	t->addr->node= &(temp_addr->node);
+	t->addr->offset=temp_addr->offset;*/
+	//just some debugging print outs
+		PRT_DBG("NEW TASK INFORMATION INSIDE CREATE:\n");
+		PRT_DBG("LUT node: %d\n",t->addr->node);
+		PRT_DBG("LUT Nr.:  %d\n",t->addr->lut);
+		PRT_DBG("LUT offset: %u\n",t->addr->offset);
+
+	//free(temp_addr);
 
 	/* calc stackaddr */
 	offset = (sizeof(lpel_task_t) + TASK_STACK_ALIGN-1) & ~(TASK_STACK_ALIGN-1);

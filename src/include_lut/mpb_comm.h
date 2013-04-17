@@ -5,10 +5,5 @@
  *      Author: Simon
  */
 
-void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location){
-
-}
-
-void LpelMailboxSend_scc(int node_location, workermsg_t *msg){
-
-}
+void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location);
+void LpelMailboxSend_scc(int node_location, workermsg_t *msg);
