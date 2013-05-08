@@ -16,7 +16,6 @@
 #include "input.h"
 #include "debugging.h"
 
-#include "LPEL_shmalloc.h"
 
 
 
@@ -182,8 +181,8 @@ void scc_init(){
 
 //***********************************************
 
-    //SCCInit(num_pages);
-    LPEL_shmalloc_init();
+    SCCInit(num_pages);
+    //LPEL_shmalloc_init();
 
 //***********************************************
 

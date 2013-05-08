@@ -1,7 +1,7 @@
  /*
  * Inputs for D-LPEL on the SCC
  */
-
+#include scc.h
 
 #define MASTER 0
 #define NR_WORKERS 2 
@@ -13,3 +13,6 @@
 #define AIR_LUT_SYNCH_VALUE 1
 //Global Memory Start Address
 #define GMS_ADDRESS 2572472320
+
+//0x10000 is just for testing is not the real value at the end
+#define MEMORY_OFFSET(id) (id *(SHM_MEMORY_SIZE/NR_WORKERS))

@@ -5,7 +5,6 @@
 #include "mailbox.h"
 #include "input.h"
 
-#include "LPEL_shmalloc.h"
 
 
 /* mailbox structures */
@@ -68,11 +67,16 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 /* Public functions                                                           */
 /******************************************************************************/
 
+void LpelMailboxInit(){
+
+}
+
+
 
 mailbox_t *LpelMailboxCreate(void)
 {
   //mailbox_t *mbox = (mailbox_t *)malloc(sizeof(mailbox_t));
-  mailbox_t *mbox = (mailbox_t *)LPEL_shmalloc(sizeof(mailbox_t));
+  mailbox_t *mbox = (mailbox_t *)SCCMallocPtr(sizeof(mailbox_t));
 
   pthread_mutex_init( &mbox->lock_free,  NULL);
   pthread_mutex_init( &mbox->lock_inbox, NULL);

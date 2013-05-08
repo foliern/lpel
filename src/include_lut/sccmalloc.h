@@ -26,4 +26,6 @@ void SCCStop(void);
 void *SCCMallocPtr(size_t size);
 unsigned char SCCMallocLut(size_t size);
 void SCCFree(void *p);
+
+void *SccGetlocal(void);
 #endif
