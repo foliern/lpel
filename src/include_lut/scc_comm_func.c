@@ -113,16 +113,15 @@ void scc_init(){
 //***********************************************
 //LUT remapping
 
-    num_pages = PAGES_PER_CORE - LINUX_PRIV_PAGES;
+   num_pages = PAGES_PER_CORE - LINUX_PRIV_PAGES;
   
-    int max_pages = MAX_PAGES-1;
-
-    printf("First for loops\n");
+   int max_pages = MAX_PAGES-1;
 
    int i, lut, origin;
 
    if(node_location != MASTER){
 	   int value=-1;
+	   PRT_DBG("Wait for MASTER'S LUT MAPPING!!! \n");
 	   while(value < AIR_LUT_SYNCH_VALUE){
 		   atomic_read(&atomic_inc_regs[MASTER],&value);
 	   }
@@ -167,44 +166,7 @@ void scc_init(){
                                    node_location, LINUX_PRIV_PAGES + (num_pages-1),LINUX_PRIV_PAGES+(num_pages-1), origin,  lut, lut, num_pages-1, max_pages);
 	}
    }
-
-
-
-
-
-
-
-
-
-
-
-
-   for (i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
-      for (lut = 0; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
-/*        printf("Copy to %i  node's LUT entry Nr.: %i / %x from (node_location+i*num_nodes)= %i node's LUT entry Nr.: %i / %x.  Condition: num_pages: %i < max_pages: %i\n",
-                  node_location, LINUX_PRIV_PAGES + num_pages,LINUX_PRIV_PAGES+num_pages, node_location + i * num_nodes,  lut, lut, num_pages, max_pages);
-*/ 
-
- 	LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node_location + i * num_nodes, lut);
-    }
-    }
-
-    int extra = ((CORES % num_nodes) * PAGES_PER_CORE) / num_nodes;
-    int node = num_nodes + (node_location * extra) / PAGES_PER_CORE;
-    int lut2 = (node_location * extra) % PAGES_PER_CORE;
-
-    printf("Second for loop\n");
-    i=0;
-    for (i = 0; i < extra && num_pages < max_pages; i++ ) {
-  	printf("Copy to %i  node's LUT entry Nr.: %i from (node_location+i*num_nodes)= %i node's LUT entry Nr.: %i\n",
-                  node_location, LINUX_PRIV_PAGES + num_pages, node_location + i * num_nodes,  lut2);
-      LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(node, lut2 + i);
-
-      if (lut + i + 1 == PAGES_PER_CORE) {
-        lut2 = 0;
-        node++;
-      }
-    }
+   
 
 //***********************************************
 
