@@ -13,6 +13,7 @@
 #include "scc.h"
 #include "sccmalloc.h"
 #include <stdarg.h>
+#include "input.h"
 
 
 
@@ -44,7 +45,7 @@ void scc_init(){
 //INIT START!!!
 
    remap=true;
-   num_nodes = DLPEL_ACTIVE_NODES;
+   num_nodes = NR_WORKERS;
 
    sigemptyset(&signal_mask);
    sigaddset(&signal_mask, SIGUSR1);
@@ -85,12 +86,28 @@ void scc_init(){
 //***********************************************
 //LUT remapping
 
-  num_pages = PAGES_PER_CORE - LINUX_PRIV_PAGES;
-    int max_pages = remap ? MAX_PAGES/2 : MAX_PAGES - 1;
+  	//num_pages = PAGES_PER_CORE - LINUX_PRIV_PAGES;
+  	num_pages=0;
+    int max_pages = MAX_PAGES - 1;
 
     printf("First for loops\n");
 
-   int i, lut;
+   int i, lut, origin;
+
+   for (i = 1; i < CORES && num_pages < max_pages; i++) {
+	   for (lut = 20; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
+				PRT_DBG("Copy to %i  node's LUT entry Nr.: %i / %x from %i node's LUT entry Nr.: %i / %x.Num_pages: %i, Max_pages: %i\n",
+				   node_location, LINUX_PRIV_PAGES + num_pages,LINUX_PRIV_PAGES+num_pages, origin,  lut, lut, num_pages, max_pages);
+
+				if ((node location+i) == 5)
+					origin=node_location+i+LUT_MEMORY_DOMAIN_OFFSET;
+				else
+					origin=node_location+i;
+
+				LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(origin, lut);
+	   }
+   }
+
 
    for (i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
       for (lut = 0; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {

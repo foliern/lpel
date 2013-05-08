@@ -23,6 +23,7 @@
 #include "mailbox.h"
 #include "lpel/monitor.h"
 #include "readTileID.h"
+#include "input.h"
 
 //to initialize MPB and LUT
 #include "scc_comm_func.h"
@@ -82,6 +83,9 @@ void LpelWorkersInit( int size) {
 
 	int i;
 	assert(0 <= size);
+
+	//init LUT and MPB directory's
+	scc_init();
 
 //	num_workers = size - 1;
 //  num_workers in test version just hardcoded
@@ -149,8 +153,7 @@ void LpelWorkersInit( int size) {
 		worker->mailbox = LpelMailboxCreate();
 	}//end else
 
-	//init LUT and MPB directory's
-	scc_init();
+
 }
 
 /*

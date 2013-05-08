@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include "mailbox.h"
+#include "input.h"
 
 
 /* mailbox structures */
