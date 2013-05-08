@@ -89,7 +89,7 @@ void LpelWorkersInit( int size) {
 
 //	num_workers = size - 1;
 //  num_workers in test version just hardcoded
-	num_workers = WORKERS;
+	num_workers = NR_WORKERS;
 
 
 	node_ID=readTileID();

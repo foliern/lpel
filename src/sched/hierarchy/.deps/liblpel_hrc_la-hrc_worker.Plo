@@ -60,8 +60,8 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_worker.lo: \
  src/include/mailbox.h src/include/taskqueue.h src/include/lpel_main.h \
  src/include/lpelcfg.h src/include/stream.h src/include/buffer.h \
  src/include/arch/sysdep.h include/lpel/monitor.h \
- src/include_lut/readTileID.h src/include/scc_comm_func.h \
- src/include_lut/mpb_comm.h
+ src/include_lut/readTileID.h src/include_lut/input.h \
+ src/include/scc_comm_func.h src/include_lut/mpb_comm.h
 
 /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdlib.h:
 
@@ -214,6 +214,8 @@ src/include/arch/sysdep.h:
 include/lpel/monitor.h:
 
 src/include_lut/readTileID.h:
+
+src/include_lut/input.h:
 
 src/include/scc_comm_func.h:
 

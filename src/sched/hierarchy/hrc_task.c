@@ -19,7 +19,7 @@
 #include "scc.h"
 #include "sccmalloc.h"
 #include <stdarg.h>
-
+#include "input.h"
 
 static atomic_t taskseq = ATOMIC_INIT(0);
 
