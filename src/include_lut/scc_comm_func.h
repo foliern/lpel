@@ -6,3 +6,8 @@
  */
 
 void scc_init();
+
+void atomic_inc(AIR *reg, int *value);
+void atomic_dec(AIR *reg, int value);
+void atomic_read(AIR *reg, int *value);
+void atomic_write(AIR *reg, int value);
