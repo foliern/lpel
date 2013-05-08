@@ -5,6 +5,11 @@
  *      Author: Simon
  */
 
+typedef volatile struct _AIR {
+        int *counter;
+        int *init;
+} AIR;
+
 void scc_init();
 
 void atomic_inc(AIR *reg, int *value);

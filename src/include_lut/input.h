@@ -4,7 +4,7 @@
 
 
 #define MASTER 0
-#define NR_WORKERS 8
+#define NR_WORKERS 2 
 #define POWER_DOMAIN 1
 #define POWER_DOMAIN_WORKERS 8
 #define MEMORY_DOMAIN 0

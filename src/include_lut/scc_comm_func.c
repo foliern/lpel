@@ -122,13 +122,26 @@ void scc_init(){
    int i, lut, origin;
 
    if(node_location != MASTER){
-	   int value=0;
-	   while(value!=AIR_LUT_SYNCH_VALUE){
-		   atomic_read(atomic_inc_regs[MASTER],value);
+	   int value=-1;
+	   while(value < AIR_LUT_SYNCH_VALUE){
+		   atomic_read(&atomic_inc_regs[MASTER],&value);
 	   }
-	   PRT_DBG("AIR==1 -> MASTER has finished LUT mapping.")
+	   
+           if (value == (num_nodes-1))
+		   atomic_write(&atomic_inc_regs[MASTER],0);
+	   else
+		   atomic_inc(&atomic_inc_regs[MASTER],&value);
+	//debugging lines
+		atomic_read(&atomic_inc_regs[MASTER],&value);
+		PRT_DBG("value= %d\n",value);
+	//debugging lines end		
+
+
+	   PRT_DBG("AIR==1 -> MASTER has finished LUT mapping.\n");
    }
-   for (i = 1; i < CORES && num_pages < max_pages; i++) {
+
+   if(node_location == MASTER){
+       for (i = 1; i < CORES && num_pages < max_pages; i++) {
 	   for (lut = 20; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
 
 				if ((node_location+i) > 5)
@@ -142,10 +155,28 @@ void scc_init(){
                                    node_location, LINUX_PRIV_PAGES + (num_pages-1),LINUX_PRIV_PAGES+(num_pages-1), origin,  lut, lut, num_pages-1, max_pages);
 
 	   }
+        }
+	atomic_write(&atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
    }
-   if(node_location == MASTER){
-	   atomic_write(atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
+   else{
+	for (lut = 20; lut < max_pages && num_pages < max_pages; lut++) {
+		
+		LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(MASTER, lut);
+                                
+                PRT_DBG("Copy to %i  node's LUT entry Nr.: %i / %x from %i node's LUT entry Nr.: %i / %x. Num_pages: %i, Max_pages: %i\n",
+                                   node_location, LINUX_PRIV_PAGES + (num_pages-1),LINUX_PRIV_PAGES+(num_pages-1), origin,  lut, lut, num_pages-1, max_pages);
+	}
    }
+
+
+
+
+
+
+
+
+
+
 
 
    for (i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
