@@ -11,4 +11,5 @@
 #define MEMORY_DOMAIN_WORKERS 10
 #define LUT_MEMORY_DOMAIN_OFFSET 6
 #define AIR_LUT_SYNCH_VALUE 1
-
+//Global Memory Start Address
+#define GMS_ADDRESS 2572472320

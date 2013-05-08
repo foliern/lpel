@@ -10,6 +10,8 @@
 #include "scc.h"
 #include "sccmalloc.h"
 #include "bool.h"
+#include "input.h"
+#include "scc_comm_func.h"
 //#include "configuration.h"
 
 
@@ -37,6 +39,7 @@ static int mem, cache;
 static block_t *freeList;
 static lut_state_t *lutState;
 static unsigned char remote_pages;
+static int node_ID;
 
 lut_addr_t SCCPtr2Addr(void *p)
 {
@@ -73,7 +76,10 @@ void *SCCAddr2Ptr(lut_addr_t addr)
 void SCCInit(unsigned char size)
 {
   local_pages = size;
-  remote_pages = remap ? MAX_PAGES - size : 1;
+  node_ID= SccGetNodeId();
+
+  //GLOBAL MEMORY START ADDRESS
+  unsigned int *nkAddr = GMS_ADDRESS;
 
   /* Open driver device "/dev/rckdyn011" to map memory in write-through mode */
   mem = open("/dev/rckdyn011", O_RDWR|O_SYNC);
@@ -81,28 +87,23 @@ void SCCInit(unsigned char size)
   if (mem < 0) {
 	printf("Opening /dev/rckdyn011 failed!\n");
   }	
-  cache = open("/dev/rckdcm", O_RDWR|O_SYNC);
-  printf("cache: %i\n",cache);
-  if (cache < 0) {
-	 printf("Opening /dev/rckdcm failed!\n");
-  }
-  local = mmap(NULL, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
+
+  //local = mmap(NULL, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, cache, LOCAL_LUT << 24);
+  local = mmap((void*)nkAddr, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
   if (local == NULL) printf("Couldn't map memory!");
 
-  remote = mmap(NULL, remote_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, REMOTE_LUT << 24);
-  if (remote == NULL) printf("Couldn't map memory!");
 
-  freeList = local;
+
+  freeList = local+MEMORY_OFFSET(node_ID);
   freeList->hdr.next = freeList;
   freeList->hdr.size = (size * PAGE_SIZE) / sizeof(block_t);
 
-  if (remap) {
-    lutState = SNetMemAlloc(remote_pages * sizeof(lut_state_t));
-    lutState[0].free = 1;
-    lutState[0].size = remote_pages;
-    lutState[remote_pages - 1] = lutState[0];
-  }
 }
+
+void *SccGetlocal(void) {
+  return local;
+}
+
 
 void SCCStop(void)
 {

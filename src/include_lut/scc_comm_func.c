@@ -16,6 +16,8 @@
 #include "input.h"
 #include "debugging.h"
 
+#include "LPEL_shmalloc.h"
+
 
 
 
@@ -180,13 +182,18 @@ void scc_init(){
 
 //***********************************************
 
-    SCCInit(num_pages);
+    //SCCInit(num_pages);
+    LPEL_shmalloc_init();
 
 //***********************************************
 
   FOOL_WRITE_COMBINE;
   unlock(node_location);
 
+}
+
+int SccGetNodeId(void) {
+  return node_location;
 }
 
 

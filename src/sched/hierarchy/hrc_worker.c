@@ -24,6 +24,8 @@
 #include "lpel/monitor.h"
 #include "readTileID.h"
 #include "input.h"
+#include "scc_comm_func.c"
+#include "sccmalloc.h"
 
 //to initialize MPB and LUT
 #include "scc_comm_func.h"
@@ -35,7 +37,7 @@
 //global variable to safe node ID
 int node_ID;
 
-
+static void *local;
 //#define WORKER_PTR(i) (workers[(i)])
 #define WORKER_PTR worker
 
@@ -53,11 +55,12 @@ static void *WrapperThread( void *arg);
 static int num_workers = -1;
 
 
-//static workerctx_t **workers;
+static mailbox_t *mbox_workers[NR_WORKERS];
 static workerctx_t *worker;
 
 static masterctx_t *master;
 static int *waitworkers;	// table of waiting worker
+
 
 #ifdef HAVE___THREAD
 static __thread workerctx_t *workerctx_cur;
@@ -92,10 +95,9 @@ void LpelWorkersInit( int size) {
 	num_workers = NR_WORKERS;
 
 
-	node_ID=readTileID();
+	node_ID=int SccGetNodeId();
 
-
-	if (RoodNode(node_ID)){
+	if (node_ID==MASTER){
 
 		/** create MASTER */
 
@@ -104,8 +106,10 @@ void LpelWorkersInit( int size) {
 		pthread_key_create(&masterctx_key, NULL);
 #endif /* HAVE___THREAD */
 
-		master = (masterctx_t *) malloc(sizeof(masterctx_t));
+		master = (masterctx_t *) SCCMallocPtr(sizeof(masterctx_t));
+		PRT_DBG("masterctx address: %p\n", master);
 		master->mailbox = LpelMailboxCreate();
+		PRT_DBG("master mailbox address: %p\n", master->mailbox);
 		master->ready_tasks = LpelTaskqueueInit ();
 
 		/** create waitworkers array */
@@ -119,11 +123,18 @@ void LpelWorkersInit( int size) {
 		/* allocate worker context table */
 		//workers = (workerctx_t **) malloc( num_workers * sizeof(workerctx_t*) );
 		/* allocate waiting table */
-		waitworkers = (int *) malloc(num_workers * sizeof(int));
+
+		//waitworkers = (int *) malloc(num_workers * sizeof(int));
+		waitworkers = (int *) SCCMallocPtr(num_workers * sizeof(int));
+
+		//local=SccGetlocal();
 		/* allocate worker contexts */
 		for (i=0; i<num_workers; i++) {
 			//workers[i] = (workerctx_t *) malloc( sizeof(workerctx_t) );
 			waitworkers[i] = 0;
+
+			//mbox_workers[i+1]=local+MEMORY_OFFSET(i+1);
+			//PRT_DBG("address: %p\n", mbox_workers[i+1]);
 		}
 
 	}else{
@@ -136,7 +147,7 @@ void LpelWorkersInit( int size) {
 #endif /* HAVE___THREAD */
 
 		/* allocate worker context table, but only for one worker */
-		worker=(workerctx_t *) malloc(sizeof(workerctx_t));
+		worker=(workerctx_t *) SCCMallocPtr(sizeof(workerctx_t));
 		worker->wid=node_ID;
 		// NOT SURE IF NEEDED OR NOT
 #ifdef USE_LOGGING
@@ -151,6 +162,7 @@ void LpelWorkersInit( int size) {
 
 		/*mailbox*/
 		worker->mailbox = LpelMailboxCreate();
+		PRT_DBG("worker mailbox address: %p\n", worker->mailbox);
 	}//end else
 
 
