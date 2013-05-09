@@ -188,7 +188,9 @@ void scc_init(){
   unlock(node_location);
 
 }
-
+int SccGetNodeID(void){
+	return node_location;
+}
 
 //--------------------------------------------------------------------------------------
 // FUNCTION: atomic_inc

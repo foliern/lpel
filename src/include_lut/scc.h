@@ -13,6 +13,8 @@
 #define LINUX_PRIV_PAGES    (20)
 #define PAGES_PER_CORE      (41)
 #define MAX_PAGES           (172)
+//#define SHM_MEMORY_SIZE		(PAGE_SIZE*(MAX_PAGES-1))
+#define SHM_MEMORY_SIZE		0xAB000000
 
 #define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
 #define IRQ_BIT             (0x01 << GLCFG_XINTR_BIT)

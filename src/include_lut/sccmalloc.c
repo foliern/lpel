@@ -11,9 +11,9 @@
 #include "sccmalloc.h"
 #include "bool.h"
 //#include "configuration.h"
-
-
-
+#include "input.h"
+#include "scc_comm_func.h"
+#include "debugging.h"
 
 
 typedef union block {
@@ -31,6 +31,7 @@ typedef struct {
 
 void *remote;
 unsigned char local_pages;
+int node_ID;
 
 static void *local;
 static int mem, cache;
@@ -73,35 +74,53 @@ void *SCCAddr2Ptr(lut_addr_t addr)
 void SCCInit(unsigned char size)
 {
   local_pages = size;
-  remote_pages = remap ? MAX_PAGES - size : 1;
-
+  node_ID=SccGetNodeID();
   /* Open driver device "/dev/rckdyn011" to map memory in write-through mode */
   mem = open("/dev/rckdyn011", O_RDWR|O_SYNC);
   printf("mem: %i\n", mem);
   if (mem < 0) {
 	printf("Opening /dev/rckdyn011 failed!\n");
   }	
-  cache = open("/dev/rckdcm", O_RDWR|O_SYNC);
-  printf("cache: %i\n",cache);
-  if (cache < 0) {
-	 printf("Opening /dev/rckdcm failed!\n");
-  }
-  local = mmap(NULL, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
+
+  unsigned int *nkAddr = 2572472320;
+
+  //local = mmap(NULL, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, cache, LOCAL_LUT << 24);
+  local = mmap((void*)nkAddr, 80 * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, mem, LOCAL_LUT << 24);
   if (local == NULL) printf("Couldn't map memory!");
 
-  remote = mmap(NULL, remote_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, REMOTE_LUT << 24);
-  if (remote == NULL) printf("Couldn't map memory!");
+        printf("nkAddr:         %p\n",nkAddr);
+        printf("local:          %p\n",local);
+  
+ PRT_DBG("local address: %u\n",local);
+ 
+  freeList = local+MEMORY_OFFSET(node_ID);
+  PRT_DBG("freelist address: %p\n",freeList);
+  lut_addr_t *addr=(lut_addr_t*)malloc(sizeof(lut_addr_t));
+	*addr= SCCPtr2Addr(freeList);
 
-  freeList = local;
+	printf("addr->node: %d addr->lut: %d addr->offset %u\n",addr->node, addr->lut, addr->offset);
+	freeList= local;
+	*addr= SCCPtr2Addr(freeList);
+
+        printf("addr->node: %d addr->lut: %d addr->offset %u\n",addr->node, addr->lut, addr->offset);
+	
+	unsigned int temp=SHM_MEMORY_SIZE/5;
+	printf("SHM_SIZE: %u\n",SHM_MEMORY_SIZE);
+	printf("temp: %f\n",temp);
+	printf("temp: %d\n",temp);
+	//printf("temp: %f\n",local+temp);
+	freeList= local + (PAGE_SIZE*90);
+	*addr= SCCPtr2Addr(freeList);
+
+        printf("addr->node: %d addr->lut: %d addr->offset %u\n",addr->node, addr->lut, addr->offset);
+	freeList= local + SHM_MEMORY_SIZE;
+        *addr= SCCPtr2Addr(freeList);
+
+        printf("addr->node: %d addr->lut: %d addr->offset %u\n",addr->node, addr->lut, addr->offset);
+
   freeList->hdr.next = freeList;
   freeList->hdr.size = (size * PAGE_SIZE) / sizeof(block_t);
 
-  if (remap) {
-    lutState = SNetMemAlloc(remote_pages * sizeof(lut_state_t));
-    lutState[0].free = 1;
-    lutState[0].size = remote_pages;
-    lutState[remote_pages - 1] = lutState[0];
-  }
 }
 
 void SCCStop(void)
