@@ -156,7 +156,6 @@ void scc_init(){
 
 	   }
         }
-	atomic_write(&atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
    }
    else{
 	for (lut = 20; lut < max_pages && num_pages < max_pages; lut++) {
@@ -168,6 +167,7 @@ void scc_init(){
 	}
    }
    
+	num_pages=50;
 
 //***********************************************
 
@@ -180,9 +180,20 @@ void scc_init(){
     WRITING(node_location) = false;
 
 //***********************************************
+uintptr_t  addr=0x0;
 
-    SCCInit(num_pages);
-    //LPEL_shmalloc_init();
+if(node_location == MASTER){
+	
+	SCCInit((void *)&addr);
+	PRT_DBG("addr: %p\n",addr);
+	cpy_mem_to_mpb(0, (void *)&addr, sizeof(uintptr_t));	
+
+	atomic_write(&atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
+}else{
+	cpy_mpb_to_mem(0, (void *)&addr, sizeof(uintptr_t));
+    	PRT_DBG("addr: %p\n",addr);
+	SCCInit((void *)&addr);
+}
 
 //***********************************************
 
@@ -190,11 +201,9 @@ void scc_init(){
   unlock(node_location);
 
 }
-
-int SccGetNodeId(void) {
-  return node_location;
+int SccGetNodeID(void){
+	return node_location;
 }
-
 
 //--------------------------------------------------------------------------------------
 // FUNCTION: atomic_inc

@@ -14,5 +14,9 @@
 //Global Memory Start Address
 #define GMS_ADDRESS 2572472320
 
+//Global Memory Start Address
+#define GMS_ADDRESS 0x9954D000 
+
 //0x10000 is just for testing is not the real value at the end
+#define LOCAL_SHMSIZE  SHM_MEMORY_SIZE/NR_WORKERS
 #define MEMORY_OFFSET(id) (id *(SHM_MEMORY_SIZE/NR_WORKERS))

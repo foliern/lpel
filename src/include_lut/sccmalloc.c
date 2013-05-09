@@ -13,9 +13,9 @@
 #include "input.h"
 #include "scc_comm_func.h"
 //#include "configuration.h"
-
-
-
+#include "input.h"
+#include "scc_comm_func.h"
+#include "debugging.h"
 
 
 typedef union block {
@@ -33,20 +33,22 @@ typedef struct {
 
 void *remote;
 unsigned char local_pages;
+int node_ID;
 
 static void *local;
 static int mem, cache;
 static block_t *freeList;
 static lut_state_t *lutState;
 static unsigned char remote_pages;
-static int node_ID;
+uintptr_t shmem_start_address;
 
 lut_addr_t SCCPtr2Addr(void *p)
 {
   uint32_t offset;
   unsigned char lut;
 
-  if (local <= p && p <= local + local_pages * PAGE_SIZE) {
+  //if (local <= p && p <= local + local_pages * PAGE_SIZE) {
+  if (local <= p && p <= local + (MAX_PAGES-1) * PAGE_SIZE) {
     offset = (p - local) % PAGE_SIZE;
     lut = LOCAL_LUT + (p - local) / PAGE_SIZE;
   } else if (remote <= p && p <= remote + remote_pages * PAGE_SIZE) {
@@ -73,36 +75,54 @@ void *SCCAddr2Ptr(lut_addr_t addr)
   return NULL;
 }
 
-void SCCInit(unsigned char size)
+
+void SCCInit(uintptr_t *addr)
 {
-  local_pages = size;
-  node_ID= SccGetNodeId();
-
-  //GLOBAL MEMORY START ADDRESS
-  unsigned int *nkAddr = GMS_ADDRESS;
-
-  /* Open driver device "/dev/rckdyn011" to map memory in write-through mode */
+  node_ID= SccGetNodeID();
+  // Open driver device "/dev/rckdyn011" to map memory in write-through mode 
   mem = open("/dev/rckdyn011", O_RDWR|O_SYNC);
   printf("mem: %i\n", mem);
   if (mem < 0) {
 	printf("Opening /dev/rckdyn011 failed!\n");
   }	
 
-  //local = mmap(NULL, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, cache, LOCAL_LUT << 24);
-  local = mmap((void*)nkAddr, local_pages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
-  if (local == NULL) printf("Couldn't map memory!");
 
+ if (*addr==0x0){ 
+	
+ 	 local = mmap(NULL, 		SHM_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
+ 	 if (local == NULL) printf("Couldn't map memory!\n");
+	 else	munmap(local, SHM_MEMORY_SIZE);
+ 	 local = mmap((void*)local, 	SHM_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, mem, LOCAL_LUT << 24);
+  	if (local == NULL) printf("Couldn't map memory!\n");
 
+	*addr=local;
 
+  }else{
+	local=*addr;
+
+	local = mmap((void*)local,     	SHM_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, mem, LOCAL_LUT << 24);
+        if (local == NULL) printf("Couldn't map memory!");
+
+  }  
+
+  PRT_DBG("local:				%p\n",local);
+  PRT_DBG("addr:				%p\n",*addr);
+
+  PRT_DBG("MEMORY_OFFSET(node_ID): 	%u\n",MEMORY_OFFSET(node_ID)); 
   freeList = local+MEMORY_OFFSET(node_ID);
+  
+  PRT_DBG("freelist address: 		%p\n",freeList);
+  	lut_addr_t *addr_t=(lut_addr_t*)malloc(sizeof(lut_addr_t));
+  	*addr_t= SCCPtr2Addr(freeList);
+  PRT_DBG("LUT-entry of freelist:		%d\n",addr_t->lut);
+  PRT_DBG("freelist's LUT offset: 		%u\n",addr_t->offset);
+
   freeList->hdr.next = freeList;
-  freeList->hdr.size = (size * PAGE_SIZE) / sizeof(block_t);
 
+ // freeList->hdr.size = (size * PAGE_SIZE) / sizeof(block_t);
+  freeList->hdr.size = SHM_MEMORY_SIZE / sizeof(block_t);
 }
 
-void *SccGetlocal(void) {
-  return local;
-}
 
 
 void SCCStop(void)

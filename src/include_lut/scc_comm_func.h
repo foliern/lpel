@@ -11,8 +11,7 @@ typedef volatile struct _AIR {
 } AIR;
 
 void scc_init();
-
-int SccGetNodeId(void);
+int SccGetNodeID(void);
 void atomic_inc(AIR *reg, int *value);
 void atomic_dec(AIR *reg, int value);
 void atomic_read(AIR *reg, int *value);
