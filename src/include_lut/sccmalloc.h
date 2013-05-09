@@ -20,7 +20,8 @@ typedef struct {
 lut_addr_t SCCPtr2Addr(void *p);
 void *SCCAddr2Ptr(lut_addr_t addr);
 
-void SCCInit(unsigned char size);
+//void SCCInit(unsigned char size);
+void SCCInit(uintptr_t  *addr);
 void SCCStop(void);
 
 void *SCCMallocPtr(size_t size);
