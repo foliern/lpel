@@ -17,7 +17,7 @@
 #include "debugging.h"
 
 
-
+static uintptr_t  addr=0x0;
 
 
 // global variables for the LUT, PINS and LOCKS
@@ -180,7 +180,7 @@ void scc_init(){
     WRITING(node_location) = false;
 
 //***********************************************
-uintptr_t  addr=0x0;
+
 
 if(node_location == MASTER){
 	

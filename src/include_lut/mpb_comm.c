@@ -36,6 +36,8 @@ struct mailbox_t {
 void MPBCommunicationCreate(void)
 {
 
+
+
 }
 
 
@@ -45,11 +47,5 @@ void MPBCommunicationDestroy(void)
 
 }
 
-void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location){
 
-}
-
-void LpelMailboxSend_scc(int node_location, workermsg_t *msg){
-
-}
 

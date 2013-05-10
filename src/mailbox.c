@@ -4,8 +4,10 @@
 #include <assert.h>
 #include "mailbox.h"
 #include "input.h"
+#include "scc_comm_func.h"
 
 
+extern static uintptr_t  addr;
 
 /* mailbox structures */
 
@@ -21,6 +23,8 @@ struct mailbox_t {
   mailbox_node_t  *list_free;
   mailbox_node_t  *list_inbox;
 };
+
+mailbox_t *mbox[NR_WORKERS];
 
 
 /******************************************************************************/
@@ -68,7 +72,13 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 /******************************************************************************/
 
 void LpelMailboxInit(){
+	int i;
 
+	PRT_DBG("addr inside Mailbox: %p\n",addr);
+	for (i=0; i < NR_WORKERS;i++){
+		mbox[i]=addr+MEMORY_OFFSET(i)+MAILBOX_OFFSET;
+		PRT_DBG("MAILBOX %d address: %p\n",i,mbox[i]);
+	}
 }
 
 
@@ -77,6 +87,7 @@ mailbox_t *LpelMailboxCreate(void)
 {
   //mailbox_t *mbox = (mailbox_t *)malloc(sizeof(mailbox_t));
   mailbox_t *mbox = (mailbox_t *)SCCMallocPtr(sizeof(mailbox_t));
+  PRT_DBG("MAILBOX address: %p\n",mbox);
 
   pthread_mutex_init( &mbox->lock_free,  NULL);
   pthread_mutex_init( &mbox->lock_inbox, NULL);
@@ -196,3 +207,18 @@ int LpelMailboxHasIncoming( mailbox_t *mbox)
 {
   return ( mbox->list_inbox != NULL);
 }
+
+
+
+
+void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location){
+
+}
+
+void LpelMailboxSend_scc(int node_location, workermsg_t *msg){
+
+
+
+}
+
+

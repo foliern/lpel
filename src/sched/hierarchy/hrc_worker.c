@@ -30,8 +30,7 @@
 //to initialize MPB and LUT
 #include "scc_comm_func.h"
 
-//for MPB communication
-#include "mpb_comm.h"
+
 
 
 //global variable to safe node ID
@@ -89,6 +88,7 @@ void LpelWorkersInit( int size) {
 
 	//init LUT and MPB directory's
 	scc_init();
+	LpelMailboxInit();
 
 //	num_workers = size - 1;
 //  num_workers in test version just hardcoded
@@ -106,9 +106,11 @@ void LpelWorkersInit( int size) {
 		pthread_key_create(&masterctx_key, NULL);
 #endif /* HAVE___THREAD */
 
+		mailbox_t *mbox = (mailbox_t *)SCCMallocPtr(sizeof(mailbox_t));
+
 		master = (masterctx_t *) SCCMallocPtr(sizeof(masterctx_t));
 		PRT_DBG("masterctx address: %p\n", master);
-		master->mailbox = LpelMailboxCreate();
+		master->mailbox = mbox;
 		PRT_DBG("master mailbox address: %p\n", master->mailbox);
 		master->ready_tasks = LpelTaskqueueInit ();
 
@@ -145,6 +147,7 @@ void LpelWorkersInit( int size) {
 		/* init key for thread specific data */
 		pthread_key_create(&masterctx_key, NULL);
 #endif /* HAVE___THREAD */
+		mailbox_t *mbox = (mailbox_t *)SCCMallocPtr(sizeof(mailbox_t));
 
 		/* allocate worker context table, but only for one worker */
 		worker=(workerctx_t *) SCCMallocPtr(sizeof(workerctx_t));
@@ -161,7 +164,7 @@ void LpelWorkersInit( int size) {
 #endif
 
 		/*mailbox*/
-		worker->mailbox = LpelMailboxCreate();
+		worker->mailbox = mbox;
 		PRT_DBG("worker mailbox address: %p\n", worker->mailbox);
 	}//end else
 

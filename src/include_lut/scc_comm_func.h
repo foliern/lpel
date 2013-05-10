@@ -10,6 +10,8 @@ typedef volatile struct _AIR {
         int *init;
 } AIR;
 
+static uintptr_t  addr;
+
 void scc_init();
 int SccGetNodeID(void);
 void atomic_incR(AIR *reg, int *value);
