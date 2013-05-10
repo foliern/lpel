@@ -61,7 +61,8 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_task.lo: \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/environments.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/confname.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/getopt.h \
- src/include_lut/config.h src/include_lut/bool.h src/include_lut/input.h
+ src/include_lut/config.h src/include_lut/bool.h src/include_lut/input.h \
+ src/include_lut/scc.h
 
 /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdlib.h:
 
@@ -224,3 +225,5 @@ src/include_lut/config.h:
 src/include_lut/bool.h:
 
 src/include_lut/input.h:
+
+src/include_lut/scc.h:

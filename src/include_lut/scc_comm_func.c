@@ -16,8 +16,7 @@
 #include "input.h"
 #include "debugging.h"
 
-
-static uintptr_t  addr=0x0;
+uintptr_t  addr=0x0;
 
 
 // global variables for the LUT, PINS and LOCKS

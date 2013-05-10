@@ -5,9 +5,10 @@
 #include "mailbox.h"
 #include "input.h"
 #include "scc_comm_func.h"
+#include "debugging.h"
 
 
-extern static uintptr_t  addr;
+extern uintptr_t  addr;
 
 /* mailbox structures */
 

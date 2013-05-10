@@ -1,7 +1,8 @@
  /*
  * Inputs for D-LPEL on the SCC
  */
-#include scc.h
+
+#include "scc.h"
 
 #define MASTER 0
 #define NR_WORKERS 2 
@@ -12,7 +13,7 @@
 #define LUT_MEMORY_DOMAIN_OFFSET 6
 #define AIR_LUT_SYNCH_VALUE 1
 //Global Memory Start Address
-#define GMS_ADDRESS 2572472320
+//#define GMS_ADDRESS 2572472320
 
 //Global Memory Start Address
 #define GMS_ADDRESS 0x9954D000 
