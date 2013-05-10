@@ -1,4 +1,4 @@
-SUBDIRS = include . tests 
+SUBDIRS = include . 
 
 lib_LTLIBRARIES = liblpel.la liblpel_mon.la liblpel_hrc.la
 
@@ -48,8 +48,7 @@ liblpel_hrc_la_SOURCES = \
 	src/include_lut/scc.c \
 	src/include_lut/scc_comm_func.c \
 	src/include_lut/sccmalloc.c \
-	src/include_lut/readTileID.c \
-	src/include_lut/mpb_comm.c 
+	src/include_lut/readTileID.c 
 
 liblpel_hrc_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include -I$(top_srcdir)/src/include_lut
 

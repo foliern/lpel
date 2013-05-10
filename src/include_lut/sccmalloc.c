@@ -11,9 +11,7 @@
 #include "sccmalloc.h"
 #include "bool.h"
 #include "input.h"
-#include "scc_comm_func.h"
 //#include "configuration.h"
-#include "input.h"
 #include "scc_comm_func.h"
 #include "debugging.h"
 

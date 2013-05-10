@@ -45,7 +45,8 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
     mbox->list_free = node->next; /* can be NULL */
   } else {
     /* allocate new node */
-    node = (mailbox_node_t *)malloc( sizeof( mailbox_node_t));
+    //node = (mailbox_node_t *)malloc( sizeof( mailbox_node_t));
+  	node = (mailbox_node_t *)SCCMallocPtr( sizeof( mailbox_node_t));
   }
   pthread_mutex_unlock( &mbox->lock_free);
 
@@ -75,7 +76,7 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 void LpelMailboxInit(){
 	int i;
 
-	PRT_DBG("addr inside Mailbox: %p\n",addr);
+	PRT_DBG("MEMORY start address: %p\n",addr);
 	for (i=0; i < NR_WORKERS;i++){
 		mbox[i]=addr+MEMORY_OFFSET(i)+MAILBOX_OFFSET;
 		PRT_DBG("MAILBOX %d address: %p\n",i,mbox[i]);
@@ -88,7 +89,7 @@ mailbox_t *LpelMailboxCreate(void)
 {
   //mailbox_t *mbox = (mailbox_t *)malloc(sizeof(mailbox_t));
   mailbox_t *mbox = (mailbox_t *)SCCMallocPtr(sizeof(mailbox_t));
-  PRT_DBG("MAILBOX address: %p\n",mbox);
+  //PRT_DBG("MAILBOX address: %p\n",mbox);
 
   pthread_mutex_init( &mbox->lock_free,  NULL);
   pthread_mutex_init( &mbox->lock_inbox, NULL);
@@ -210,7 +211,33 @@ int LpelMailboxHasIncoming( mailbox_t *mbox)
 }
 
 
+void LpelMailboxSend2( mailbox_t *mbox, workermsg_t *msg)
+{
+  /* get a free node from recepient
+   * either from the list_free list or a new one gets created */
+  mailbox_node_t *node = GetFree( mbox);
 
+  /* copy the message */
+  node->msg = *msg;
+
+  /* put node into inbox */
+  //pthread_mutex_lock( &mbox->lock_inbox);
+  if ( mbox->list_inbox == NULL) {
+    /* list is empty */
+    mbox->list_inbox = node;
+    node->next = node; /* self-loop */
+
+    //pthread_cond_signal( &mbox->notempty);
+
+  } else {
+    /* insert stream between last node=list_inbox
+       and first node=list_inbox->next */
+    node->next = mbox->list_inbox->next;
+    mbox->list_inbox->next = node;
+    mbox->list_inbox = node;
+  }
+ // pthread_mutex_unlock( &mbox->lock_inbox);
+}
 
 void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location){
 
@@ -218,7 +245,7 @@ void LpelMailboxRecv_scc(mailbox_t *mbox, int node_location){
 
 void LpelMailboxSend_scc(int node_location, workermsg_t *msg){
 
-
+	LpelMailboxSend2(mbox[node_location],msg);
 
 }
 

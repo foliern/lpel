@@ -16,15 +16,14 @@
 
 #include "bool.h"
 #include "hrc_worker.h"
-#include "hrc_task.h"
+//#include "hrc_task.h"
 #include "lpel_main.h"
 #include "lpelcfg.h"
 #include "stream.h"
-#include "mailbox.h"
+//#include "mailbox.h"
 #include "lpel/monitor.h"
 #include "readTileID.h"
 #include "input.h"
-#include "scc_comm_func.c"
 #include "sccmalloc.h"
 
 //to initialize MPB and LUT
@@ -90,10 +89,7 @@ void LpelWorkersInit( int size) {
 	scc_init();
 	LpelMailboxInit();
 
-//	num_workers = size - 1;
-//  num_workers in test version just hardcoded
 	num_workers = NR_WORKERS;
-
 
 	node_ID=SccGetNodeID();
 
@@ -109,9 +105,9 @@ void LpelWorkersInit( int size) {
 		mailbox_t *mbox = LpelMailboxCreate();
 
 		master = (masterctx_t *) SCCMallocPtr(sizeof(masterctx_t));
-		PRT_DBG("masterctx address: %p\n", master);
+		//PRT_DBG("masterctx address: %p\n", master);
 		master->mailbox = mbox;
-		PRT_DBG("master mailbox address: %p\n", master->mailbox);
+		PRT_DBG("MASTER mailbox address: %p\n", master->mailbox);
 		master->ready_tasks = LpelTaskqueueInit ();
 
 		/** create waitworkers array */
@@ -165,7 +161,7 @@ void LpelWorkersInit( int size) {
 
 		/*mailbox*/
 		worker->mailbox = mbox;
-		PRT_DBG("worker mailbox address: %p\n", worker->mailbox);
+		PRT_DBG("WORKER mailbox address: %p\n", worker->mailbox);
 	}//end else
 
 
