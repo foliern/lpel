@@ -623,7 +623,7 @@ workerctx_t *LpelCreateWrapperContext(int wid) {
 	//wp->marked_del = NULL;
 
 	/* mailbox */
-	wp->mailbox = LpelMailboxCreate();
+	wp->mailbox = LpelMailboxCreate(wid);
 	/* taskqueue of free tasks */
 	(void) pthread_create( &wp->thread, NULL, WrapperThread, wp);
 	(void) pthread_detach( wp->thread);

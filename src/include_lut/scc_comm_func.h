@@ -5,7 +5,7 @@
  */
 
 #include <stdint.h>
-
+#include "scc.h"
 typedef volatile struct _AIR {
         int *counter;
         int *init;

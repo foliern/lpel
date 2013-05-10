@@ -152,7 +152,7 @@ void LpelWorkersInit(int size)
 #endif
 
     /* mailbox */
-    wc->mailbox = LpelMailboxCreate();
+    wc->mailbox = LpelMailboxCreate(0);
 
     /* taskqueue of free tasks */
     //LpelTaskqueueInit( &wc->free_tasks);
@@ -377,7 +377,7 @@ workerctx_t *LpelWorkerGetContext(int id) {
     wc->wraptask = NULL;
     wc->mon = NULL;
     /* mailbox */
-    wc->mailbox = LpelMailboxCreate();
+    wc->mailbox = LpelMailboxCreate(0);
     /* taskqueue of free tasks */
     //LpelTaskqueueInit( &wc->free_tasks);
     (void) pthread_create( &wc->thread, NULL, WorkerThread, wc);

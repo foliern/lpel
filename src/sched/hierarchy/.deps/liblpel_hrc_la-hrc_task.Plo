@@ -54,15 +54,16 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_task.lo: \
  src/include/worker.h src/include/mailbox.h src/include/workermsg.h \
  src/include/mailbox.h src/include/taskqueue.h include/lpel/monitor.h \
  src/sched/hierarchy/taskpriority.h src/include_lut/readTileID.h \
- src/include_lut/config.h src/include_lut/RCCE_memcpy.c \
- src/include_lut/distribution.h src/include_lut/scc.h \
+ src/include_lut/debugging.h src/include_lut/scc_comm_func.h \
+ src/include_lut/scc.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/unistd.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/posix_opt.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/environments.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/confname.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/getopt.h \
- src/include_lut/config.h src/include_lut/bool.h src/include_lut/input.h \
- src/include_lut/scc.h
+ src/include_lut/config.h src/include_lut/bool.h src/include_lut/config.h \
+ src/include_lut/RCCE_memcpy.c src/include_lut/distribution.h \
+ src/include_lut/scc.h src/include_lut/input.h
 
 /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdlib.h:
 
@@ -202,11 +203,9 @@ src/sched/hierarchy/taskpriority.h:
 
 src/include_lut/readTileID.h:
 
-src/include_lut/config.h:
+src/include_lut/debugging.h:
 
-src/include_lut/RCCE_memcpy.c:
-
-src/include_lut/distribution.h:
+src/include_lut/scc_comm_func.h:
 
 src/include_lut/scc.h:
 
@@ -224,6 +223,12 @@ src/include_lut/config.h:
 
 src/include_lut/bool.h:
 
-src/include_lut/input.h:
+src/include_lut/config.h:
+
+src/include_lut/RCCE_memcpy.c:
+
+src/include_lut/distribution.h:
 
 src/include_lut/scc.h:
+
+src/include_lut/input.h:
