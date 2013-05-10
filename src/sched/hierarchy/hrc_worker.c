@@ -102,7 +102,7 @@ void LpelWorkersInit( int size) {
 		pthread_key_create(&masterctx_key, NULL);
 #endif /* HAVE___THREAD */
 
-		mailbox_t *mbox = LpelMailboxCreate();
+		mailbox_t *mbox = LpelMailboxCreate(node_ID);
 
 		master = (masterctx_t *) SCCMallocPtr(sizeof(masterctx_t));
 		//PRT_DBG("masterctx address: %p\n", master);
@@ -143,7 +143,7 @@ void LpelWorkersInit( int size) {
 		/* init key for thread specific data */
 		pthread_key_create(&masterctx_key, NULL);
 #endif /* HAVE___THREAD */
-		mailbox_t *mbox = LpelMailboxCreate();
+		mailbox_t *mbox = LpelMailboxCreate(node_ID);
 
 		/* allocate worker context table, but only for one worker */
 		worker=(workerctx_t *) SCCMallocPtr(sizeof(workerctx_t));
@@ -661,7 +661,7 @@ static void WorkerLoop( workerctx_t *wc)
 
   workermsg_t msg;
   do {
-  		LpelMailboxRecv_scc(WORKER_PTR->mailbox,wc->wid);
+  		//LpelMailboxRecv_scc(WORKER_PTR->mailbox,wc->wid);
   		LpelMailboxRecv(wc->mailbox, &msg);
   		lpel_task_t *t;
 

@@ -5,7 +5,7 @@
 
 typedef struct mailbox_t mailbox_t;
 
-mailbox_t *LpelMailboxCreate(void);
+mailbox_t *LpelMailboxCreate(int mbox_ID);
 void LpelMailboxDestroy(mailbox_t *mbox);
 void LpelMailboxSend(mailbox_t *mbox, workermsg_t *msg);
 void LpelMailboxRecv(mailbox_t *mbox, workermsg_t *msg);

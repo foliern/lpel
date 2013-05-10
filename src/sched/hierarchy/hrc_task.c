@@ -11,6 +11,8 @@
 #include "taskpriority.h"
 #include "hrc_worker.h"
 #include "readTileID.h"
+#include "debugging.h"
+#include "scc_comm_func.h"
 
 // includes for the LUT mapping
 #include "config.h"
@@ -37,9 +39,12 @@ lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
 
 	lpel_task_t *t=NULL;
 
-		if (readTileID()==MASTER){
+		if (SccGetNodeID()==MASTER){
 			// node is MASTER NODE
+			PRT_DBG("Node is MASTER --> create task!!!");
 			t = LpelMasterTaskCreate(map, func, inarg, size);
+		} else {
+			PRT_DBG("Node is WORKER --> don't create task!!!");
 		}
 	return t;
 
