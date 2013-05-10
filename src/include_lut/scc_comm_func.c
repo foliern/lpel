@@ -28,10 +28,10 @@ volatile uint64_t *luts[CORES];
 AIR atomic_inc_regs[2*CORES];
 
 //AIR function first declaration forLUT remapping synchronisation
-void atomic_inc(AIR *reg, int *value);
-void atomic_dec(AIR *reg, int value);
-void atomic_read(AIR *reg, int *value);
-void atomic_write(AIR *reg, int value);
+void atomic_incR(AIR *reg, int *value);
+void atomic_decR(AIR *reg, int value);
+void atomic_readR(AIR *reg, int *value);
+void atomic_writeR(AIR *reg, int value);
 
 
 bool remap =false;
@@ -124,15 +124,15 @@ void scc_init(){
 	   int value=-1;
 	   PRT_DBG("Wait for MASTER'S LUT MAPPING!!! \n");
 	   while(value < AIR_LUT_SYNCH_VALUE){
-		   atomic_read(&atomic_inc_regs[MASTER],&value);
+		   atomic_readR(&atomic_inc_regs[MASTER],&value);
 	   }
 	   
            if (value == (num_nodes-1))
-		   atomic_write(&atomic_inc_regs[MASTER],0);
+		   atomic_writeR(&atomic_inc_regs[MASTER],0);
 	   else
-		   atomic_inc(&atomic_inc_regs[MASTER],&value);
+		   atomic_incR(&atomic_inc_regs[MASTER],&value);
 	//debugging lines
-		atomic_read(&atomic_inc_regs[MASTER],&value);
+		atomic_readR(&atomic_inc_regs[MASTER],&value);
 		PRT_DBG("value= %d\n",value);
 	//debugging lines end		
 
@@ -188,7 +188,7 @@ if(node_location == MASTER){
 	PRT_DBG("addr: %p\n",addr);
 	cpy_mem_to_mpb(0, (void *)&addr, sizeof(uintptr_t));	
 
-	atomic_write(&atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
+	atomic_writeR(&atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
 }else{
 	cpy_mpb_to_mem(0, (void *)&addr, sizeof(uintptr_t));
     	PRT_DBG("addr: %p\n",addr);
@@ -210,7 +210,7 @@ int SccGetNodeID(void){
 //--------------------------------------------------------------------------------------
 // Increments an AIR register and returns its privious content
 //--------------------------------------------------------------------------------------
-void atomic_inc(AIR *reg, int *value)
+void atomic_incR(AIR *reg, int *value)
 {
   (*value) = (*reg->counter);
 }
@@ -220,7 +220,7 @@ void atomic_inc(AIR *reg, int *value)
 //--------------------------------------------------------------------------------------
 // Decrements an AIR register and returns its privious content
 //--------------------------------------------------------------------------------------
-void atomic_dec(AIR *reg, int value)
+void atomic_decR(AIR *reg, int value)
 {
   (*reg->counter) = value;
 }
@@ -230,7 +230,7 @@ void atomic_dec(AIR *reg, int value)
 //--------------------------------------------------------------------------------------
 // Returns the current value of an AIR register with-out modification to AIR
 //--------------------------------------------------------------------------------------
-void atomic_read(AIR *reg, int *value)
+void atomic_readR(AIR *reg, int *value)
 {
   (*value) = (*reg->init);
 }
@@ -240,7 +240,7 @@ void atomic_read(AIR *reg, int *value)
 //--------------------------------------------------------------------------------------
 // Initializes an AIR register by writing a start value
 //--------------------------------------------------------------------------------------
-void atomic_write(AIR *reg, int value)
+void atomic_writeR(AIR *reg, int value)
 {
   (*reg->init) = value;
 }
