@@ -123,15 +123,19 @@ void scc_init(){
 	   int value=-1;
 	   PRT_DBG("Wait for MASTER'S LUT MAPPING!!! \n");
 	   while(value < AIR_LUT_SYNCH_VALUE){
-		   atomic_readR(&atomic_inc_regs[MASTER],&value);
+		   //atomic_readR(&atomic_inc_regs[MASTER],&value);
+		   atomic_readR(&atomic_inc_regs[30],&value);
 	   }
 	   
            if (value == (num_nodes-1))
-		   atomic_writeR(&atomic_inc_regs[MASTER],0);
+		   //atomic_writeR(&atomic_inc_regs[MASTER],0);
+        	   atomic_writeR(&atomic_inc_regs[30],0);
 	   else
-		   atomic_incR(&atomic_inc_regs[MASTER],&value);
+		   //atomic_incR(&atomic_inc_regs[MASTER],&value);
+		   atomic_incR(&atomic_inc_regs[30],&value);
 	//debugging lines
-		atomic_readR(&atomic_inc_regs[MASTER],&value);
+		//atomic_readR(&atomic_inc_regs[MASTER],&value);
+		atomic_readR(&atomic_inc_regs[30],&value);
 		PRT_DBG("value= %d\n",value);
 	//debugging lines end		
 
@@ -187,7 +191,8 @@ if(node_location == MASTER){
 	PRT_DBG("addr: %p\n",addr);
 	cpy_mem_to_mpb(0, (void *)&addr, sizeof(uintptr_t));	
 
-	atomic_writeR(&atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
+	//atomic_writeR(&atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
+	atomic_writeR(&atomic_inc_regs[30],AIR_LUT_SYNCH_VALUE);
 }else{
 	cpy_mpb_to_mem(0, (void *)&addr, sizeof(uintptr_t));
     	PRT_DBG("addr: %p\n",addr);

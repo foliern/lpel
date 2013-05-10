@@ -43,9 +43,11 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
 
   //pthread_mutex_lock( &mbox->lock_free);
   int value=-1;
+  PRT_DBG("WAIT in GetFree");
   while(value != AIR_MBOX_SYNCH_VALUE){
   		  atomic_incR(&atomic_inc_regs[CORES+mbox->mbox_ID],&value);
   }
+  PRT_DBG("GO-ON in GetFree");
 
   if (mbox->list_free != NULL) {
     /* pop free node off */
@@ -69,6 +71,13 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
 static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 {
   //pthread_mutex_lock( &mbox->lock_free);
+	int value=-1;
+	PRT_DBG("WAIT in PutFree");
+	  while(value != AIR_MBOX_SYNCH_VALUE){
+	  		  atomic_incR(&atomic_inc_regs[CORES+mbox->mbox_ID],&value);
+	  }
+	  PRT_DBG("GO-ON in PutFree");
+
   if ( mbox->list_free == NULL) {
     node->next = NULL;
   } else {
@@ -76,6 +85,7 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
   }
   mbox->list_free = node;
   //pthread_mutex_unlock( &mbox->lock_free);
+  atomic_writeR(&atomic_inc_regs[CORES+mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
 }
 
 
@@ -163,15 +173,18 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   /* put node into inbox */
   //pthread_mutex_lock( &mbox->lock_inbox);
   int value=-1;
+  PRT_DBG("WAIT in LpelMailboxSend");
   while(value != AIR_MBOX_SYNCH_VALUE){
-		  atomic_incR(&atomic_inc_regs[CORES+mbox->mbox_ID],&value);
+		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
   }
+  PRT_DBG("GO-ON in LpelMailboxSend");
   if ( mbox->list_inbox == NULL) {
 	/* list is empty */
 	mbox->list_inbox = node;
 	node->next = node; /* self-loop */
 
 	//pthread_cond_signal( &mbox->notempty);
+	atomic_writeR(&atomic_inc_regs[40],AIR_MBOX_SYNCH_VALUE);
 
   } else {
 	/* insert stream between last node=list_inbox
@@ -182,7 +195,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   }
 
   //pthread_mutex_unlock( &mbox->lock_inbox);
-  atomic_writeR(&atomic_inc_regs[CORES+mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
+  atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
 }
 
 
@@ -194,20 +207,28 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   /* get node from inbox */
   //pthread_mutex_lock( &mbox->lock_inbox);
   int value=-1;
+  PRT_DBG("WAIT1 in LpelMailboxRecv");
   while(value != AIR_MBOX_SYNCH_VALUE){
   		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
   }
-  //while( mbox->list_inbox == NULL) {
-      //pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
-  //}
-  while(message == false){
-	  value=-1;
-	  while(value != AIR_MBOX_SYNCH_VALUE){
-    		  atomic_incR(&atomic_inc_regs[CORES+mbox->mbox_ID],&value);
+  PRT_DBG("GO-ON in LpelMailboxRecv");
+
+  if (mbox->list_inbox == NULL){
+	  atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
+	  value=-1
+	  PRT_DBG("WAIT2 in LpelMailboxRecv")
+	  while( value != AIR_MBOX_SYNCH_VALUE) {
+		  	 //pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
+		  atomic_readR(&atomic_inc_regs[30],&value);
 	  }
-	  if (mbox->list_inbox == NULL)
-		  message= true;
+	  PRT_DBG("GO-ON in LpelMailboxRecv");
   }
+
+  PRT_DBG("WAIT3 in LpelMailboxRecv");
+    while(value != AIR_MBOX_SYNCH_VALUE){
+    		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
+    }
+    PRT_DBG("GO-ON in LpelMailboxRecv");
 
 
   /*writes a message to stderror in case of expression == zero =>
@@ -224,7 +245,6 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
     mbox->list_inbox->next = node->next;
   }
   //pthread_mutex_unlock( &mbox->lock_inbox);
-  atomic_writeR(&atomic_inc_regs[CORES+mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
   atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
 
   /* copy the message */
