@@ -42,7 +42,7 @@ lpel_task_t *LpelTaskCreate( int map, lpel_taskfunc_t func,
 		if (SccGetNodeID()==MASTER){
 			// node is MASTER NODE
 			PRT_DBG("Node is MASTER --> create task!!!\n");
-			t = LpelMasterTaskCreate(map, func, inarg, size);
+//			t = LpelMasterTaskCreate(map, func, inarg, size);
 		} else {
 			PRT_DBG("Node is WORKER --> don't create task!!!\n");
 		}

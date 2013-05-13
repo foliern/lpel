@@ -98,11 +98,19 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 void LpelMailboxInit(){
 	int i;
 
-	PRT_DBG("MEMORY start address: %p\n",addr);
+	PRT_DBG("MEMORY start address: 			%p\n",addr);
 	for (i=0; i < NR_WORKERS;i++){
 		mbox[i]=addr+MEMORY_OFFSET(i)+MAILBOX_OFFSET;
-		PRT_DBG("MAILBOX %d address: %p\n",i,mbox[i]);
+//		mbox[i]->list_free  = NULL;
+//  		mbox[i]->list_inbox = NULL;
+		PRT_DBG("MAILBOX %d address: 		%p\n",i,mbox[i]);
+		PRT_DBG("mbox[%d]->list_inbox addr:  	%p\n",i,&mbox[i]->list_inbox);
+		PRT_DBG("mbox[%d]->list_inbox: 		%p\n",i,mbox[i]->list_inbox);
+		PRT_DBG("mbox[%d]->mbox_ID:	        %d\n",i,mbox[i]->mbox_ID);
 	}
+	
+
+
 }
 
 
@@ -120,6 +128,11 @@ mailbox_t *LpelMailboxCreate(int ID)
   mbox->list_free  = NULL;
   mbox->list_inbox = NULL;
 
+  PRT_DBG("MAILBOX address: 		%p\n",mbox);
+  PRT_DBG("mbox->list_inbox: 		%p\n",mbox->list_inbox);
+
+  abort(); 
+ 
   return mbox;
 }
 
@@ -178,12 +191,16 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
   }
   PRT_DBG("GO-ON in LpelMailboxSend\n");
+  PRT_DBG("MAILBOX address: %p\n",mbox);
+  PRT_DBG("mbox->list_inbox: %p\n",mbox->list_inbox);
   if ( mbox->list_inbox == NULL) {
 	/* list is empty */
 	mbox->list_inbox = node;
 	node->next = node; /* self-loop */
 
 	//pthread_cond_signal( &mbox->notempty);
+	PRT_DBG("mbox->mbox_ID: %d\n",mbox->mbox_ID);
+	PRT_DBG("mbox->notempty, set in register: %d\n",mbox->mbox_ID+40);
 	atomic_writeR(&atomic_inc_regs[mbox->mbox_ID+40],1);
 
   } else {
@@ -213,13 +230,21 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   }
   PRT_DBG("GO-ON1 in LpelMailboxRecv\n");
 
+  PRT_DBG("MAILBOX address: %p\n",mbox);
+  PRT_DBG("mbox->list_inbox: %p\n",mbox->list_inbox);
+ 
+  PRT_DBG("mbox->mbox_ID: %d\n",mbox->mbox_ID);
+  PRT_DBG("mbox->notempty, check in register: %d\n",mbox->mbox_ID+40);
+
   if (mbox->list_inbox == NULL){
 	  atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
 	  value=-1;
 	  PRT_DBG("WAIT2 in LpelMailboxRecv\n");
 	  while( value != 1) {
 		  	 //pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
+	//		PRT_DBG("mbox->notempty, check in register: %d\n",mbox->mbox_ID+40);
 		  atomic_readR(&atomic_inc_regs[mbox->mbox_ID+40],&value);
+	//		PRT_DBG("value= %d\n", value);
 	  }
 	  PRT_DBG("GO-ON2 in LpelMailboxRecv\n");
   }
