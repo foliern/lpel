@@ -211,8 +211,12 @@ if(node_location == MASTER){
 	//atomic_writeR(&atomic_inc_regs[MASTER],AIR_LUT_SYNCH_VALUE);
 	atomic_writeR(&atomic_inc_regs[30],AIR_LUT_SYNCH_VALUE);
 }else{
+
+	//TWO TIMES BECAUSE OF POINTER MOVING IN CPY_MPB_TO_MEM--> SOLUTION FIXED WRITE BECAUSE THIS ONE CAUSES PROBLEMS
+
 	cpy_mpb_to_mem(0, (void *)&addr, sizeof(uintptr_t));
-    	PRT_DBG("addr: %p\n",addr);
+    	cpy_mem_to_mpb(0, (void *)&addr, sizeof(uintptr_t));
+	PRT_DBG("addr: %p\n",addr);
 	SCCInit((void *)&addr);
 }
 

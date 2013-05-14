@@ -201,7 +201,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 	//pthread_cond_signal( &mbox->notempty);
 	PRT_DBG("mbox->mbox_ID: %d\n",mbox->mbox_ID);
 	PRT_DBG("mbox->notempty, set in register: %d\n",mbox->mbox_ID+40);
-	atomic_writeR(&atomic_inc_regs[mbox->mbox_ID+40],1);
+	atomic_incR(&atomic_inc_regs[mbox->mbox_ID+40],&value);
 
   } else {
 	/* insert stream between last node=list_inbox
@@ -240,15 +240,16 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
 	  atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
 	  value=-1;
 	  PRT_DBG("WAIT2 in LpelMailboxRecv\n");
-	  while( value != 1) {
+	  while( value < 1) {
 		  	 //pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
 	//		PRT_DBG("mbox->notempty, check in register: %d\n",mbox->mbox_ID+40);
 		  atomic_readR(&atomic_inc_regs[mbox->mbox_ID+40],&value);
 	//		PRT_DBG("value= %d\n", value);
 	  }
+	  atomic_decR(&atomic_inc_regs[mbox->mbox_ID+40],value);
 	  PRT_DBG("GO-ON2 in LpelMailboxRecv\n");
   }
-
+  value=-1;
   PRT_DBG("WAIT3 in LpelMailboxRecv\n");
     while(value != AIR_MBOX_SYNCH_VALUE){
     		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
