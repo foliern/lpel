@@ -44,9 +44,8 @@ lut_addr_t SCCPtr2Addr(void *p)
 {
   uint32_t offset;
   unsigned char lut;
-
   //if (local <= p && p <= local + local_pages * PAGE_SIZE) {
-  if (local <= p && p <= local + (MAX_PAGES-1) * PAGE_SIZE) {
+  if (local <= p && p <= local + SHM_MEMORY_SIZE) {
     offset = (p - local) % PAGE_SIZE;
     lut = LOCAL_LUT + (p - local) / PAGE_SIZE;
   } else if (remote <= p && p <= remote + remote_pages * PAGE_SIZE) {

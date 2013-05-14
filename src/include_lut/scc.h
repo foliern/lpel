@@ -7,14 +7,19 @@
 
 #include "config.h"
 #include "bool.h"
+#include "input.h"
 
 
 #define PAGE_SIZE           (16*1024*1024)
 #define LINUX_PRIV_PAGES    (20)
 #define PAGES_PER_CORE      (41)
-#define MAX_PAGES           (172)
+#define MAX_PAGES           (152) //instead of 192, because first 41 can not be used to map into
 //#define SHM_MEMORY_SIZE		(PAGE_SIZE*(MAX_PAGES-1))
-#define SHM_MEMORY_SIZE		0xAB000000
+#define SHM_MEMORY_SIZE		0x98000000
+#define LOCAL_SHMSIZE  		SHM_MEMORY_SIZE/NR_WORKERS
+#define MEMORY_OFFSET(id) 	(id *(SHM_MEMORY_SIZE/NR_WORKERS))
+#define MAILBOX_OFFSET 8
+
 
 #define CORES               (NUM_ROWS * NUM_COLS * NUM_CORES)
 #define IRQ_BIT             (0x01 << GLCFG_XINTR_BIT)

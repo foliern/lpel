@@ -143,6 +143,10 @@ void scc_init(){
 	   PRT_DBG("AIR==1 -> MASTER has finished LUT mapping.\n");
    }
 
+
+  /* 
+//LUT MAPPPING WHICH TAKES LUT ENTRIES 20-41 FROM EACH CORE AND MAPPS THEN INTO THE MASTER CORE, AFTERWARDS EACH CORE MAPS THE MASTER LUT ENTRIE 41-192 INT HIS OWN CORE
+
    if(node_location == MASTER){
        for (i = 1; i < CORES && num_pages < max_pages; i++) {
 	   for (lut = 20; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
@@ -160,21 +164,34 @@ void scc_init(){
 	   }
         }
    }
-   else{
-	for (lut = 20; lut < max_pages && num_pages < max_pages; lut++) {
+	else{
+	for (lut = 21; lut < max_pages && num_pages < max_pages; lut++) {
 		
-		LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(MASTER, lut);
+		LUT(node_location, LINUX_PRIV_PAGES + num_pages++) = LUT(MASTER,LINUX_PRIV_PAGES+lut);
                                 
                 PRT_DBG("Copy to %i  node's LUT entry Nr.: %i / %x from %i node's LUT entry Nr.: %i / %x. Num_pages: %i, Max_pages: %i\n",
-                                   node_location, LINUX_PRIV_PAGES + (num_pages-1),LINUX_PRIV_PAGES+(num_pages-1), origin,  lut, lut, num_pages-1, max_pages);
+                                   node_location, LINUX_PRIV_PAGES + (num_pages-1),LINUX_PRIV_PAGES+(num_pages-1), MASTER,LINUX_PRIV_PAGES+lut, LINUX_PRIV_PAGES+lut, num_pages-1, max_pages);
 	}
-   }
+   }   
    
-	num_pages=50;
+*/
+
+//
+num_pages=0;
+for (int i = 1; i < CORES / num_nodes && num_pages < max_pages; i++) {
+    for (int lut = 0; lut < PAGES_PER_CORE && num_pages < max_pages; lut++) {
+      LUT(node_location, PAGES_PER_CORE + num_pages++) = LUT(i * num_nodes, lut);
+    	PRT_DBG("Copy to %i  node's LUT entry Nr.: %i / %x from %i node's LUT entry Nr.: %i / %x. Num_pages: %i, Max_pages: %i\n",
+                                   node_location, PAGES_PER_CORE+ (num_pages-1),PAGES_PER_CORE+(num_pages-1), i*num_nodes,  lut, lut, num_pages-1, max_pages);
+	
+	}
+  }
+
+
+
 
 //***********************************************
 
-//LUT settings
     flush();
     START(node_location) = 0;
     END(node_location) = 0;

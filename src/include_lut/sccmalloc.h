@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define LOCAL_LUT   0x14
+//#define LOCAL_LUT   0x14
+#define LOCAL_LUT   0x29
 #define REMOTE_LUT  (LOCAL_LUT + local_pages)
 
 

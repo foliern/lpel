@@ -98,7 +98,7 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 void LpelMailboxInit(){
 	int i;
 
-	PRT_DBG("MEMORY start address: 			%p\n",addr);
+	PRT_DBG("MEMORY start address: 			%p\n",(void*)addr);
 	for (i=0; i < NR_WORKERS;i++){
 		mbox[i]=addr+MEMORY_OFFSET(i)+MAILBOX_OFFSET;
 //		mbox[i]->list_free  = NULL;
@@ -131,7 +131,7 @@ mailbox_t *LpelMailboxCreate(int ID)
   PRT_DBG("MAILBOX address: 		%p\n",mbox);
   PRT_DBG("mbox->list_inbox: 		%p\n",mbox->list_inbox);
 
-  abort(); 
+  //abort(); 
  
   return mbox;
 }
