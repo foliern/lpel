@@ -44,11 +44,6 @@ lpel_stream_t *LpelStreamCreate(int size)
 
   // specific malloc
    lpel_stream_t *s=(lpel_stream_t *) SCCMallocPtr(sizeof(lpel_stream_t));
-  // assign LUT entry to the task
-	lut_addr_t *temp_addr=(lut_addr_t*)malloc(sizeof(lut_addr_t));
-	*temp_addr=SCCPtr2Addr(s);
-  	s->addr = temp_addr;
-	free(temp_addr);
 
 
   /* reset buffer (including buffer area) */
