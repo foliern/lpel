@@ -48,9 +48,10 @@ lut_addr_t SCCPtr2Addr(void *p)
   if (local <= p && p <= local + SHM_MEMORY_SIZE) {
     offset = (p - local) % PAGE_SIZE;
     lut = LOCAL_LUT + (p - local) / PAGE_SIZE;
-  } else if (remote <= p && p <= remote + remote_pages * PAGE_SIZE) {
+  /*} else if (remote <= p && p <= remote + remote_pages * PAGE_SIZE) {
     offset = (p - remote) % PAGE_SIZE;
     lut = REMOTE_LUT + (p - remote) / PAGE_SIZE;
+  */
   } else {
     printf("Invalid pointer\n");
   }
@@ -63,8 +64,9 @@ void *SCCAddr2Ptr(lut_addr_t addr)
 {
   if (LOCAL_LUT <= addr.lut && addr.lut < LOCAL_LUT + local_pages) {
     return (void*) ((addr.lut - LOCAL_LUT) * PAGE_SIZE + addr.offset + local);
-  } else if (REMOTE_LUT <= addr.lut && addr.lut < REMOTE_LUT + remote_pages) {
+  /*} else if (REMOTE_LUT <= addr.lut && addr.lut < REMOTE_LUT + remote_pages) {
     return (void*) ((addr.lut - REMOTE_LUT) * PAGE_SIZE + addr.offset + remote);
+  */
   } else {
     printf("Invalid SCC LUT address\n");
   }
@@ -138,28 +140,48 @@ void *SCCMallocPtr(size_t size)
 
 
   if (freeList == NULL) printf("Couldn't allocate memory!");
-
+  
+  PRT_DBG("freeList:                            %p\n",freeList);
+  PRT_DBG("freeList->hdr.next:                  %p\n",freeList->hdr.next);
+  PRT_DBG("freeList->hdr.size:                  %u\n",freeList->hdr.size);
   prev = freeList;
+  PRT_DBG("prev:				%p\n",prev);
+  PRT_DBG("prev->hdr.next:                      %p\n",prev->hdr.next);
+  PRT_DBG("prev->hdr.size:                      %u\n",prev->hdr.size);
   curr = prev->hdr.next;
+  PRT_DBG("curr:				%p\n",curr);
+  PRT_DBG("curr->hdr.next:                      %p\n",curr->hdr.next);
+  PRT_DBG("curr->hdr.size:                      %u\n",curr->hdr.size);
   nunits = (size + sizeof(block_t) - 1) / sizeof(block_t) + 1;
-
+  PRT_DBG("size:				%zu\n",size);
+  PRT_DBG("nunits:				%zu\n",nunits);
   do {
+    PRT_DBG("curr->hdr.size:			%zu\n\n",curr->hdr.size);
     if (curr->hdr.size >= nunits) {
       if (curr->hdr.size == nunits) {
-        if (prev == curr) prev = NULL;
-        else prev->hdr.next = curr->hdr.next;
-
+      
+	  if (prev == curr){
+		PRT_DBG("SET prev TO NULL");
+		 prev = NULL;
+          }else{
+		 prev->hdr.next = curr->hdr.next;
+	  }
       } else if (curr->hdr.size > nunits) {
 	new = curr + nunits;
 	*new = *curr;
         new->hdr.size -= nunits;
+	PRT_DBG("new->hdr.size:                    %zu\n\n",new->hdr.size);
   	curr->hdr.size = nunits;
+//	PRT_DBG("curr->hdr.size:                    %zu\n\n",curr->hdr.size);
 
-        if (prev == curr) prev = new;{
-		prev->hdr.next = new;
-      	}
+        if (prev == curr) prev = new;
+	prev->hdr.next = new;
       }
       freeList = prev;
+      PRT_DBG("freeList:                            %p\n",freeList);
+      PRT_DBG("freeList->hdr.next:                  %p\n",freeList->hdr.next);
+      PRT_DBG("freeList->hdr.size:                  %u\n\n",freeList->hdr.size);
+      PRT_DBG("RETURN: 	                       	    %p\n\n",curr+1);
       return (void*) (curr + 1);
      }
   } while (curr != freeList && (prev = curr, curr = curr->hdr.next));

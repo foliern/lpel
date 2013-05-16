@@ -19,7 +19,7 @@
 #include "lpel_main.h"
 #include "lpelcfg.h"
 #include "worker.h"
-
+#include "debugging.h"
 
 #ifdef HAVE_PROC_CAPABILITIES
 #  include <sys/capability.h>
@@ -206,8 +206,8 @@ int LpelInit(lpel_config_t *cfg)
   _lpel_global_config = *cfg;
 
   /* check the config */
-  res = CheckConfig();
-  if (res!=0) return res;
+//  res = CheckConfig();
+//  if (res!=0) return res;
 
   /* create the cpu affinity set for used threads */
   CreateCpusets();
@@ -217,7 +217,7 @@ int LpelInit(lpel_config_t *cfg)
   assert( 0 == co_thread_init());
 #endif
 
-
+	PRT_DBG("INITIALIZE WORKERS");
   /* initialise workers */
   LpelWorkersInit( _lpel_global_config.num_workers);
 

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "hrc_lpel.h"
 #include "../modimpl/monitoring.h"
+#include "../../src/include_lut/readTileID.h"
 
 
 
@@ -136,6 +137,7 @@ static void testBasic(void)
   LpelMonInit(&cfg.mon, flags);
   LpelInit(&cfg);
 
+	if (readTileID()==0){
 
   in = LpelStreamCreate(0);
   out = PipeElement(in, 4);
@@ -148,6 +150,8 @@ static void testBasic(void)
   mt = LpelMonTaskCreate( LpelTaskGetId(intask), "intask");
   LpelTaskMonitor(intask, mt);
   LpelTaskStart(intask);
+
+	}
 
   LpelStart();
   LpelCleanup();
