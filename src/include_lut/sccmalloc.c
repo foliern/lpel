@@ -142,17 +142,17 @@ void *SCCMallocPtr(size_t size)
 
   if (freeList == NULL) printf("Couldn't allocate memory!");
   
-//  PRT_DBG("freeList:                            %p\n",freeList);
-//  PRT_DBG("freeList->hdr.next:                  %p\n",freeList->hdr.next);
-//  PRT_DBG("freeList->hdr.size:                  %zu\n",freeList->hdr.size);
+  PRT_DBG("freeList:         								%p\n",freeList);
+  PRT_DBG("freeList->hdr.next:								%p\n",freeList->hdr.next);
+  PRT_DBG("freeList->hdr.size:								%zu\n",freeList->hdr.size);
   prev = freeList;
 //  PRT_DBG("prev:				%p\n",prev);
 //  PRT_DBG("prev->hdr.next:                      %p\n",prev->hdr.next);
 //  PRT_DBG("prev->hdr.size:                      %zu\n",prev->hdr.size);
   curr = prev->hdr.next;
-//  PRT_DBG("curr:				%p\n",curr);
-//  PRT_DBG("curr->hdr.next:                      %p\n",curr->hdr.next);
-//  PRT_DBG("curr->hdr.size:                      %zu\n",curr->hdr.size);
+  PRT_DBG("curr:              								%p\n",curr);
+  PRT_DBG("curr->hdr.next:    								%p\n",curr->hdr.next);
+  PRT_DBG("curr->hdr.size:								%zu\n",curr->hdr.size);
   nunits = (size + sizeof(block_t) - 1) / sizeof(block_t) + 1;
 //  PRT_DBG("size:				%zu\n",size);
 //  PRT_DBG("nunits:				%zu\n",nunits);
@@ -221,10 +221,10 @@ void *SCCMallocPtr(size_t size)
 
       }
       freeList = prev;
-//      PRT_DBG("freeList:                            %p\n",freeList);
-//      PRT_DBG("freeList->hdr.next:                  %p\n",freeList->hdr.next);
-//      PRT_DBG("freeList->hdr.size:                  %zu\n\n",freeList->hdr.size);
-//      PRT_DBG("RETURN: 	                       	    %p\n\n",curr+1);
+      PRT_DBG("freeList:          								%p\n",freeList);
+      PRT_DBG("freeList->hdr.next:								%p\n",freeList->hdr.next);
+      PRT_DBG("freeList->hdr.size:								%zu\n\n",freeList->hdr.size);
+      PRT_DBG("RETURN:            								%p\n\n",curr+1);
         	
 //	if (msync(local,SHM_MEMORY_SIZE,MS_SYNC | MS_INVALIDATE))
 //		printf("Couldn't sync memory");

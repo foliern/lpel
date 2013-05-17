@@ -129,6 +129,7 @@ mailbox_t *LpelMailboxCreate(int ID)
   mbox->list_inbox = NULL;
 
   PRT_DBG("MAILBOX address: 		%p\n",mbox);
+  PRT_DBG("mbox->mbox_ID:             %d\n",mbox->mbox_ID);
   PRT_DBG("mbox->list_inbox: 		%p\n",mbox->list_inbox);
 
   //abort(); 
@@ -249,14 +250,15 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
 	  }
 	  atomic_decR(&atomic_inc_regs[mbox->mbox_ID+40],value);
 	  PRT_DBG("GO-ON2 in LpelMailboxRecv\n");
-  }
-  value=-1;
-  PRT_DBG("WAIT3 in LpelMailboxRecv\n");
-    while(value != AIR_MBOX_SYNCH_VALUE){
-    		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
-    }
-    PRT_DBG("GO-ON3 in LpelMailboxRecv\n");
+  	
 
+	value=-1;
+  	PRT_DBG("WAIT3 in LpelMailboxRecv\n");
+    	while(value != AIR_MBOX_SYNCH_VALUE){
+                  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
+    	}
+    	PRT_DBG("GO-ON3 in LpelMailboxRecv\n");
+  }
 
   /*writes a message to stderror in case of expression == zero =>
    *error in case of mbox->list_inbox is empty

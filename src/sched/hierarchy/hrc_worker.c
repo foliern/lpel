@@ -34,7 +34,8 @@
 
 //global variable to safe node ID
 int node_ID;
-
+//equal number of cores gets decremented each time a wrapper mbox is created, more or less for synchronisation in mailbox.c, just a temporary solution!!!
+int wrapper_mbox_ID=CORES-1;
 static void *local;
 //#define WORKER_PTR(i) (workers[(i)])
 #define WORKER_PTR worker
@@ -613,7 +614,7 @@ static void *WrapperThread( void *arg)
 }
 
 workerctx_t *LpelCreateWrapperContext(int wid) {
-	workerctx_t *wp = (workerctx_t *) malloc( sizeof( workerctx_t));
+	workerctx_t *wp = (workerctx_t *) SCCMallocPtr( sizeof( workerctx_t));
 	wp->wid = wid;
 	wp->terminate = 0;
 	/* Wrapper is excluded from scheduling module */
@@ -623,7 +624,9 @@ workerctx_t *LpelCreateWrapperContext(int wid) {
 	//wp->marked_del = NULL;
 
 	/* mailbox */
-	wp->mailbox = LpelMailboxCreate(0);
+	PRT_DBG("Create Wrapper Mailbox\n");
+	wp->mailbox = LpelMailboxCreate(wrapper_mbox_ID);
+	wrapper_mbox_ID--;
 	/* taskqueue of free tasks */
 	(void) pthread_create( &wp->thread, NULL, WrapperThread, wp);
 	(void) pthread_detach( wp->thread);
