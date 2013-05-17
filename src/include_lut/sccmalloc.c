@@ -11,7 +11,6 @@
 #include "sccmalloc.h"
 #include "bool.h"
 #include "input.h"
-//#include "configuration.h"
 #include "scc_comm_func.h"
 #include "debugging.h"
 
@@ -29,15 +28,15 @@ typedef struct {
   unsigned char size;
 } lut_state_t;
 
-void *remote;
-unsigned char local_pages;
+//void *remote;
+unsigned char local_pages=MAX_PAGES;
 int node_ID;
 
 static void *local;
 static int mem, cache;
 static block_t *freeList;
 static lut_state_t *lutState;
-static unsigned char remote_pages;
+//static unsigned char remote_pages;
 uintptr_t shmem_start_address;
 
 lut_addr_t SCCPtr2Addr(void *p)
@@ -79,15 +78,15 @@ void SCCInit(uintptr_t *addr)
 {
   node_ID= SccGetNodeID();
   // Open driver device "/dev/rckdyn011" to map memory in write-through mode 
-  mem = open("/dev/rckdyn011", O_RDWR|O_SYNC);
-  printf("mem: %i\n", mem);
+  mem = open("/dev/rckdcm", O_RDWR|O_SYNC);
+  PRT_DBG("mem: %i\n", mem);
   if (mem < 0) {
 	printf("Opening /dev/rckdyn011 failed!\n");
   }	
 
 
  if (*addr==0x0){ 
-	
+	 PRT_DBG("MASTER MMAP\n\n");
  	 local = mmap(NULL, 		SHM_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mem, LOCAL_LUT << 24);
  	 if (local == NULL) printf("Couldn't map memory!\n");
 	 else	munmap(local, SHM_MEMORY_SIZE);
@@ -95,21 +94,20 @@ void SCCInit(uintptr_t *addr)
   	if (local == NULL) printf("Couldn't map memory!\n");
 
 	*addr=local;
-
   }else{
+	PRT_DBG("WORKER MMAP\n\n");
 	local=*addr;
-
 	local = mmap((void*)local,     	SHM_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, mem, LOCAL_LUT << 24);
-        if (local == NULL) printf("Couldn't map memory!");
+
+	if (local == NULL) printf("Couldn't map memory!");
 
   }  
 
+  PRT_DBG("addr:                                %p\n",*addr);
   PRT_DBG("local:				%p\n",local);
-  PRT_DBG("addr:				%p\n",*addr);
 
   PRT_DBG("MEMORY_OFFSET(node_ID): 	%u\n",MEMORY_OFFSET(node_ID)); 
   freeList = local+MEMORY_OFFSET(node_ID);
-  
   PRT_DBG("freelist address: 		%p\n",freeList);
   	lut_addr_t *addr_t=(lut_addr_t*)malloc(sizeof(lut_addr_t));
   	*addr_t= SCCPtr2Addr(freeList);
@@ -120,17 +118,20 @@ void SCCInit(uintptr_t *addr)
 
  // freeList->hdr.size = (size * PAGE_SIZE) / sizeof(block_t);
   freeList->hdr.size = SHM_MEMORY_SIZE / sizeof(block_t);
+  /*if(msync(local,SHM_MEMORY_SIZE,MS_SYNC | MS_INVALIDATE))
+                printf("Couldn't sync memory");
+  */
 }
 
 
 
 void SCCStop(void)
 {
-  munmap(remote, remote_pages * PAGE_SIZE);
+  //munmap(remote, remote_pages * PAGE_SIZE);
   munmap(local, local_pages * PAGE_SIZE);
 
   close(mem);
-  close(cache);
+  //close(cache);
 }
 
 void *SCCMallocPtr(size_t size)
@@ -141,22 +142,22 @@ void *SCCMallocPtr(size_t size)
 
   if (freeList == NULL) printf("Couldn't allocate memory!");
   
-  PRT_DBG("freeList:                            %p\n",freeList);
-  PRT_DBG("freeList->hdr.next:                  %p\n",freeList->hdr.next);
-  PRT_DBG("freeList->hdr.size:                  %u\n",freeList->hdr.size);
+//  PRT_DBG("freeList:                            %p\n",freeList);
+//  PRT_DBG("freeList->hdr.next:                  %p\n",freeList->hdr.next);
+//  PRT_DBG("freeList->hdr.size:                  %zu\n",freeList->hdr.size);
   prev = freeList;
-  PRT_DBG("prev:				%p\n",prev);
-  PRT_DBG("prev->hdr.next:                      %p\n",prev->hdr.next);
-  PRT_DBG("prev->hdr.size:                      %u\n",prev->hdr.size);
+//  PRT_DBG("prev:				%p\n",prev);
+//  PRT_DBG("prev->hdr.next:                      %p\n",prev->hdr.next);
+//  PRT_DBG("prev->hdr.size:                      %zu\n",prev->hdr.size);
   curr = prev->hdr.next;
-  PRT_DBG("curr:				%p\n",curr);
-  PRT_DBG("curr->hdr.next:                      %p\n",curr->hdr.next);
-  PRT_DBG("curr->hdr.size:                      %u\n",curr->hdr.size);
+//  PRT_DBG("curr:				%p\n",curr);
+//  PRT_DBG("curr->hdr.next:                      %p\n",curr->hdr.next);
+//  PRT_DBG("curr->hdr.size:                      %zu\n",curr->hdr.size);
   nunits = (size + sizeof(block_t) - 1) / sizeof(block_t) + 1;
-  PRT_DBG("size:				%zu\n",size);
-  PRT_DBG("nunits:				%zu\n",nunits);
+//  PRT_DBG("size:				%zu\n",size);
+//  PRT_DBG("nunits:				%zu\n",nunits);
   do {
-    PRT_DBG("curr->hdr.size:			%zu\n\n",curr->hdr.size);
+//    PRT_DBG("curr->hdr.size:			%zu\n\n",curr->hdr.size);
     if (curr->hdr.size >= nunits) {
       if (curr->hdr.size == nunits) {
       
@@ -167,23 +168,69 @@ void *SCCMallocPtr(size_t size)
 		 prev->hdr.next = curr->hdr.next;
 	  }
       } else if (curr->hdr.size > nunits) {
+
+//	PRT_DBG("curr:                                %p\n",curr);
+//  PRT_DBG("curr->hdr.next:                      %p\n",curr->hdr.next);
+//  PRT_DBG("curr->hdr.size:                      %zu\n",curr->hdr.size);
+
+
 	new = curr + nunits;
+	
+//	        PRT_DBG("new:                                   %p\n",new);
+//        PRT_DBG("new->hdr.next:                         %p\n",new->hdr.next);
+//        PRT_DBG("new->hdr.size:                         %zu\n",new->hdr.size);
 	*new = *curr;
+//	new->hdr.next=curr->hdr.next;
+//	PRT_DBG("new->hdr.size:                         %zu\n\n\n",new->hdr.size);
+//	PRT_DBG("curr->hdr.size:                        %zu\n\n\n",curr->hdr.size);
+
+//	new->hdr.size=curr->hdr.size;
+
+//	PRT_DBG("new->hdr.size:                         %zu\n\n\n",new->hdr.size);
+//        PRT_DBG("curr->hdr.size:                        %zu\n\n\n",curr->hdr.size);
+
+
+//	        PRT_DBG("new:                                   %p\n",new);
+//        PRT_DBG("new->hdr.next:                         %p\n",new->hdr.next);
+//        PRT_DBG("new->hdr.size:                         %zu\n",new->hdr.size);
+
         new->hdr.size -= nunits;
-	PRT_DBG("new->hdr.size:                    %zu\n\n",new->hdr.size);
+
+//	PRT_DBG("new->hdr.size:                    %zu\n\n",new->hdr.size);
   	curr->hdr.size = nunits;
 //	PRT_DBG("curr->hdr.size:                    %zu\n\n",curr->hdr.size);
+	
 
+//	PRT_DBG("curr:                                	%p\n",curr);
+// 	PRT_DBG("curr->hdr.next:                      	%p\n",curr->hdr.next);
+// 	PRT_DBG("curr->hdr.size:                     	%zu\n",curr->hdr.size);
+
+//	PRT_DBG("new:					%p\n",new);
+//	PRT_DBG("new->hdr.next:				%p\n",new->hdr.next);
+// 	PRT_DBG("new->hdr.size:				%zu\n",new->hdr.size);
+
+
+//	PRT_DBG("prev:                                %p\n",prev);
+//  	PRT_DBG("prev->hdr.next:                      %p\n",prev->hdr.next);
+//  	PRT_DBG("prev->hdr.size:                      %zu\n",prev->hdr.size);
         if (prev == curr) prev = new;
 	prev->hdr.next = new;
+//	PRT_DBG("prev:                                %p\n",prev);
+//  	PRT_DBG("prev->hdr.next:                      %p\n",prev->hdr.next);
+//  	PRT_DBG("prev->hdr.size:                      %zu\n",prev->hdr.size);
+
       }
       freeList = prev;
-      PRT_DBG("freeList:                            %p\n",freeList);
-      PRT_DBG("freeList->hdr.next:                  %p\n",freeList->hdr.next);
-      PRT_DBG("freeList->hdr.size:                  %u\n\n",freeList->hdr.size);
-      PRT_DBG("RETURN: 	                       	    %p\n\n",curr+1);
-      return (void*) (curr + 1);
+//      PRT_DBG("freeList:                            %p\n",freeList);
+//      PRT_DBG("freeList->hdr.next:                  %p\n",freeList->hdr.next);
+//      PRT_DBG("freeList->hdr.size:                  %zu\n\n",freeList->hdr.size);
+//      PRT_DBG("RETURN: 	                       	    %p\n\n",curr+1);
+        	
+//	if (msync(local,SHM_MEMORY_SIZE,MS_SYNC | MS_INVALIDATE))
+//		printf("Couldn't sync memory");
+	return (void*) (curr + 1);
      }
+//	PRT_DBG("						WHILE LOOP!!!");
   } while (curr != freeList && (prev = curr, curr = curr->hdr.next));
 
 
@@ -228,7 +275,7 @@ void SCCFreePtr(void *p)
 
 unsigned char SCCMallocLut(size_t size)
 {
-  lut_state_t *curr = lutState;
+/*  lut_state_t *curr = lutState;
 
   do {
     if (curr->free && curr->size >= size) {
@@ -254,12 +301,14 @@ unsigned char SCCMallocLut(size_t size)
   } while (curr < lutState + remote_pages);
 
   printf("Not enough available LUT entries!\n");
-  return 0;
+ */ 
+ return 0;
 }
+
 
 void SCCFreeLut(void *p)
 {
-  lut_state_t *lut = lutState + (p - remote) / PAGE_SIZE;
+/*  lut_state_t *lut = lutState + (p - remote) / PAGE_SIZE;
 
   if (lut + lut->size < lutState + remote_pages && lut[lut->size].free) {
     lut->size += lut[lut->size].size;
@@ -272,13 +321,14 @@ void SCCFreeLut(void *p)
 
   lut->free = 1;
   lut[lut->size - 1] = lut[0];
+*/
 }
 
 void SCCFree(void *p)
 {
   if (local <= p && p <= local + local_pages * PAGE_SIZE) {
     SCCFreePtr(p);
-  } else if (remote <= p && p <= remote + remote_pages * PAGE_SIZE) {
+  }/* else if (remote <= p && p <= remote + remote_pages * PAGE_SIZE) {
     SCCFreeLut(p);
-  }
+  }*/
 }

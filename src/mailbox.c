@@ -179,7 +179,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   /* get a free node from recepient
    * either from the list_free list or a new one gets created */
   mailbox_node_t *node = GetFree( mbox);
-
+  PRT_DBG("Node address (in send): 					%p\n",node);
   /* copy the message */
   node->msg = *msg;
 
@@ -191,16 +191,16 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
   }
   PRT_DBG("GO-ON in LpelMailboxSend\n");
-  PRT_DBG("MAILBOX address: %p\n",mbox);
-  PRT_DBG("mbox->list_inbox: %p\n",mbox->list_inbox);
+  PRT_DBG("MAILBOX address (in send): %p\n",mbox);
+  PRT_DBG("mbox->list_inbox (in send): 					%p\n",mbox->list_inbox);
   if ( mbox->list_inbox == NULL) {
 	/* list is empty */
 	mbox->list_inbox = node;
 	node->next = node; /* self-loop */
 
 	//pthread_cond_signal( &mbox->notempty);
-	PRT_DBG("mbox->mbox_ID: %d\n",mbox->mbox_ID);
-	PRT_DBG("mbox->notempty, set in register: %d\n",mbox->mbox_ID+40);
+	PRT_DBG("mbox->mbox_ID (in send): %d\n",mbox->mbox_ID);
+	PRT_DBG("mbox->notempty, set in register (in send): %d\n",mbox->mbox_ID+40);
 	atomic_incR(&atomic_inc_regs[mbox->mbox_ID+40],&value);
 
   } else {
@@ -211,6 +211,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 	mbox->list_inbox = node;
   }
 
+  PRT_DBG("mbox->list_inbox at the end of sending: 		%p\n",mbox->list_inbox);
   //pthread_mutex_unlock( &mbox->lock_inbox);
   atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
 }

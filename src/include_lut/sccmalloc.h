@@ -10,8 +10,8 @@
 #define REMOTE_LUT  (LOCAL_LUT + local_pages)
 
 
-extern void *remote;
-extern unsigned char local_pages;
+//extern void *remote;
+//extern unsigned char local_pages;
 
 typedef struct {
   unsigned char node, lut;

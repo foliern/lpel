@@ -19,7 +19,7 @@ extern bool remap;
 
 void SNetDistribPack(void *src, ...)
 {
-  bool isData;
+/*  bool isData;
   va_list args;
   lut_addr_t *addr;
   unsigned char node;
@@ -63,12 +63,12 @@ printf("isData:%d\n",isData);
     }
   } else {
     cpy_mem_to_mpb(addr->node, src, size);
-  }
+  }*/
 }
 
 void SNetDistribUnpack(void *dst, ...)
 {
-  bool isData;
+/*  bool isData;
   size_t size;
   va_list args;
   lut_addr_t *addr;
@@ -100,5 +100,5 @@ void SNetDistribUnpack(void *dst, ...)
     *(void**) dst = SCCAddr2Ptr(*addr);
   } else {
     cpy_mpb_to_mem(node_location, dst, size);
-  }
+  }*/
 }
