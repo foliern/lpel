@@ -134,10 +134,11 @@ static void testBasic(void)
   cfg.type = HRC_LPEL;
 
   unsigned long flags = 1 << 7 - 1;
+  flags=0;
   LpelMonInit(&cfg.mon, flags);
   LpelInit(&cfg);
 
-/*	if (readTileID()==0){
+	if (readTileID()==0){
 
   in = LpelStreamCreate(0);
   out = PipeElement(in, 4);
@@ -153,7 +154,7 @@ static void testBasic(void)
   LpelTaskStart(intask);
 	printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      intask started    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	}
-*/
+
   LpelStart();
   LpelCleanup();
   LpelMonCleanup();
