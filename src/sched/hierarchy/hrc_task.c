@@ -9,19 +9,15 @@
 #include "hrc_worker.h"
 #include "lpel/monitor.h"
 #include "taskpriority.h"
-#include "hrc_worker.h"
-#include "readTileID.h"
-#include "debugging.h"
-#include "scc_comm_func.h"
+#include <readTileID.h>
+#include <debugging.h>
+#include <scc_comm_func.h>
 
 // includes for the LUT mapping
-#include "config.h"
-#include "RCCE_memcpy.c"
-#include "distribution.h"
-#include "scc.h"
-#include "sccmalloc.h"
+#include <scc_config.h>
 #include <stdarg.h>
-#include "input.h"
+#include <input.h>
+#include <pcl.h>
 
 static atomic_t taskseq = ATOMIC_INIT(0);
 
@@ -110,7 +106,7 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 	t->inarg = inarg;
 
 	/* initialize poll token to 0 */
-	atomic_init( &t->poll_token, 0);
+//	atomic_init( &t->poll_token, 0);
 
 	t->state = TASK_CREATED;
 
@@ -119,13 +115,13 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 	t->mon = NULL;
 
 	/* function, argument (data), stack base address, stacksize */
-	mctx_create( &t->mctx, TaskStartup, (void*)t, stackaddr, t->size - offset);
+/*	mctx_create( &t->mctx, TaskStartup, (void*)t, stackaddr, t->size - offset);
 #ifdef USE_MCTX_PCL
 	assert(t->mctx != NULL);
 #endif
-
+*/
 	// default scheduling info
-	t->sched_info = (sched_task_t *) malloc(sizeof(sched_task_t));
+	t->sched_info = (sched_task_t *) SCCMallocPtr(sizeof(sched_task_t));
 	t->sched_info->prior = 0;
 	t->sched_info->rec_cnt = 0;
 	t->sched_info->rec_limit = 1;

@@ -40,15 +40,15 @@ liblpel_hrc_la_SOURCES = \
 	src/sched/hierarchy/hrc_taskqueue.c \
 	src/sched/hierarchy/taskpriority.h \
 	src/sched/hierarchy/taskpriority.c \ 
-	src/sched/hierarchy/hrc_stream.c \
-	src/include_lut/config.c \
-	src/include_lut/distribution.c \
-	src/include_lut/memfun.c \
-	src/include_lut/RCCE_memcpy.c \
-	src/include_lut/scc.c \
-	src/include_lut/scc_comm_func.c \
-	src/include_lut/sccmalloc.c \
-	src/include_lut/readTileID.c 
+	src/sched/hierarchy/hrc_stream.c 
+#	src/include_lut/config.c \
+#	src/include_lut/distribution.c \
+#	src/include_lut/memfun.c \
+#	src/include_lut/RCCE_memcpy.c \
+#	src/include_lut/scc.c \
+#	src/include_lut/scc_comm_func.c \
+#	src/include_lut/sccmalloc.c \
+#	src/include_lut/readTileID.c 
 
 liblpel_hrc_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/include -I$(top_srcdir)/src/include_lut
 

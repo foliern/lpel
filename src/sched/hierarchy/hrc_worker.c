@@ -22,13 +22,12 @@
 #include "stream.h"
 //#include "mailbox.h"
 #include "lpel/monitor.h"
-#include "readTileID.h"
-#include "input.h"
-#include "sccmalloc.h"
+#include <input.h>
+#include <sccmalloc.h>
 
 //to initialize MPB and LUT
-#include "scc_comm_func.h"
-
+#include <scc_comm_func.h>
+#include <pcl.h>
 
 
 
@@ -394,7 +393,7 @@ static void MasterLoop( void)
 	do {
 		workermsg_t msg;
 
-		LpelMailboxRecv_scc(MASTER_PTR->mailbox,MASTER);
+		//LpelMailboxRecv_scc(MASTER_PTR->mailbox,MASTER);
 		LpelMailboxRecv(MASTER_PTR->mailbox, &msg);
 		PRT_DBG("MSG received, handle it!\n");
 		lpel_task_t *t;
@@ -533,8 +532,8 @@ static void WrapperLoop( workerctx_t *wp)
 		if (t != NULL) {
 			/* execute task */
 			wp->current_task = t;
-			PRT_DBG("wrapper: switch to task %d\n", t->uid);
-			mctx_switch(&wp->mctx, &t->mctx);
+			//PRT_DBG("wrapper: switch to task %d\n", t->uid);
+			//mctx_switch(&wp->mctx, &t->mctx);
 		} else {
 			/* no ready tasks */
 			LpelMailboxRecv(wp->mailbox, &msg);

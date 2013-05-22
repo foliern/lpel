@@ -16,13 +16,10 @@
 #include "hrc_worker.h"
 
 // includes for the LUT mapping
-#include "config.h"
-#include "RCCE_memcpy.c"
-#include "distribution.h"
-#include "scc.h"
-#include "sccmalloc.h"
+#include <scc_config.h>
 #include <stdarg.h>
-
+#include <pcl.h>
+#include <sccmalloc.h>
 
 static atomic_t stream_seq = ATOMIC_INIT(0);
 
