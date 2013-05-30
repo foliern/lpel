@@ -86,7 +86,7 @@ void LpelWorkersInit( int size) {
 	assert(0 <= size);
 
 	//init LUT and MPB directory's
-	scc_init();
+//	scc_init();
 	LpelMailboxInit();
 
 	num_workers = NR_WORKERS;
@@ -532,8 +532,11 @@ static void WrapperLoop( workerctx_t *wp)
 		if (t != NULL) {
 			/* execute task */
 			wp->current_task = t;
-			//PRT_DBG("wrapper: switch to task %d\n", t->uid);
-			//mctx_switch(&wp->mctx, &t->mctx);
+			PRT_DBG("wrapper: switch to task %d\n", t->uid);
+			PRT_DBG("wp->mctx:		%p\n",wp->mctx);
+			PRT_DBG("wp->mctx:              %p\n",&wp->mctx);
+			PRT_DBG("t->mctx:              %p\n",t->mctx);
+			mctx_switch(&wp->mctx, &t->mctx);
 		} else {
 			/* no ready tasks */
 			LpelMailboxRecv(wp->mailbox, &msg);

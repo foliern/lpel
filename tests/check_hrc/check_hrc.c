@@ -5,8 +5,7 @@
 #include <assert.h>
 #include "hrc_lpel.h"
 #include "../modimpl/monitoring.h"
-#include "../../../../snetInstall/include/readTileID.h"
-
+#include <../../../../snetInstall/include/scc_comm_func.h>
 
 
 
@@ -138,7 +137,7 @@ static void testBasic(void)
   LpelMonInit(&cfg.mon, flags);
   LpelInit(&cfg);
 
-	if (readTileID()==0){
+	if (SccGetNodeID()==0){
 
   in = LpelStreamCreate(0);
   out = PipeElement(in, 4);

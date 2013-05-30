@@ -115,11 +115,11 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 	t->mon = NULL;
 
 	/* function, argument (data), stack base address, stacksize */
-/*	mctx_create( &t->mctx, TaskStartup, (void*)t, stackaddr, t->size - offset);
+	mctx_create( &t->mctx, TaskStartup, (void*)t, stackaddr, t->size - offset);
 #ifdef USE_MCTX_PCL
 	assert(t->mctx != NULL);
 #endif
-*/
+
 	// default scheduling info
 	t->sched_info = (sched_task_t *) SCCMallocPtr(sizeof(sched_task_t));
 	t->sched_info->prior = 0;

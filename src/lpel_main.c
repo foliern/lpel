@@ -20,6 +20,7 @@
 #include "lpelcfg.h"
 #include "worker.h"
 #include "debugging.h"
+#include <scc_comm_func.h>
 
 #ifdef HAVE_PROC_CAPABILITIES
 #  include <sys/capability.h>
@@ -201,6 +202,8 @@ static void CreateCpusets( void)
 int LpelInit(lpel_config_t *cfg)
 {
   int res;
+
+  scc_init();
 
   /* store a local copy of cfg */
   _lpel_global_config = *cfg;
