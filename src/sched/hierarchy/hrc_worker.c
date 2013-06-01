@@ -60,13 +60,12 @@ static masterctx_t *master;
 static int *waitworkers;	// table of waiting worker
 
 
-#ifdef HAVE___THREAD
+//#ifdef HAVE___THREAD
 static __thread workerctx_t *workerctx_cur;
 static __thread masterctx_t *masterctx;
-#else /* HAVE___THREAD */
+//#else /* HAVE___THREAD */
 static pthread_key_t workerctx_key;
-static pthread_key_t masterctx_key;
-#endif /* HAVE___THREAD */
+//#endif /* HAVE___THREAD */
 
 
 
@@ -92,15 +91,14 @@ void LpelWorkersInit( int size) {
 	num_workers = NR_WORKERS;
 
 	node_ID=SccGetNodeID();
+#ifndef HAVE___THREAD
+                /* init key for thread specific data */
+//                pthread_key_create(&workerctx_key, NULL);
+#endif /* HAVE___THREAD */
 
 	if (node_ID==MASTER){
 
 		/** create MASTER */
-
-#ifndef HAVE___THREAD
-		/* init key for thread specific data */
-		pthread_key_create(&masterctx_key, NULL);
-#endif /* HAVE___THREAD */
 
 		mailbox_t *mbox = LpelMailboxCreate(node_ID);
 
@@ -112,10 +110,6 @@ void LpelWorkersInit( int size) {
 
 		/** create waitworkers array */
 
-#ifndef HAVE___THREAD
-		/* init key for thread specific data */
-		pthread_key_create(&masterctx_key, NULL);
-#endif /* HAVE___THREAD */
 
 		/* a structure is created to give the MASTER later knowledge about the participating workers
 		/* allocate worker context table */
@@ -139,10 +133,6 @@ void LpelWorkersInit( int size) {
 
 		/** create SINGLE WORKER */
 
-#ifndef HAVE___THREAD
-		/* init key for thread specific data */
-		pthread_key_create(&masterctx_key, NULL);
-#endif /* HAVE___THREAD */
 		mailbox_t *mbox = LpelMailboxCreate(node_ID);
 
 		/* allocate worker context table, but only for one worker */
@@ -488,10 +478,10 @@ static void *MasterThread( void *arg)
   masterctx_t *ms = (masterctx_t *)arg;
 
 #ifdef HAVE___THREAD
-  masterctx = ms;
+//  masterctx= ms;
 #else /* HAVE___THREAD */
   /* set pointer to worker context as TSD */
-  pthread_setspecific(masterctx_key, ms);
+//  pthread_setspecific(workerctx_key, ms);
 #endif /* HAVE___THREAD */
 
 
@@ -500,7 +490,7 @@ static void *MasterThread( void *arg)
   assert( 0 == co_thread_init());
   ms->mctx = co_current();
 #endif
-
+PRT_DBG("ms->mctx: %p\n",ms->mctx);
 
   /* assign to cores */
   ms->terminate = 0;
@@ -536,7 +526,9 @@ static void WrapperLoop( workerctx_t *wp)
 			PRT_DBG("wp->mctx:		%p\n",wp->mctx);
 			PRT_DBG("wp->mctx:              %p\n",&wp->mctx);
 			PRT_DBG("t->mctx:              %p\n",t->mctx);
-			mctx_switch(&wp->mctx, &t->mctx);
+			DCMflush();
+			//mctx_switch(&wp->mctx, &t->mctx);
+			(void) co_call(&t->mctx);
 		} else {
 			/* no ready tasks */
 			LpelMailboxRecv(wp->mailbox, &msg);
@@ -592,16 +584,17 @@ static void *WrapperThread( void *arg)
 	workerctx_t *wp = (workerctx_t *)arg;
 
 #ifdef HAVE___THREAD
-	workerctx_cur = wp;
+//	workerctx_cur = wp;
 #else /* HAVE___THREAD */
 	/* set pointer to worker context as TSD */
-	pthread_setspecific(workerctx_key, wp);
+//	pthread_setspecific(workerctx_key, wp);
 #endif /* HAVE___THREAD */
 
 #ifdef USE_MCTX_PCL
 	assert( 0 == co_thread_init());
 	wp->mctx = co_current();
 #endif
+	PRT_DBG("wp->mctx: %p\n",wp->mctx);
 
 	LpelThreadAssign( wp->wid);
 	WrapperLoop( wp);
@@ -714,10 +707,10 @@ static void *WorkerThread( void *arg)
   workerctx_t *wc = (workerctx_t *)arg;
 
 #ifdef HAVE___THREAD
-  workerctx_cur = wc;
+//  workerctx_cur = wc;
 #else /* HAVE___THREAD */
   /* set pointer to worker context as TSD */
-  pthread_setspecific(workerctx_key, wc);
+  //pthread_setspecific(workerctx_key, wc);
 #endif /* HAVE___THREAD */
 
 

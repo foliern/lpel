@@ -105,7 +105,8 @@ void LpelMailboxInit(){
 
 	PRT_DBG("MEMORY start address: 			%p\n",(void*)addr);
 	for (i=0; i < NR_WORKERS;i++){
-		mbox[i]=addr+MEMORY_OFFSET(i)+MAILBOX_OFFSET;
+		//mbox[i]=addr+MEMORY_OFFSET(i)+MAILBOX_OFFSET;
+		mbox[i]=addr+MEMORY_OFFSET(i)+0x1190;
 //		mbox[i]->list_free  = NULL;
 //  		mbox[i]->list_inbox = NULL;
 		PRT_DBG("MAILBOX %d address: 		%p\n",i,mbox[i]);

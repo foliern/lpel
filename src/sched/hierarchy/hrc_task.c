@@ -79,7 +79,8 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 //	t = valloc( size );
 
 	// specific malloc
-	t=SCCMallocPtr(sizeof(lpel_task_t));
+	//t=SCCMallocPtr(sizeof(lpel_task_t));
+	t=SCCMallocPtr(size);
 	// specific malloc for addr pointer 
 	t->addr=SCCMallocPtr(sizeof(lut_addr_t));
 	// assign LUT entry to the task
@@ -94,7 +95,9 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 	offset = (sizeof(lpel_task_t) + TASK_STACK_ALIGN-1) & ~(TASK_STACK_ALIGN-1);
 	stackaddr = (char *) t + offset;
 	t->size = size;
-
+	PRT_DBG("t: 		%p\n",t);
+	PRT_DBG("stackaddr: 	%p\n",stackaddr);
+	PRT_DBG("t->addr: 	%p\n",t->addr);
 
 	if (map == LPEL_MAP_OTHERS )	/** others wrapper or source/sink */
 		t->worker_context = LpelCreateWrapperContext(map);
@@ -115,7 +118,10 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 	t->mon = NULL;
 
 	/* function, argument (data), stack base address, stacksize */
-	mctx_create( &t->mctx, TaskStartup, (void*)t, stackaddr, t->size - offset);
+	//mctx_create( &t->mctx, TaskStartup, (void*)t, stackaddr, t->size - offset);
+	t->mctx=co_create(TaskStartup, (void*)t, stackaddr, t->size - offset);
+	printf("t->mctx: %p\n",t->mctx);
+
 #ifdef USE_MCTX_PCL
 	assert(t->mctx != NULL);
 #endif
@@ -228,7 +234,8 @@ void LpelTaskAddStream( lpel_task_t *t, lpel_stream_desc_t *des, char mode) {
 		break;
 	}
 	head = *list;
-	stream_elem_t *new = (stream_elem_t *) malloc(sizeof(stream_elem_t));
+	//stream_elem_t *new = (stream_elem_t *) malloc(sizeof(stream_elem_t));
+	stream_elem_t *new = (stream_elem_t *) SCCMallocPtr(sizeof(stream_elem_t));
 	new->stream_desc = des;
 	if (head)
 		new->next = head;
@@ -343,9 +350,9 @@ void TaskStart( lpel_task_t *t)
 
 	/* MONITORING CALLBACK */
 #ifdef USE_TASK_EVENT_LOGGING
-	if (t->mon && MON_CB(task_start)) {
-		MON_CB(task_start)(t->mon);
-	}
+//	if (t->mon && MON_CB(task_start)) {
+//		MON_CB(task_start)(t->mon);
+//	}
 #endif
 	t->sched_info->rec_cnt = 0;	// reset rec_cnt
 	t->state = TASK_RUNNING;

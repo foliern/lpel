@@ -10,7 +10,7 @@
 #include <string.h>
 #include <assert.h>
 #include "buffer.h"
-
+#include <sccmalloc.h>
 
 typedef struct entry entry;
 struct entry {
@@ -25,7 +25,8 @@ struct buffer_t{
 };
 
 static entry *createEntry(void *data) {
-  entry *e = (entry *) malloc(sizeof(entry));
+  //entry *e = (entry *) malloc(sizeof(entry));
+	entry *e = (entry *)SCCMallocPtr(sizeof(entry));
   e->data = data;
   e->next = NULL;
   return e;
@@ -40,7 +41,8 @@ static entry *createEntry(void *data) {
  */
 buffer_t *LpelBufferInit(unsigned int size)
 {
-	buffer_t *buf = (buffer_t *) malloc(sizeof(buffer_t));
+//	buffer_t *buf = (buffer_t *) malloc(sizeof(buffer_t));
+	buffer_t *buf = (buffer_t *)SCCMallocPtr(sizeof(buffer_t));
   buf->head = createEntry(NULL);
   buf->tail = buf->head;
   buf->count = 0;

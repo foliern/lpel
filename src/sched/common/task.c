@@ -175,9 +175,9 @@ void TaskStop( lpel_task_t *t)
 
   /* MONITORING CALLBACK */
 #ifdef USE_TASK_EVENT_LOGGING
-  if (t->mon && MON_CB(task_stop)) {
-    MON_CB(task_stop)(t->mon, t->state);
-  }
+//  if (t->mon && MON_CB(task_stop)) {
+//    MON_CB(task_stop)(t->mon, t->state);
+//  }
 #endif
 
 }

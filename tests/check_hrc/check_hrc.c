@@ -6,7 +6,7 @@
 #include "hrc_lpel.h"
 #include "../modimpl/monitoring.h"
 #include <../../../../snetInstall/include/scc_comm_func.h>
-
+#include <../../../../snetInstall/include/sccmalloc.h>
 
 
 typedef struct {
@@ -48,7 +48,8 @@ void *Relay(void *inarg)
 
 static channels_t *ChannelsCreate(lpel_stream_t *in, lpel_stream_t *out, int id)
 {
-  channels_t *ch = (channels_t *) malloc( sizeof(channels_t));
+  //channels_t *ch = (channels_t *) malloc( sizeof(channels_t));
+  channels_t *ch = (channels_t *) SCCMallocPtr( sizeof(channels_t));
   ch->in = in;
   ch->out = out;
   ch->id = id;
@@ -110,8 +111,9 @@ static void *Inputter(void *arg)
 
   printf("Inputter START\n");
   do {
-    buf = fgets( malloc( 120 * sizeof(char) ), 119, stdin  );
-    LpelStreamWrite( out, buf);
+    //buf = fgets( malloc( 120 * sizeof(char) ), 119, stdin  );
+   buf = fgets( SCCMallocPtr( 120 * sizeof(char) ), 119, stdin  ); 
+   LpelStreamWrite( out, buf);
   } while ( 0 != strcmp(buf, "T\n") );
 
   LpelStreamClose( out, 0);
