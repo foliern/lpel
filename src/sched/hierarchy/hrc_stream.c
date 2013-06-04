@@ -48,8 +48,8 @@ lpel_stream_t *LpelStreamCreate(int size)
 
   s->uid = fetch_and_inc( &stream_seq);
   PRODLOCK_INIT( &s->prod_lock );
-//  atomic_init( &s->n_sem, 0);
-//  atomic_init( &s->e_sem, size);
+  atomic_init( &s->n_sem, 0);
+  atomic_init( &s->e_sem, size);
   s->is_poll = 0;
   s->prod_sd = NULL;
   s->cons_sd = NULL;
@@ -80,9 +80,9 @@ void LpelStreamWrite( lpel_stream_desc_t *sd, void *item)
 
   /* MONITORING CALLBACK */
 #ifdef USE_TASK_EVENT_LOGGING
-//  if (sd->mon && MON_CB(stream_writeprepare)) {
-//    MON_CB(stream_writeprepare)(sd->mon, item);
-//  }
+  if (sd->mon && MON_CB(stream_writeprepare)) {
+    MON_CB(stream_writeprepare)(sd->mon, item);
+  }
 #endif
 
 
@@ -113,9 +113,9 @@ void LpelStreamWrite( lpel_stream_desc_t *sd, void *item)
 
     /* MONITORING CALLBACK */
 #ifdef USE_TASK_EVENT_LOGGING
-//    if (sd->mon && MON_CB(stream_wakeup)) {
-//      MON_CB(stream_wakeup)(sd->mon);
-//    }
+    if (sd->mon && MON_CB(stream_wakeup)) {
+      MON_CB(stream_wakeup)(sd->mon);
+    }
 #endif
   } else {
     /* we are the sole producer task waking the polling consumer up */
@@ -127,18 +127,18 @@ void LpelStreamWrite( lpel_stream_desc_t *sd, void *item)
 
       /* MONITORING CALLBACK */
 #ifdef USE_TASK_EVENT_LOGGING
-//      if (sd->mon && MON_CB(stream_wakeup)) {
-//        MON_CB(stream_wakeup)(sd->mon);
-//      }
+      if (sd->mon && MON_CB(stream_wakeup)) {
+        MON_CB(stream_wakeup)(sd->mon);
+      }
 #endif
     }
   }
 
   /* MONITORING CALLBACK */
 #ifdef USE_TASK_EVENT_LOGGING
-//  if (sd->mon && MON_CB(stream_writefinish)) {
-//    MON_CB(stream_writefinish)(sd->mon);
-//  }
+  if (sd->mon && MON_CB(stream_writefinish)) {
+    MON_CB(stream_writefinish)(sd->mon);
+  }
 #endif
 
   /* check if a task should be yield after writing this output record */
@@ -167,9 +167,9 @@ void *LpelStreamRead( lpel_stream_desc_t *sd)
 
   /* MONITORING CALLBACK */
 #ifdef USE_TASK_EVENT_LOGGING
-//  if (sd->mon && MON_CB(stream_readprepare)) {
-//    MON_CB(stream_readprepare)(sd->mon);
-//  }
+  if (sd->mon && MON_CB(stream_readprepare)) {
+    MON_CB(stream_readprepare)(sd->mon);
+  }
 #endif
 
   /* quasi P(n_sem) */
@@ -177,9 +177,9 @@ void *LpelStreamRead( lpel_stream_desc_t *sd)
 
 #ifdef USE_TASK_EVENT_LOGGING
     /* MONITORING CALLBACK */
-//    if (sd->mon && MON_CB(stream_blockon)) {
-//      MON_CB(stream_blockon)(sd->mon);
-//    }
+    if (sd->mon && MON_CB(stream_blockon)) {
+      MON_CB(stream_blockon)(sd->mon);
+    }
 #endif
 
     /* wait on stream: */
@@ -196,9 +196,9 @@ void *LpelStreamRead( lpel_stream_desc_t *sd)
 
   /* MONITORING CALLBACK */
 #ifdef USE_TASK_EVENT_LOGGING
-//  if (sd->mon && MON_CB(stream_readfinish)) {
-//    MON_CB(stream_readfinish)(sd->mon, item);
-//  }
+  if (sd->mon && MON_CB(stream_readfinish)) {
+    MON_CB(stream_readfinish)(sd->mon, item);
+  }
 #endif
   return item;
 }

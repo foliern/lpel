@@ -50,7 +50,7 @@
 
 #include "stream.h"
 #include "lpel/monitor.h"
-
+#include <sccmalloc.h>
 
 static atomic_t stream_seq = ATOMIC_INIT(0);
 
@@ -107,7 +107,8 @@ lpel_stream_desc_t *LpelStreamOpen( lpel_stream_t *s, char mode)
   lpel_task_t *ct = LpelTaskSelf();
 
   assert( mode == 'r' || mode == 'w' );
-  sd = (lpel_stream_desc_t *) malloc( sizeof( lpel_stream_desc_t));
+//  sd = (lpel_stream_desc_t *) malloc( sizeof( lpel_stream_desc_t));
+	sd = (lpel_stream_desc_t *)SCCMallocPtr( sizeof( lpel_stream_desc_t));
   sd->task = ct;
   sd->stream = s;
   sd->mode = mode;

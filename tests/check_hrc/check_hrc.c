@@ -67,8 +67,8 @@ lpel_stream_t *PipeElement(lpel_stream_t *in, int depth)
   out = LpelStreamCreate(0);
   ch = ChannelsCreate( in, out, depth);
   t = LpelTaskCreate( 0, Relay, ch, 8192);
-  mt = LpelMonTaskCreate(LpelTaskGetId(t), NULL);
-  LpelTaskMonitor(t, mt);
+  //mt = LpelMonTaskCreate(LpelTaskGetId(t), NULL);
+  //LpelTaskMonitor(t, mt);
   LpelTaskStart(t);
 
   printf("Created Relay %d\n", depth );
@@ -136,7 +136,7 @@ static void testBasic(void)
 
   unsigned long flags = 1 << 7 - 1;
   flags=0;
-  LpelMonInit(&cfg.mon, flags);
+//  LpelMonInit(&cfg.mon, flags);
   LpelInit(&cfg);
 
 	if (SccGetNodeID()==0){

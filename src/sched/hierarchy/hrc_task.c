@@ -19,6 +19,30 @@
 #include <input.h>
 #include <pcl.h>
 
+
+//JUST FOR DEBUGGING PURPOSE
+
+#include <ucontext.h>
+typedef ucontext_t co_core_ctx_t;
+
+//#include <setjmp.h>
+//typedef jmp_buf co_core_ctx_t;
+
+typedef struct s_co_ctx {
+	co_core_ctx_t cc;
+} co_ctx_t;
+
+
+typedef struct s_coroutine {
+	co_ctx_t ctx;
+	int alloc;
+	struct s_coroutine *caller;
+	struct s_coroutine *restarget;
+	void (*func)(void *);
+	void *data;
+} coroutine_temp;
+//END DEBUGGING DEF'S
+
 static atomic_t taskseq = ATOMIC_INIT(0);
 
 static double (*prior_cal) (int in, int out) = priorfunc1;
@@ -99,8 +123,10 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 	PRT_DBG("stackaddr: 	%p\n",stackaddr);
 	PRT_DBG("t->addr: 	%p\n",t->addr);
 
-	if (map == LPEL_MAP_OTHERS )	/** others wrapper or source/sink */
+	if (map == LPEL_MAP_OTHERS ){	/** others wrapper or source/sink */
 		t->worker_context = LpelCreateWrapperContext(map);
+		printf("--------------------WRAPPER-TASK-----------------");
+	}	
 	else
 		t->worker_context = NULL;
 
@@ -117,11 +143,14 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 
 	t->mon = NULL;
 
+	printf("\n\n!!!!!!!!!CO_CREATE!!!!!!!!!!\n");
 	/* function, argument (data), stack base address, stacksize */
 	//mctx_create( &t->mctx, TaskStartup, (void*)t, stackaddr, t->size - offset);
 	t->mctx=co_create(TaskStartup, (void*)t, stackaddr, t->size - offset);
 	printf("t->mctx: %p\n",t->mctx);
-
+	coroutine_temp *co = (coroutine_temp *) t->mctx;
+	printf("co: %p\n",co);
+	printf("co->ctx: %p\n",co->ctx);
 #ifdef USE_MCTX_PCL
 	assert(t->mctx != NULL);
 #endif

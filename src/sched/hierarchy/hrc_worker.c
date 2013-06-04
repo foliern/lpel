@@ -93,7 +93,7 @@ void LpelWorkersInit( int size) {
 	node_ID=SccGetNodeID();
 #ifndef HAVE___THREAD
                 /* init key for thread specific data */
-//                pthread_key_create(&workerctx_key, NULL);
+                pthread_key_create(&workerctx_key, NULL);
 #endif /* HAVE___THREAD */
 
 	if (node_ID==MASTER){
@@ -478,10 +478,10 @@ static void *MasterThread( void *arg)
   masterctx_t *ms = (masterctx_t *)arg;
 
 #ifdef HAVE___THREAD
-//  masterctx= ms;
+  masterctx= ms;
 #else /* HAVE___THREAD */
   /* set pointer to worker context as TSD */
-//  pthread_setspecific(workerctx_key, ms);
+  pthread_setspecific(workerctx_key, ms);
 #endif /* HAVE___THREAD */
 
 
@@ -528,7 +528,7 @@ static void WrapperLoop( workerctx_t *wp)
 			PRT_DBG("t->mctx:              %p\n",t->mctx);
 			DCMflush();
 			//mctx_switch(&wp->mctx, &t->mctx);
-			(void) co_call(&t->mctx);
+			(void) co_call(t->mctx);
 		} else {
 			/* no ready tasks */
 			LpelMailboxRecv(wp->mailbox, &msg);
@@ -549,7 +549,7 @@ static void WrapperLoop( workerctx_t *wp)
 				}
 				if (t->mon && MON_CB(task_assign)) {
 					MON_CB(task_assign)(t->mon, wp->mon);
-				}
+			}
 #endif
 				break;
 
@@ -562,7 +562,7 @@ static void WrapperLoop( workerctx_t *wp)
 #ifdef USE_LOGGING
 				if (t->mon && MON_CB(task_assign)) {
 					MON_CB(task_assign)(t->mon, wp->mon);
-				}
+		 				}
 #endif
 				break;
 			default:
@@ -584,10 +584,10 @@ static void *WrapperThread( void *arg)
 	workerctx_t *wp = (workerctx_t *)arg;
 
 #ifdef HAVE___THREAD
-//	workerctx_cur = wp;
+	workerctx_cur = wp;
 #else /* HAVE___THREAD */
 	/* set pointer to worker context as TSD */
-//	pthread_setspecific(workerctx_key, wp);
+	pthread_setspecific(workerctx_key, wp);
 #endif /* HAVE___THREAD */
 
 #ifdef USE_MCTX_PCL
@@ -679,8 +679,11 @@ static void WorkerLoop( workerctx_t *wc)
   	  		MON_CB(task_assign)(t->mon, wc->mon);
   	  	}
 #endif
-  	  	mctx_switch(&wc->mctx, &t->mctx);
-  	  	//task return here
+  		PRT_DBG("t->mctx:              %p\n",t->mctx);
+		DCMflush();  
+		//mctx_switch(&wc->mctx, &t->mctx);
+  	  	(void) co_call(t->mctx);
+		//task return here
   	  	assert(t->state != TASK_RUNNING);
   	  	if (t->state != TASK_ZOMBIE) {
   	  		t->worker_context = NULL;
@@ -707,10 +710,10 @@ static void *WorkerThread( void *arg)
   workerctx_t *wc = (workerctx_t *)arg;
 
 #ifdef HAVE___THREAD
-//  workerctx_cur = wc;
+  workerctx_cur = wc;
 #else /* HAVE___THREAD */
   /* set pointer to worker context as TSD */
-  //pthread_setspecific(workerctx_key, wc);
+  pthread_setspecific(workerctx_key, wc);
 #endif /* HAVE___THREAD */
 
 
@@ -810,5 +813,6 @@ void LpelWorkerTaskBlock(lpel_task_t *t) {
 void LpelWorkerDispatcher( lpel_task_t *t) {
 	workerctx_t *wc = t->worker_context;
 	wc->current_task = NULL;
-	mctx_switch( &t->mctx, &wc->mctx);
+	//mctx_switch( &t->mctx, &wc->mctx);
+	(void)co_call(wc->mctx);
 }
