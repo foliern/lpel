@@ -32,6 +32,7 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_task.lo: \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/lib/gcc/i586-unknown-linux-gnu/4.6.1/include/stdarg.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/stdio_lim.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/sys_errlist.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/stdio.h \
  src/include/arch/atomic.h src/include/arch/atomic-builtin.h \
  src/sched/hierarchy/hrc_task.h include/hrc_lpel.h include/lpel.h \
  src/include/task.h src/include/arch/mctx.h src/include/arch/mctx-pcl.h \
@@ -41,6 +42,8 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_task.lo: \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/stdint.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/wchar.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/string.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/string.h \
+ /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/string2.h \
  src/include/arch/mctx.h src/include/stream.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/pthread.h \
  /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/sched.h \
@@ -150,6 +153,8 @@ src/sched/hierarchy/liblpel_hrc_la-hrc_task.lo: \
 
 /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/sys_errlist.h:
 
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/stdio.h:
+
 src/include/arch/atomic.h:
 
 src/include/arch/atomic-builtin.h:
@@ -179,6 +184,10 @@ src/include/arch/atomic.h:
 /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/wchar.h:
 
 /shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/string.h:
+
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/string.h:
+
+/shared/foliern/sccLinux/buildroot-2011.11/output/host/usr/i586-unknown-linux-gnu/sysroot/usr/include/bits/string2.h:
 
 src/include/arch/mctx.h:
 

@@ -146,7 +146,10 @@ lpel_task_t *LpelMasterTaskCreate( int map, lpel_taskfunc_t func,
 	printf("\n\n!!!!!!!!!CO_CREATE!!!!!!!!!!\n");
 	/* function, argument (data), stack base address, stacksize */
 	//mctx_create( &t->mctx, TaskStartup, (void*)t, stackaddr, t->size - offset);
-	t->mctx=co_create(TaskStartup, (void*)t, stackaddr, t->size - offset);
+	// t->mctx=co_create(TaskStartup, (void*)t, stackaddr, t->size - offset);
+
+	t->mctx=co_create(TaskStartup, (void*)t, NULL,8192);
+	
 	printf("t->mctx: %p\n",t->mctx);
 	coroutine_temp *co = (coroutine_temp *) t->mctx;
 	printf("co: %p\n",co);

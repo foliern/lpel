@@ -529,6 +529,7 @@ static void WrapperLoop( workerctx_t *wp)
 			DCMflush();
 			//mctx_switch(&wp->mctx, &t->mctx);
 			(void) co_call(t->mctx);
+			 DCMflush();
 		} else {
 			/* no ready tasks */
 			LpelMailboxRecv(wp->mailbox, &msg);
@@ -683,6 +684,7 @@ static void WorkerLoop( workerctx_t *wc)
 		DCMflush();  
 		//mctx_switch(&wc->mctx, &t->mctx);
   	  	(void) co_call(t->mctx);
+		 DCMflush();
 		//task return here
   	  	assert(t->state != TASK_RUNNING);
   	  	if (t->state != TASK_ZOMBIE) {
@@ -814,5 +816,7 @@ void LpelWorkerDispatcher( lpel_task_t *t) {
 	workerctx_t *wc = t->worker_context;
 	wc->current_task = NULL;
 	//mctx_switch( &t->mctx, &wc->mctx);
+	 DCMflush();
 	(void)co_call(wc->mctx);
+	 DCMflush();
 }
