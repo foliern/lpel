@@ -69,7 +69,9 @@ void LpelStreamDestroy( lpel_stream_t *s)
   atomic_destroy( &s->n_sem);
   atomic_destroy( &s->e_sem);
   LpelBufferCleanup( s->buffer);
-  free( s);
+  
+  //free( s);
+	SCCFreePtr(s);
 }
 
 
@@ -169,7 +171,8 @@ void LpelStreamClose( lpel_stream_desc_t *sd, int destroy_s)
   if (destroy_s) {
     LpelStreamDestroy( sd->stream);
   }
-  free(sd);
+  //free(sd);
+	SCCFreePtr(sd);
 }
 
 

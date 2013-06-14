@@ -45,12 +45,12 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
 
   //pthread_mutex_lock( &mbox->lock_free);
   int value=-1;
-  PRT_DBG("WAIT in GetFree\n");
+  //PRT_DBG("WAIT in GetFree\n");
   while(value != AIR_MBOX_SYNCH_VALUE){
   		  atomic_incR(&atomic_inc_regs[CORES+mbox->mbox_ID],&value);
   }
   DCMflush();
-  PRT_DBG("GO-ON in GetFree\n");
+  //PRT_DBG("GO-ON in GetFree\n");
 
   if (mbox->list_free != NULL) {
     /* pop free node off */
@@ -76,11 +76,11 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 {
   //pthread_mutex_lock( &mbox->lock_free);
 	int value=-1;
-	PRT_DBG("WAIT in PutFree\n");
+	//PRT_DBG("WAIT in PutFree\n");
 	  while(value != AIR_MBOX_SYNCH_VALUE){
 	  		  atomic_incR(&atomic_inc_regs[CORES+mbox->mbox_ID],&value);
 	  }
-	  PRT_DBG("GO-ON in PutFree\n");
+	  //PRT_DBG("GO-ON in PutFree\n");
   DCMflush();
   if ( mbox->list_free == NULL) {
     node->next = NULL;
@@ -170,7 +170,8 @@ void LpelMailboxDestroy( mailbox_t *mbox)
     node = mbox->list_free;
     mbox->list_free = node->next; /* can be NULL */
     /* free the memory for the node */
-    free( node);
+    //free( node);
+	SCCFreePtr(node);
   }
   //pthread_mutex_unlock( &mbox->lock_free);
 
@@ -179,7 +180,8 @@ void LpelMailboxDestroy( mailbox_t *mbox)
   //pthread_mutex_destroy( &mbox->lock_inbox);
   //pthread_cond_destroy(  &mbox->notempty);
 
-  free(mbox);
+  //free(mbox);
+	SCCFreePtr(mbox);
 }
 
 void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
@@ -187,7 +189,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   /* get a free node from recepient
    * either from the list_free list or a new one gets created */
   mailbox_node_t *node = GetFree( mbox);
-  PRT_DBG("Node address (in send):						%p\n",node);
+  //PRT_DBG("Node address (in send):						%p\n",node);
   /* copy the message */
   node->msg = *msg;
 
@@ -199,17 +201,17 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
   }
   DCMflush();
-  PRT_DBG("GO-ON in LpelMailboxSend\n");
-  PRT_DBG("MAILBOX address (in send):					%p\n",mbox);
-  PRT_DBG("mbox->list_inbox (in send):					%p\n",mbox->list_inbox);
+  //PRT_DBG("GO-ON in LpelMailboxSend\n");
+  //PRT_DBG("MAILBOX address (in send):					%p\n",mbox);
+  //PRT_DBG("mbox->list_inbox (in send):					%p\n",mbox->list_inbox);
   if ( mbox->list_inbox == NULL) {
 	/* list is empty */
 	mbox->list_inbox = node;
 	node->next = node; /* self-loop */
 
 	//pthread_cond_signal( &mbox->notempty);
-	PRT_DBG("mbox->mbox_ID (in send):					%d\n",mbox->mbox_ID);
-	PRT_DBG("mbox->notempty, set in register (in send):			%d\n",mbox->mbox_ID+40);
+	//PRT_DBG("mbox->mbox_ID (in send):					%d\n",mbox->mbox_ID);
+	//PRT_DBG("mbox->notempty, set in register (in send):			%d\n",mbox->mbox_ID+40);
 	atomic_incR(&atomic_inc_regs[mbox->mbox_ID+40],&value);
 
   } else {
@@ -221,9 +223,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   }
 
   DCMflush();
-	PRT_DBG("SLEEP \n");
-//	sleep(10);
-  PRT_DBG("mbox->list_inbox at the end of sending:				%p\n",mbox->list_inbox);
+  //PRT_DBG("mbox->list_inbox at the end of sending:				%p\n",mbox->list_inbox);
   //pthread_mutex_unlock( &mbox->lock_inbox);
   atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
 }
@@ -237,18 +237,18 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   /* get node from inbox */
   //pthread_mutex_lock( &mbox->lock_inbox);
   int value=-1;
-  PRT_DBG("WAIT1 in LpelMailboxRecv\n");
+  //PRT_DBG("WAIT1 in LpelMailboxRecv\n");
   while(value != AIR_MBOX_SYNCH_VALUE){
   		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
   }
   DCMflush();
-  PRT_DBG("GO-ON1 in LpelMailboxRecv\n");
+  //PRT_DBG("GO-ON1 in LpelMailboxRecv\n");
 
-  PRT_DBG("MAILBOX address:						%p\n",mbox);
-  PRT_DBG("mbox->list_inbox:						%p\n",mbox->list_inbox);
+  //PRT_DBG("MAILBOX address:						%p\n",mbox);
+  //PRT_DBG("mbox->list_inbox:						%p\n",mbox->list_inbox);
  
-  PRT_DBG("mbox->mbox_ID:							%d\n",mbox->mbox_ID);
-  PRT_DBG("mbox->notempty, check in register:				%d\n",mbox->mbox_ID+40);
+  //PRT_DBG("mbox->mbox_ID:							%d\n",mbox->mbox_ID);
+  //PRT_DBG("mbox->notempty, check in register:				%d\n",mbox->mbox_ID+40);
 
   if (mbox->list_inbox == NULL){
 	  atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
@@ -261,22 +261,22 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
 //			PRT_DBG("value= %d\n", value);
 	  }
 	//  atomic_decR(&atomic_inc_regs[mbox->mbox_ID+40],value);
-	  PRT_DBG("GO-ON2 in LpelMailboxRecv\n");
+	  //PRT_DBG("GO-ON2 in LpelMailboxRecv\n");
   	
 
 	value=-1;
-  	PRT_DBG("WAIT3 in LpelMailboxRecv\n");
+  	//PRT_DBG("WAIT3 in LpelMailboxRecv\n");
     	while(value != AIR_MBOX_SYNCH_VALUE){
                   atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
     	}
 
-    	PRT_DBG("GO-ON3 in LpelMailboxRecv\n");
- 	PRT_DBG("MAILBOX address:                                             %p\n",mbox);
- 	PRT_DBG("mbox->list_inbox:                                            %p\n",mbox->list_inbox); 
+    //	PRT_DBG("GO-ON3 in LpelMailboxRecv\n");
+// 	PRT_DBG("MAILBOX address:                                             %p\n",mbox);
+ //	PRT_DBG("mbox->list_inbox:                                            %p\n",mbox->list_inbox); 
 	DCMflush();
  }
-	PRT_DBG("MAILBOX address:                                             %p\n",mbox);
-        PRT_DBG("mbox->list_inbox:                                            %p\n",mbox->list_inbox);
+	//PRT_DBG("MAILBOX address:                                             %p\n",mbox);
+        //PRT_DBG("mbox->list_inbox:                                            %p\n",mbox->list_inbox);
 
   /*writes a message to stderror in case of expression == zero =>
    *error in case of mbox->list_inbox is empty
@@ -288,7 +288,7 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   if ( node == mbox->list_inbox) {
     /* self-loop, just single node */
     mbox->list_inbox = NULL;
-	PRT_DBG("Mailbox is empty reset atomic_inc_regs: %d\n",mbox->mbox_ID+40);
+	//PRT_DBG("Mailbox is empty reset atomic_inc_regs: %d\n",mbox->mbox_ID+40);
 	atomic_writeR(&atomic_inc_regs[mbox->mbox_ID+40],0);
   } else {
     mbox->list_inbox->next = node->next;

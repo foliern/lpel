@@ -4,10 +4,11 @@
 #include <string.h>
 #include <assert.h>
 #include "hrc_lpel.h"
-#include "../modimpl/monitoring.h"
-#include <../../../../snetInstall/include/scc_comm_func.h>
-#include <../../../../snetInstall/include/sccmalloc.h>
-
+//#include "../modimpl/monitoring.h"
+//#include <../../../../snetInstall/include/scc_comm_func.h>
+//#include <../../../../snetInstall/include/sccmalloc.h>
+#include "scc_comm_func.h"
+#include "sccmalloc.h"
 
 typedef struct {
   lpel_stream_t *in, *out;
@@ -40,7 +41,8 @@ void *Relay(void *inarg)
   } // end while
   LpelStreamClose( in, 1);
   LpelStreamClose( out, 0);
-  free(ch);
+  //free(ch);
+  SCCFreePtr(ch);
   printf("Relay %d TERM\n", id);
   return NULL;
 }
@@ -88,12 +90,13 @@ static void *Outputter(void *arg)
   while (!term) {
     item = LpelStreamRead(in);
     assert( item != NULL );
-    printf("Out: %s", item );
+    printf("\n\n*************************************\nOut: %s\n*************************************\n", item );
 
     if ( 0 == strcmp( item, "T\n")) {
       term = 1;
     }
-    free( item);
+    //free( item);
+	SCCFreePtr(item);
   } // end while
 
   LpelStreamClose( in, 1);
@@ -109,15 +112,17 @@ static void *Inputter(void *arg)
   lpel_stream_desc_t *out = LpelStreamOpen((lpel_stream_t*)arg, 'w'); 
   char *buf;
 
-  printf("Inputter START\n");
+  printf("\nInputter START\n\n");
   do {
     //buf = fgets( malloc( 120 * sizeof(char) ), 119, stdin  );
+   
    buf = fgets( SCCMallocPtr( 120 * sizeof(char) ), 119, stdin  ); 
+   printf("\nLPEL STREAM WRITE\n\n");
    LpelStreamWrite( out, buf);
   } while ( 0 != strcmp(buf, "T\n") );
 
   LpelStreamClose( out, 0);
-  printf("Inputter TERM\n");
+  printf("\nInputter TERM\n\n");
   return NULL;
 }
 

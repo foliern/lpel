@@ -189,7 +189,8 @@ void LpelWorkersCleanup( void) {
 		LpelMailboxDestroy(worker->mailbox);
 		/* free workers tables */
 		//free( workers);
-		free(worker);
+		//free(worker);
+		SCCFreePtr(worker);
 
 #ifndef HAVE___THREAD
 		pthread_key_delete(workerctx_key);
@@ -201,8 +202,8 @@ void LpelWorkersCleanup( void) {
 
 		PRT_DBG("CLEAN; master finished");
 		/* free waitworkers tables */
-		free( waitworkers);
-
+		//free( waitworkers);
+		SCCFreePtr(waitworkers);
 		/* clean up master's mailbox */
 
 		workermsg_t msg;
@@ -213,7 +214,8 @@ void LpelWorkersCleanup( void) {
 
 		LpelMailboxDestroy(master->mailbox);
 		LpelTaskqueueDestroy(master->ready_tasks);
-		free(master);
+		//free(master);
+		SCCFreePtr(master);
 	}
 }
 
@@ -330,7 +332,10 @@ static void sendWakeup( mailbox_t *mb, lpel_task_t *t)
 	workermsg_t msg;
 	msg.type = WORKER_MSG_WAKEUP;
 	msg.body.task = t;
-	LpelMailboxSend(mb, &msg);
+	if (mb == NULL)
+		LpelMailboxSend_scc(MASTER, &msg);
+	else
+		LpelMailboxSend(mb, &msg);
 }
 
 /*******************************************************************************
@@ -601,8 +606,8 @@ static void *WrapperThread( void *arg)
 	WrapperLoop( wp);
 
 	LpelMailboxDestroy(wp->mailbox);
-	free( wp);
-
+	//free( wp);
+	SCCFreePtr(wp);
 #ifdef USE_MCTX_PCL
 	co_thread_cleanup();
 #endif
@@ -794,16 +799,17 @@ void LpelWorkerSelfTaskYield(lpel_task_t *t){
 void LpelWorkerTaskWakeup( lpel_task_t *t) {
 	workerctx_t *wc = t->worker_context;
 	PRT_DBG("worker %d: send wake up task %d\n", LpelWorkerSelf()->wid, t->uid);
-	/*if (wc == NULL)
-		sendWakeup(MASTER_PTR->mailbox, t);
+	
+	if (wc == NULL)
+		sendWakeup(NULL, t);
 	else {
 		if (wc->wid < 0)
 			sendWakeup(wc->mailbox, t);
 		else
-			sendWakeup(MASTER_PTR->mailbox, t);
-	}*/
+			sendWakeup(NULL, t);
+	}
 	// a task will be always send to the Master
-	sendWakeup(MASTER_PTR->mailbox, t);
+	//sendWakeup(MASTER_PTR->mailbox, t);
 }
 
 void LpelWorkerTaskBlock(lpel_task_t *t) {

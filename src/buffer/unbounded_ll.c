@@ -57,8 +57,10 @@ buffer_t *LpelBufferInit(unsigned int size)
  */
 void  LpelBufferCleanup(buffer_t *buf)
 {
-	 free(buf->head);
-	 free(buf);
+	 //free(buf->head);
+	SCCFreePtr(buf->head);
+	 // free(buf);
+	SCCFreePtr(buf);
 }
 
 
@@ -93,7 +95,9 @@ void LpelBufferPop( buffer_t *buf)
 	  entry *t = buf->head;
 	  buf->head = t->next;
 	  buf->count--;
-	  free(t);
+	 
+	 //free(t);
+	SCCFreePtr(t);
 }
 
 

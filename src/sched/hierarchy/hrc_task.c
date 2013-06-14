@@ -197,9 +197,12 @@ void LpelTaskDestroy( lpel_task_t *t)
 
 	assert(t->sched_info->in_streams == NULL);
 	assert(t->sched_info->out_streams == NULL);
-	free(t->sched_info);
+	
+	//free(t->sched_info);
+	SCCFreePtr(t->sched_info);
 	/* free the TCB itself*/
-	free(t);
+	//free(t);
+	SCCFreePtr(t);
 }
 
 
@@ -310,7 +313,8 @@ void LpelTaskRemoveStream( lpel_task_t *t, lpel_stream_desc_t *des, char mode) {
 	else
 		prev->next = head->next;
 
-	free(head);
+	//free(head);
+	SCCFreePtr(head);
 }
 
 

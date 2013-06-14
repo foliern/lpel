@@ -141,8 +141,10 @@ int LpelTaskqueueSize(taskqueue_t *tq){
  * Free memory of the task queue
  */
 void LpelTaskqueueDestroy(taskqueue_t *tq){
-  free (tq->heap);
-  free(tq);
+  //free (tq->heap);
+	SCCFreePtr(tq->heap); 
+ //free(tq);
+	SCCFreePtr(tq);
 }
 
 /*
