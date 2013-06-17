@@ -194,7 +194,6 @@ void LpelWorkersCleanup( void) {
 
 #ifndef HAVE___THREAD
 		pthread_key_delete(workerctx_key);
-		pthread_key_delete(workerctx_key);
 #endif /* HAVE___THREAD */
 	}else{
 	    /* wait for the master to finish */
@@ -250,9 +249,12 @@ void LpelWorkersSpawn( void) {
 void LpelWorkersTerminate(void) {
 	workermsg_t msg;
 	msg.type = WORKER_MSG_TERMINATE;
-	LpelMailboxSend(MASTER_PTR->mailbox, &msg);
-
-	LpelWorkerBroadcast(&msg);
+	//LpelMailboxSend(MASTER_PTR->mailbox, &msg);
+	LpelMailboxSend_scc(MASTER, &msg);
+	if (node_ID==MASTER)
+		LpelWorkerBroadcast(&msg);
+	else
+		printf("Wait for TERMINATION msg..")
 }
 
 /**
@@ -461,10 +463,10 @@ static void MasterLoop( void)
 			t = LpelTaskqueuePop(MASTER_PTR->ready_tasks);
 			break;
 
-//		case WORKER_MSG_PRIORITY:
-//			t = msg.body.task;
-//			updatePriorityNeigh(MASTER_PTR->ready_tasks, t);
-//			break;
+		case WORKER_MSG_PRIORITY:
+			t = msg.body.task;
+			updatePriorityNeigh(MASTER_PTR->ready_tasks, t);
+			break;
 
 		case WORKER_MSG_TERMINATE:
 			assert((LpelTaskqueueSize(MASTER_PTR->ready_tasks) == 0));
@@ -495,7 +497,7 @@ static void *MasterThread( void *arg)
   assert( 0 == co_thread_init());
   ms->mctx = co_current();
 #endif
-PRT_DBG("ms->mctx: %p\n",ms->mctx);
+//PRT_DBG("ms->mctx: %p\n",ms->mctx);
 
   /* assign to cores */
   ms->terminate = 0;
@@ -528,10 +530,10 @@ static void WrapperLoop( workerctx_t *wp)
 			/* execute task */
 			wp->current_task = t;
 			PRT_DBG("wrapper: switch to task %d\n", t->uid);
-			PRT_DBG("wp->mctx:		%p\n",wp->mctx);
+/*			PRT_DBG("wp->mctx:		%p\n",wp->mctx);
 			PRT_DBG("wp->mctx:              %p\n",&wp->mctx);
 			PRT_DBG("t->mctx:              %p\n",t->mctx);
-			DCMflush();
+*/			DCMflush();
 			//mctx_switch(&wp->mctx, &t->mctx);
 			(void) co_call(t->mctx);
 			 DCMflush();
@@ -734,6 +736,7 @@ static void *WorkerThread( void *arg)
   wc->current_task = NULL;
   //wc->marked_del = NULL;
 
+//NOT SURE WHAT HAPPENS HERE!!!
     //LpelThreadAssign( wc->wid + 1);		// 0 is for the master
     LpelThreadAssign(LPEL_MAP_WORKER);		// 0 is for the master
     WorkerLoop( wc);
@@ -801,6 +804,7 @@ void LpelWorkerTaskWakeup( lpel_task_t *t) {
 	PRT_DBG("worker %d: send wake up task %d\n", LpelWorkerSelf()->wid, t->uid);
 	
 	if (wc == NULL)
+		//NULL means send it to MASTER'S MAilbox
 		sendWakeup(NULL, t);
 	else {
 		if (wc->wid < 0)
@@ -808,8 +812,6 @@ void LpelWorkerTaskWakeup( lpel_task_t *t) {
 		else
 			sendWakeup(NULL, t);
 	}
-	// a task will be always send to the Master
-	//sendWakeup(MASTER_PTR->mailbox, t);
 }
 
 void LpelWorkerTaskBlock(lpel_task_t *t) {
