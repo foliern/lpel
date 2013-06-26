@@ -27,7 +27,7 @@ struct mailbox_t {
   //pthread_cond_t   notempty;
 	pthread_mutex_t  		*lock_free;
 	pthread_mutex_t 		*lock_inbox;
-	pthread_cond_t 			*notempty;
+	pthread_mutex_t			*notempty;
 	pthread_mutexattr_t 	*attr;
 
   int mbox_ID;
@@ -50,15 +50,16 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
 
   //pthread_mutex_lock( &mbox->lock_free);
   int value=-1;
-  //PRT_DBG("WAIT in GetFree\n");
+  PRT_DBG("WAIT in GetFree\n");
   /*while(value != AIR_MBOX_SYNCH_VALUE){
   		  atomic_incR(&atomic_inc_regs[CORES+mbox->mbox_ID],&value);
   }*/
-  while(pthread_mutex_trylock(mbox->lock_free) != 0){
+  DCMflush();
+/*  while(pthread_mutex_trylock(mbox->lock_free) != 0){
     			DCMflush();
   }
-
-  //PRT_DBG("GO-ON in GetFree\n");
+  DCMflush();
+*/  PRT_DBG("GO-ON in GetFree\n");
 
   if (mbox->list_free != NULL) {
     /* pop free node off */
@@ -72,8 +73,9 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
   DCMflush();
   //pthread_mutex_unlock( &mbox->lock_free);
   //atomic_writeR(&atomic_inc_regs[CORES+mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
-  pthread_mutex_unlock(mbox->lock_free);
-
+  
+//pthread_mutex_unlock(mbox->lock_free);
+ // DCMflush();
   return node;
 }
 
@@ -85,15 +87,14 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 {
   //pthread_mutex_lock( &mbox->lock_free);
 	int value=-1;
-	//PRT_DBG("WAIT in PutFree\n");
+	PRT_DBG("WAIT in PutFree\n");
 	  /*while(value != AIR_MBOX_SYNCH_VALUE){
 	  		  atomic_incR(&atomic_inc_regs[CORES+mbox->mbox_ID],&value);
-	  }*/
-		while(pthread_mutex_trylock(mbox->lock_free) != 0){
+	  }*/   DCMflush();
+/*		while(pthread_mutex_trylock(mbox->lock_free) != 0){
 	    			DCMflush();
 		}
-
-	  //PRT_DBG("GO-ON in PutFree\n");
+*/	  PRT_DBG("GO-ON in PutFree\n");
   DCMflush();
   if ( mbox->list_free == NULL) {
     node->next = NULL;
@@ -103,8 +104,9 @@ static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
   mbox->list_free = node;
   DCMflush();
   //pthread_mutex_unlock( &mbox->lock_free);
-  atomic_writeR(&atomic_inc_regs[CORES+mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
-  pthread_mutex_unlock( mbox->lock_free);
+  //atomic_writeR(&atomic_inc_regs[CORES+mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
+//  pthread_mutex_unlock( mbox->lock_free);
+//  DCMflush();
 }
 
 
@@ -145,20 +147,18 @@ mailbox_t *LpelMailboxCreate(int ID)
   //pthread_mutex_init( &mbox->lock_inbox, NULL);
   //pthread_cond_init(  &mbox->notempty,   NULL);
 
-  int *count;
-  count=SCCMallocPtr(sizeof(int));
-  *count=1;
   mbox->lock_inbox= SCCMallocPtr(sizeof(pthread_mutex_t));
   mbox->lock_free= SCCMallocPtr(sizeof(pthread_mutex_t));
-  mbox->notempty = SCCMallocPtr(sizeof(pthread_cond_t));
+ // mbox->notempty = SCCMallocPtr(sizeof(pthread_cond_t));
+  mbox->notempty = SCCMallocPtr(sizeof(pthread_mutex_t));
   mbox->attr = SCCMallocPtr(sizeof(pthread_mutexattr_t));
   pthread_mutexattr_init(mbox->attr);
   pthread_mutexattr_setpshared(mbox->attr, PTHREAD_PROCESS_SHARED);
   pthread_mutex_init(mbox->lock_inbox,mbox->attr);
   pthread_mutex_init(mbox->lock_free,mbox->attr);
   //pthread_mutex_init(lock_inbox, NULL);
-  pthread_cond_init (mbox->notempty, NULL);
-
+  //pthread_cond_init (mbox->notempty, NULL);
+  pthread_mutex_init(mbox->notempty,mbox->attr);
   mbox->mbox_ID=ID;
   mbox->list_free  = NULL;
   mbox->list_inbox = NULL;
@@ -167,7 +167,7 @@ mailbox_t *LpelMailboxCreate(int ID)
   PRT_DBG("mbox->mbox_ID:             %d\n",mbox->mbox_ID);
   PRT_DBG("mbox->list_inbox: 		%p\n",mbox->list_inbox);
   
-  pthread_mutex_lock(mbox->notempty);
+//  pthread_mutex_lock(mbox->notempty);
 
   DCMflush();
  
@@ -207,16 +207,17 @@ void LpelMailboxDestroy( mailbox_t *mbox)
     //free( node);
 	SCCFreePtr(node);
   }
+  DCMflush();
   //pthread_mutex_unlock( &mbox->lock_free);
   pthread_mutex_unlock( mbox->lock_free);
-
+  DCMflush();
   /* destroy sync primitives */
   pthread_mutex_destroy( mbox->lock_free);
   pthread_mutex_destroy( mbox->lock_inbox);
-  pthread_cond_destroy(  mbox->notempty);
+  pthread_mutex_destroy( mbox->notempty);
   int ret;
   /* destroy an attribute */
-  ret = pthread_attr_destroy(mbox->attr);
+  ret = pthread_mutexattr_destroy(mbox->attr);
   if (ret!=0)
 	  printf("pthread_attr can not be destroyed!!!\n");
   //free(mbox);
@@ -227,26 +228,41 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 {
   /* get a free node from recepient
    * either from the list_free list or a new one gets created */
-  mailbox_node_t *node = GetFree( mbox);
+ // mailbox_node_t *node = GetFree( mbox);
   //PRT_DBG("Node address (in send):						%p\n",node);
   /* copy the message */
-  node->msg = *msg;
+ // node->msg = *msg;
 
   /* put node into inbox */
   //pthread_mutex_lock( &mbox->lock_inbox);
   int value=-1;
+  PRT_DBG("INSIDE LpelMailboxSend, send msg to node %d\n",mbox->mbox_ID);
   PRT_DBG("WAIT in LpelMailboxSend\n");
-  /*while(value != AIR_MBOX_SYNCH_VALUE){
+
+  if (mbox->mbox_ID == MASTER){
+  	while(value != AIR_MBOX_SYNCH_VALUE){
 		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
-  }*/
-  while(pthread_mutex_trylock(mbox->lock_inbox) != 0){
+  	}
+  }else{
+	DCMflush();
+  	while(pthread_mutex_trylock(mbox->lock_inbox) != 0){
   			DCMflush();
+  	}
+	DCMflush();
   }
 
-
   PRT_DBG("GO-ON in LpelMailboxSend\n");
-  //PRT_DBG("MAILBOX address (in send):					%p\n",mbox);
-  //PRT_DBG("mbox->list_inbox (in send):					%p\n",mbox->list_inbox);
+	/* get a free node from recepient
+   * either from the list_free list or a new one gets created */
+  mailbox_node_t *node = GetFree( mbox);
+  //PRT_DBG("Node address (in send):                                            %p\n",node);
+  /* copy the message */
+  node->msg = *msg;
+
+
+  PRT_DBG("INSIDE LpelMailboxSend, MAILBOX address:					%p\n",mbox);
+  PRT_DBG("INSIDE LpelMailboxSend, mbox->list_inbox:					%p\n",mbox->list_inbox);
+  DCMflush();
   if ( mbox->list_inbox == NULL) {
 	/* list is empty */
 	mbox->list_inbox = node;
@@ -256,7 +272,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
 	//PRT_DBG("mbox->mbox_ID (in send):					%d\n",mbox->mbox_ID);
 	//PRT_DBG("mbox->notempty, set in register (in send):			%d\n",mbox->mbox_ID+40);
 	//atomic_incR(&atomic_inc_regs[mbox->mbox_ID+40],&value);
-	pthread_mutex_unlock(mbox->notempty);
+	//pthread_mutex_unlock(mbox->notempty);
   } else {
 	/* insert stream between last node=list_inbox
 	   and first node=list_inbox->next */
@@ -266,10 +282,14 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   }
 
   DCMflush();
-  //PRT_DBG("mbox->list_inbox at the end of sending:				%p\n",mbox->list_inbox);
+  PRT_DBG("INSIDE LpelMailboxSend, mbox->list_inbox at the end of sending:				%p\n",mbox->list_inbox);
   //pthread_mutex_unlock( &mbox->lock_inbox);
-  //atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
-  pthread_mutex_unlock(mbox->lock_inbox);
+  if (mbox->mbox_ID == MASTER){
+ 	 atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
+  }else{
+	pthread_mutex_unlock(mbox->lock_inbox);
+  }
+  DCMflush();
 }
 
 
@@ -281,23 +301,44 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   /* get node from inbox */
   //pthread_mutex_lock( &mbox->lock_inbox);
   int value=-1;
-  //PRT_DBG("WAIT1 in LpelMailboxRecv\n");
-  /*while(value != AIR_MBOX_SYNCH_VALUE){
-  		  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
-  }*/
-  while(pthread_mutex_trylock(mbox->lock_inbox) != 0){
-    			DCMflush();
-    }
-  DCMflush();
-  //PRT_DBG("GO-ON1 in LpelMailboxRecv\n");
-
-  //PRT_DBG("MAILBOX address:						%p\n",mbox);
-  //PRT_DBG("mbox->list_inbox:						%p\n",mbox->list_inbox);
+  PRT_DBG("WAIT1 in LpelMailboxRecv\n");
  
-  //PRT_DBG("mbox->mbox_ID:							%d\n",mbox->mbox_ID);
+  PRT_DBG("INSIDE LpelMailboxRecv, MAILBOX address:                                             %p\n",mbox);
+  PRT_DBG("INSIDE LpelMailboxRecv, mbox->list_inbox:                                            %p\n",mbox->list_inbox);
+  PRT_DBG("INSIDE LpelMailboxRecv, mbox->mbox_ID:                                                       %d\n",mbox->mbox_ID);
+	DCMflush();
+  PRT_DBG("INSIDE LpelMailboxRecv, MAILBOX address:                                             %p\n",mbox);
+  PRT_DBG("INSIDE LpelMailboxRecv, mbox->list_inbox:                                            %p\n",mbox->list_inbox);
+  PRT_DBG("INSIDE LpelMailboxRecv, mbox->mbox_ID:                                                       %d\n",mbox->mbox_ID);
+
+  bool go_on=false;
+  while(go_on==false){
+	DCMflush();
+	PRT_DBG(".");
+	if(mbox->list_inbox != NULL){
+		 if (mbox->mbox_ID == MASTER){
+  			while(value != AIR_MBOX_SYNCH_VALUE){
+  				  atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
+  			}
+		 }else{
+  			while(pthread_mutex_trylock(mbox->lock_inbox) != 0){
+    				DCMflush();
+   			}	
+  			DCMflush();
+  	 	}
+		go_on=true;
+	}
+  }
+  PRT_DBG("\n");
+  DCMflush();
+  PRT_DBG("INSIDE LpelMailboxRecv, MAILBOX address:                                             %p\n",mbox);
+  PRT_DBG("INSIDE LpelMailboxRecv, mbox->list_inbox:                                            %p\n",mbox->list_inbox);
+  PRT_DBG("INSIDE LpelMailboxRecv, mbox->mbox_ID:                                                       %d\n",mbox->mbox_ID);
+	
+ 
   //PRT_DBG("mbox->notempty, check in register:				%d\n",mbox->mbox_ID+40);
 
-  if (mbox->list_inbox == NULL){
+/*  if (mbox->list_inbox == NULL){
 	  //atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
 	  pthread_mutex_unlock(mbox->lock_inbox);
 	  value=-1;
@@ -306,28 +347,31 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
 		  	 //pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
 	//		PRT_DBG("mbox->notempty, check in register: %d\n",mbox->mbox_ID+40);
 		  //atomic_readR(&atomic_inc_regs[mbox->mbox_ID+40],&value);
-		  if (pthread_mutex_trylock(mbox->notempty)=0)
+		DCMflush();  
+		if (pthread_mutex_trylock(mbox->notempty)==0)
 			  value=1;
-//			PRT_DBG("value= %d\n", value);
+		DCMflush();	
+		PRT_DBG("value= %d\n", value);
 	  }
 	//  atomic_decR(&atomic_inc_regs[mbox->mbox_ID+40],value);
-	  //PRT_DBG("GO-ON2 in LpelMailboxRecv\n");
+	  PRT_DBG("GO-ON2 in LpelMailboxRecv\n");
   	
 
 	value=-1;
-  	//PRT_DBG("WAIT3 in LpelMailboxRecv\n");
-    	/*while(value != AIR_MBOX_SYNCH_VALUE){
+  	PRT_DBG("WAIT3 in LpelMailboxRecv\n");
+    	while(value != AIR_MBOX_SYNCH_VALUE){
                   atomic_incR(&atomic_inc_regs[mbox->mbox_ID],&value);
-    	}*/
+    	}
+	DCMflush();
 	while(pthread_mutex_trylock(mbox->lock_inbox) != 0){
 	    			DCMflush();
 	    }
-
-    //	PRT_DBG("GO-ON3 in LpelMailboxRecv\n");
-// 	PRT_DBG("MAILBOX address:                                             %p\n",mbox);
- //	PRT_DBG("mbox->list_inbox:                                            %p\n",mbox->list_inbox); 
 	DCMflush();
- }
+    	PRT_DBG("GO-ON3 in LpelMailboxRecv\n");
+ 	PRT_DBG("MAILBOX address:                                             %p\n",mbox);
+ 	PRT_DBG("mbox->list_inbox:                                            %p\n",mbox->list_inbox); 
+	DCMflush();
+ }*/
 	//PRT_DBG("MAILBOX address:                                             %p\n",mbox);
         //PRT_DBG("mbox->list_inbox:                                            %p\n",mbox->list_inbox);
 
@@ -343,19 +387,32 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
     mbox->list_inbox = NULL;
 	//PRT_DBG("Mailbox is empty reset atomic_inc_regs: %d\n",mbox->mbox_ID+40);
 	//atomic_writeR(&atomic_inc_regs[mbox->mbox_ID+40],0);
-    pthread_mutex_unlock(mbox->notempty);
+    //pthread_mutex_unlock(mbox->notempty);
   } else {
     mbox->list_inbox->next = node->next;
   }
   DCMflush();
-  //pthread_mutex_unlock( &mbox->lock_inbox);
-  //atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
-  pthread_mutex_unlock(mbox->lock_inbox);
   /* copy the message */
   *msg = node->msg;
 
   /* put node into free pool */
   PutFree( mbox, node);
+  DCMflush();
+  //pthread_mutex_unlock( &mbox->lock_inbox);
+  //atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
+  if (mbox->mbox_ID == MASTER){
+         atomic_writeR(&atomic_inc_regs[mbox->mbox_ID],AIR_MBOX_SYNCH_VALUE);
+  }else{
+        pthread_mutex_unlock(mbox->lock_inbox);
+  }
+  DCMflush();
+	 PRT_DBG("INSIDE LpelMailboxRecv(end), mbox->list_inbox:                                            %p\n",mbox->list_inbox);
+
+  /* copy the message */
+//  *msg = node->msg;
+
+  /* put node into free pool */
+//  PutFree( mbox, node);
 }
 
 

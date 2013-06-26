@@ -254,7 +254,7 @@ void LpelWorkersTerminate(void) {
 	if (node_ID==MASTER)
 		LpelWorkerBroadcast(&msg);
 	else
-		printf("Wait for TERMINATION msg..")
+		printf("Wait for TERMINATION msg..");
 }
 
 /**
